@@ -25,7 +25,7 @@ from main_system.views import department, employee, maps, vehicle, login, home_p
 from main_system.views.customer import customer_register
 
 urlpatterns = [
-    path('', home_page.homepage, name='homepage'),  # 首页
+    path('', home_page.homepage, name='homepage'),  # Homepage
     # Employee_login
     path('operation/employee/login/', login.employee_login),
     # Employee_logout
