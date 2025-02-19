@@ -1,0 +1,70 @@
+{% extends "customer_layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+        <!-- FAQ Section -->
+        <section class="faq mb-5">
+            <h2 class="text-secondary text-center mb-4">Frequently Asked Questions</h2>
+            <div class="accordion" id="faqAccordion">
+                <div class="card">
+                    <div class="card-header" id="headingOne">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                How do I book an e-vehicle?
+                            </button>
+                        </h5>
+                    </div>
+                    <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#faqAccordion">
+                        <div class="card-body">
+                            You can book an e-vehicle by navigating to the booking section on your dashboard, selecting the vehicle of your choice, and choosing the time slot that suits you.
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header" id="headingTwo">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                How do I cancel my booking?
+                            </button>
+                        </h5>
+                    </div>
+                    <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#faqAccordion">
+                        <div class="card-body">
+                            To cancel a booking, go to "My Bookings" under your dashboard, click on the booking you wish to cancel, and select the "Cancel Booking" option.
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header" id="headingThree">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                What should I do if I face an issue with the vehicle?
+                            </button>
+                        </h5>
+                    </div>
+                    <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#faqAccordion">
+                        <div class="card-body">
+                            If you face any issue with your vehicle, please report it immediately through the "Report Issue" section in your dashboard or contact customer support for further assistance.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section class="contact text-center">
+            <h2 class="text-secondary mb-4">Contact Us</h2>
+            <p>If you need further assistance, feel free to contact our customer support:</p>
+            <ul class="list-unstyled">
+                <li><strong>Email:</strong> <a href="mailto:support@evehicleshare.com">support@evehicleshare.com</a></li>
+                <li><strong>Phone:</strong> +1234567890</li>
+                <li><strong>Live Chat:</strong> Available 9 AM - 6 PM (GMT)</li>
+            </ul>
+        </section>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.6.0/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</div>
+{% endblock %}

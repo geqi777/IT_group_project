@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <h1>Verify License for: {{ customer.name }}</h1>
+    <form method="post" enctype="multipart/form-data">  <!-- 确保文件上传 -->
+        {% csrf_token %}
+        
+        <!-- 如果存在驾照文件，直接展示图片 -->
+        {% if form.driver_license.value %}
+            <div class="mb-3">
+                <label>{{ form.driver_license.label }}</label>
+                <div>
+                    <img src="{{ form.driver_license.value.url }}" alt="Driver License" style="max-width: 300px; max-height: 300px;">
+                </div>
+            </div>
+        {% else %}
+            <div class="mb-3">
+                <label>{{ form.driver_license.label }}</label>
+                {{ form.driver_license }}
+            </div>
+        {% endif %}
+        
+        <!-- 是否验证 -->
+        <div class="mb-3">
+            <label>{{ form.is_verified.label }}</label>
+            {{ form.is_verified }}
+        </div>
+        
+        <!-- 提交按钮 -->
+        <button type="submit" class="btn btn-primary">Submit Verification</button>
+    </form>
+{% endblock %}

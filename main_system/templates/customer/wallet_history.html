@@ -1,0 +1,150 @@
+{% extends "customer_layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Wallet History</h2>
+
+    <!-- Account Balance History -->
+    <div class="card mb-3">
+        <div class="card-body">
+
+            <h3>Account Balance History</h3>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Transaction</th>
+                        <th>Amount</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+            <tbody>
+                {% for record in balance_history %}
+                    <tr>
+                        <td>{{ record.date|date:"Y-m-d H:i" }}</td>
+                        <td>{{ record.transaction_type }}</td>
+                        <td>{{ record.amount }}</td>
+                        <td>{{ record.details }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center">No balance history available</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+            </div>
+        </div>
+
+    <!-- Trip Points and Coupon History Buttons -->
+    <div class="d-flex justify-content-around mt-4">
+        <button class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#pointsModal">View Trip Points History</button>
+        <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#couponModal">View Coupon History</button>
+    </div>
+
+    <!-- Trip Points History Modal -->
+    <div class="modal fade" id="pointsModal" tabindex="-1" aria-labelledby="pointsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="pointsModalLabel">Trip Points History</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Transaction Type</th>
+                                <th>Points</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in points_history %}
+                                <tr>
+                                    <td>{{ record.date|date:"Y-m-d H:i" }}</td>
+                                    <td>{{ record.transaction_type }}</td>
+                                    <td>{{ record.trip_points }}</td>
+                                    <td>{{ record.details }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No trip points history available.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Coupon History Modal -->
+    <div class="modal fade" id="couponModal" tabindex="-1" aria-labelledby="couponModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="couponModalLabel">Coupon History</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Transaction Type</th>
+                                <th>Discount</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in coupon_history %}
+                                <tr>
+                                    <td>{{ record.date|date:"Y-m-d H:i" }}</td>
+                                    <td>{{ record.transaction_type }}</td>
+                                    <td>
+                                        {% if record.coupon %}
+                                            £{{ record.coupon.discount }}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ record.details }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No coupon history available.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Ensure buttons only toggle the respective modals
+        const pointsModal = new bootstrap.Modal(document.getElementById('pointsModal'));
+        const couponModal = new bootstrap.Modal(document.getElementById('couponModal'));
+
+        document.querySelector('[data-bs-target="#pointsModal"]').addEventListener('click', function() {
+            pointsModal.show();
+        });
+
+        document.querySelector('[data-bs-target="#couponModal"]').addEventListener('click', function() {
+            couponModal.show();
+        });
+    });
+</script>
+    
+{% endblock %}

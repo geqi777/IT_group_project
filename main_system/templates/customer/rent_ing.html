@@ -1,0 +1,129 @@
+{% extends "customer_layout.html" %}
+{% load static %}
+
+{% block head %}
+{% endblock %}
+
+{% block content %}
+<a href="javascript:history.back()" class="btn btn-primary" style="margin-left: 125px;">&larr; Back</a>
+
+<!-- Map Display -->
+<div id="map" style="width: 75%; height: 400px; border: 1px solid #ccc; margin: 0 auto;"></div>
+<div id="distance" style="text-align: center; font-size: 18px; margin-top: 10px;">Distance: Loading...</div>
+<div id="duration" style="text-align: center; font-size: 18px; margin-top: 10px;">Estimated time: Loading...</div>
+
+<div class="location" style="text-align: center; font-size: 24px;">
+    <p><strong>Your Pick-up Location:</strong> {{ customer_user_address }}</p>
+    <p><strong>Current Vehicle Location:</strong> {{ vehicle_location }}</p>
+</div>
+
+<!-- Success Message Display -->
+<div id="successMessage" style="text-align: center; margin-top: 20px; display: none;"></div>
+
+<!-- Hidden Element for Customer Name -->
+<div id="customerName" style="display: none;">{{ customer_name }}</div>
+
+<!-- Booking Button -->
+<div style="display: flex; justify-content: center; margin-top: 20px;">
+    <button id="bookButton" class="btn btn-primary" onclick="bookVehicle()">Book Now</button>
+</div>
+
+<script>
+    function initMap() {
+        const vehicleLocation = { lat: parseFloat("{{ vehicle_latitude }}"), lng: parseFloat("{{ vehicle_longitude }}") };
+        const userLocation = { lat: parseFloat("{{ customer_latitude }}"), lng: parseFloat("{{ customer_longitude }}") };
+
+        const map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 12,
+            center: userLocation
+        });
+
+        // Vehicle marker
+        const vehicleMarker = new google.maps.Marker({
+            position: vehicleLocation,
+            map: map,
+            title: 'Vehicle Location'
+        });
+
+        // User location marker
+        const userMarker = new google.maps.Marker({
+            position: userLocation,
+            map: map,
+            title: 'Your Location',
+            icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
+        });
+
+        // Route display
+        const directionsService = new google.maps.DirectionsService();
+        const directionsRenderer = new google.maps.DirectionsRenderer();
+        directionsRenderer.setMap(map);
+
+        const request = {
+            origin: userLocation,
+            destination: vehicleLocation,
+            travelMode: 'WALKING' // Set to walking mode
+        };
+
+        directionsService.route(request, function(result, status) {
+            if (status === 'OK') {
+                directionsRenderer.setDirections(result);
+
+                // Extract and display walking distance and time
+                const route = result.routes[0].legs[0];
+                const distanceText = route.distance.text;  // Distance text
+                const durationText = route.duration.text;  // Duration text
+
+                // Display distance and time on the page
+                document.getElementById('distance').innerText = `Distance: ${distanceText}`;
+                document.getElementById('duration').innerText = `Estimated time: ${durationText}`;
+            } else {
+                console.error('Directions request failed due to ' + status);
+            }
+        });
+
+        // Fit map bounds to include both markers
+        const bounds = new google.maps.LatLngBounds();
+        bounds.extend(vehicleLocation);
+        bounds.extend(userLocation);
+        map.fitBounds(bounds);
+    }
+
+    window.onload = initMap;
+
+    // Vehicle booking function, sending POST request
+    function bookVehicle() {
+        fetch("{% url 'rent_ing' vehicle.id %}", {
+            method: "POST",
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({ 'book': 'true' })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message === 'rental started') {
+                const button = document.getElementById('bookButton');
+                button.innerText = 'Booked';
+                button.classList.remove('btn-primary');
+                button.classList.add('btn-success');
+                button.disabled = true;
+
+                const customerName = document.getElementById('customerName').innerText;
+                const messageDiv = document.getElementById('successMessage');
+                messageDiv.innerText = `Dear ${customerName}, you have successfully booked the vehicle.`;
+                messageDiv.style.display = 'block';
+
+                // Redirect to order page after a delay
+                setTimeout(function() {
+                    window.location.href = "/customer/order_page/";
+                }, 3000);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Something went wrong. Please try again.');
+        });
+    }
+</script>
+{% endblock %}

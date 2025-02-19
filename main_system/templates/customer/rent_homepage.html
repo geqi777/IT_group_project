@@ -1,0 +1,184 @@
+{% extends "customer_layout.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <!-- Back Button -->
+    <a href="javascript:history.back()" class="btn btn-outline-primary mb-4">
+        <i class="bi bi-arrow-left"></i> Back
+    </a>
+    
+    <h1 class="text-primary display-4 mb-4">Vehicle Rental</h1>
+    <hr class="mb-5">
+
+    <!-- User Pickup Location and Available Cars Info -->
+    <div class="card mb-5 shadow-sm border-0">
+        <div class="card-body p-4">
+            <p class="mb-2"><strong>Your Pick-up Location:</strong> {{ customer_address }}</p>
+            <p><strong>Available Cars:</strong> {{ available_car_nums }} vehicles</p>
+        </div>
+    </div>
+
+    <!-- Map Display -->
+    <div id="map" class="rounded shadow-sm border mb-5" style="width: 100%; height: 500px;"></div>
+
+    <!-- Find Nearest Vehicle Button -->
+    <button onclick="findNearestVehicle()" class="btn btn-primary btn-lg shadow-sm mb-5">
+        <i class="bi bi-compass"></i> Find Nearest Vehicle
+    </button>
+
+    <!-- Vehicle List Section -->
+    <div id="vehicle-list">
+        <h3 class="text-primary">Available Vehicles</h3>
+        <div id="vehicle-list-content" class="row mt-4"></div>
+    </div>
+</div>
+
+<script>
+    let map;
+    const customerLocation = { lat: {{ customer_latitude }}, lng: {{ customer_longitude }} };
+    let markers = {}; // Used to store markers and vehicle information
+    let nearestMarker; // Stores the nearest vehicle marker
+
+    function initMap() {
+        // Initialize map with customer's location
+        map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 12,
+            center: customerLocation
+        });
+
+        // Add customer location marker
+        new google.maps.Marker({
+            position: customerLocation,
+            map: map,
+            title: 'Your Location',
+            icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
+        });
+
+        // Define an info window
+        const infoWindow = new google.maps.InfoWindow();
+
+        // Declare variables for coordinates and vehicle image
+        let lat, lng, latLngKey, vehicleImage;
+
+        // Display markers for all vehicles
+        {% for vehicle in vehicles %}
+            lat = parseFloat("{{ vehicle.latitude }}");
+            lng = parseFloat("{{ vehicle.longitude }}");
+            latLngKey = `${lat},${lng}`;
+            vehicleImage = `{% static 'image/vvehicles/' %}{% if vehicle.vehicle_type == "Scooter" %}Scooter.png{% elif vehicle.vehicle_type == "E-bike" %}E-bike.png{% endif %}`;
+
+           
+
+            // Initialize vehicle marker storage object
+            if (!markers[latLngKey]) {
+                markers[latLngKey] = {
+                    marker: new google.maps.Marker({
+                        position: { lat: lat, lng: lng },
+                        map: map,
+                        title: "{{ vehicle.name }}"
+                    }),
+                    vehicles: []
+                };
+
+                // Immediately Invoked Function Expression (IIFE) to solve closure issues
+                ((marker, vehicles) => {
+                    marker.addListener('click', () => {
+                        const vehicleInfo = vehicles.map(vehicle => `
+                            <div class="card mb-3 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">${vehicle.name}</h5>
+                                    <img src="${vehicle.image}" alt="${vehicle.name}" style="width: 50px; height: auto;"><br>
+                                    <p><strong>Type:</strong> ${vehicle.type}</p>
+                                    <p><strong>Price:</strong> ${vehicle.price} pounds/hour</p>
+                                    <p><strong>Location:</strong> ${vehicle.location}</p>
+                                    <p><strong>Distance:</strong> ${vehicle.distance}</p>
+                                    <p><strong>Duration:</strong> ${vehicle.duration}</p>
+                                    <a href="${vehicle.url}" class="btn btn-primary mt-2">Rent Now</a>
+                                </div>
+                            </div>
+                        `).join('<hr>');
+                        infoWindow.setContent(vehicleInfo);
+                        infoWindow.open(map, marker);
+
+                        // Display all vehicles at this location in the vehicle list section
+                        displayVehicleList(vehicles);
+                    });
+                })(markers[latLngKey].marker, markers[latLngKey].vehicles);
+            }
+
+            // Add this vehicle's information to the marker storage object
+            markers[latLngKey].vehicles.push({
+                name: "{{ vehicle.name }}",
+                type: "{{ vehicle.vehicle_type }}",
+                price: "{{ vehicle.price }}",
+                power: "{{ vehicle.power }}",
+                situation: "{{ vehicle.situation }}",
+                location: "{{ vehicle.location }}",
+                distance: "{{ vehicle.distance }}",
+                duration: "{{ vehicle.duration }}",
+                image: vehicleImage,
+                url: "{% url 'rent_ing' vehicle.id %}"
+            });
+        {% endfor %}
+    }
+
+    // Display vehicle list
+    function displayVehicleList(vehicles) {
+        const vehicleListContent = document.getElementById('vehicle-list-content');
+        vehicleListContent.innerHTML = vehicles.map(vehicle => `
+            <div class="col-md-4">
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-body">
+                        <h4 class="card-title">${vehicle.name}</h4>
+                        <img src="${vehicle.image}" alt="${vehicle.name}" style="width: 50px; height: auto;"><br>
+                        <p><strong>Type:</strong> ${vehicle.type}</p>
+                        <p><strong>Price:</strong> ${vehicle.price} pounds/hour</p>
+                        <p><strong>Power:</strong> ${vehicle.power}</p>
+                        <p><strong>Situation:</strong> ${vehicle.situation}</p>
+                        <p><strong>Location:</strong> ${vehicle.location}</p>
+                        <p><strong>Distance:</strong> ${vehicle.distance}</p>
+                        <p><strong>Duration:</strong> ${vehicle.duration}</p>
+                        <a href="${vehicle.url}" class="btn btn-primary mt-2">Rent Now</a>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Find the nearest vehicle to the user
+    function findNearestVehicle() {
+        let nearestVehicle = null;
+        let nearestDistance = Infinity;
+
+        for (let key in markers) {
+            const vehicles = markers[key].vehicles;
+            vehicles.forEach(vehicle => {
+                const distance = parseFloat(vehicle.distance);
+                if (distance < nearestDistance) {
+                    nearestDistance = distance;
+                    nearestVehicle = vehicle;
+                    nearestMarker = markers[key].marker; // Store the nearest vehicle's marker
+                }
+            });
+        }
+
+        if (nearestVehicle && nearestMarker) {
+            // Change nearest vehicle marker color to green
+            nearestMarker.setIcon('http://maps.google.com/mapfiles/ms/icons/green-dot.png');
+
+            // Focus on the nearest vehicle's location and zoom in
+            map.setCenter(nearestMarker.getPosition());
+            map.setZoom(14);
+
+            // Display nearest vehicle's information in the vehicle list section
+            displayVehicleList([nearestVehicle]);
+        } else {
+            document.getElementById('vehicle-list-content').innerHTML = "<p>No vehicles available</p>";
+        }
+    }
+
+    // Initialize map on window load
+    window.onload = initMap;
+</script>
+{% endblock %}

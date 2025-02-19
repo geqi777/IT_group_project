@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Maps Example</title>
+    <style>
+        /* 设置地图容器的样式 - 确保地图容器有足够的高度和宽度 */
+        /* Set the style of the map container - ensure it has enough height and width */
+        #map {
+            height: 500px; /* 地图高度 / Height of the map */
+            width: 100%;   /* 地图宽度 / Width of the map */
+        }
+    </style>
+    <!-- 加载 Google Maps JavaScript API / Load Google Maps JavaScript API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBIWSxGqGliYcvqVAG1Daba143S98dofDE&callback=initMap" async defer></script>
+</head>
+<body>
+    <h3>Google Maps Example - Get Current Location and Show Nearby Available Vehicles</h3>
+    <!-- 地图容器，用于显示地图 / Map container used to display the map -->
+    <div id="map"></div>
+
+    <!-- 控件容器，用于显示车辆信息 / Control container used to display vehicle information -->
+    <div id="vehicle-list">
+        <h4>Available Vehicles List and Estimated Arrival Time</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Vehicle Name</th>
+                    <th>Vehicle Number</th>
+                    <th>Battery Level</th>
+                    <th>Estimated Travel Time</th>
+                    <th>operation</th>
+                </tr>
+            </thead>
+            <tbody id="vehicle-data">
+                <!-- 车辆数据将动态插入 / Vehicle data will be dynamically inserted here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        let map;
+        let userMarker;
+        let vehicleMarkers = [];
+        let directionsService;
+
+        // 初始化地图 / Function to initialize the map
+        function initMap() {
+            directionsService = new google.maps.DirectionsService();
+
+            // 使用 HTML5 Geolocation API 获取用户当前位置 / Use HTML5 Geolocation API to get the user's current position
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        // 成功获取当前位置 / Successfully got the current location
+                        const userLocation = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude,
+                        };
+
+                        // 创建 Google 地图实例，并将地图中心设置为用户的当前位置
+                        // Create a Google Map instance and set its center to the user's current location
+                        map = new google.maps.Map(document.getElementById("map"), {
+                            center: userLocation,
+                            zoom: 15, // 设置地图缩放级别（数字越大，缩放越近） / Set the zoom level of the map (the higher the number, the closer the zoom)
+                        });
+
+                        // 在地图上添加一个标记，标记位置为用户的当前位置
+                        // Add a marker on the map indicating the user's current location
+                        userMarker = new google.maps.Marker({
+                            position: userLocation,
+                            map: map,
+                            title: "Your Current Location", // 鼠标悬停时显示的提示信息 / Tooltip to be displayed when the mouse hovers
+                        });
+
+                        // 从后端获取可用车辆数据 / Fetch available vehicle data from the backend
+                        fetch('/vehicle/available/')  // 替换为 Django 后端实际 API 路径 / Replace with the actual Django backend API path
+                            .then(response => response.json())
+                            .then(data => {
+                                // 遍历返回的车辆数据并在地图上标记 / Iterate over the returned vehicle data and mark them on the map
+                                data.forEach(vehicle => {
+                                    const vehicleLocation = {
+                                        lat: vehicle.lat,
+                                        lng: vehicle.lng,
+                                    };
+
+                                    // 在地图上添加车辆的标记 / Add a marker for the vehicle on the map
+                                    const marker = new google.maps.Marker({
+                                        position: vehicleLocation,
+                                        map: map,
+                                        title: `${vehicle.name} - Battery: ${vehicle.power}%`,
+                                        icon: "http://maps.google.com/mapfiles/ms/icons/green-dot.png" // 设置不同颜色的标记图标 / Set a different color for the marker icon
+                                    });
+
+                                    // 保存到数组中，以便后续操作 / Save to an array for future operations
+                                    vehicleMarkers.push({ marker, vehicle });
+
+                                    // 获取并显示行驶时间 / Get and display travel time
+                                    calculateTravelTime(userLocation, vehicleLocation, vehicle);
+                                });
+                            })
+                            .catch(error => {
+                                console.error("Failed to fetch vehicle data:", error);
+                                alert("Unable to fetch available vehicle data, please try again later.");
+                            });
+                    },
+                    () => {
+                        // 用户拒绝共享位置时，或获取位置失败时的处理 / Handle when the user denies sharing location or the location fetch fails
+                        handleLocationError(true);
+                    }
+                );
+            } else {
+                // 浏览器不支持地理定位时的处理 / Handle when the browser does not support geolocation
+                handleLocationError(false);
+            }
+        }
+
+        // 处理定位错误的函数 / Function to handle location errors
+        function handleLocationError(browserHasGeolocation) {
+            const errorMsg = browserHasGeolocation
+                ? "Unable to get your location, possibly due to permission issues."
+                : "Your browser does not support geolocation.";
+            alert(errorMsg);
+
+            // 设置默认位置为格拉斯哥 / Set the default location to Glasgow
+            const defaultLocation = { lat: 55.8642, lng: -4.2518 };
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: defaultLocation,
+                zoom: 12,
+            });
+
+            // 添加默认位置的标记 / Add a marker for the default location
+            const marker = new google.maps.Marker({
+                position: defaultLocation,
+                map: map,
+                title: "This is Glasgow",
+            });
+        }
+
+        // 使用 Google Maps Directions API 计算行驶时间 / Use Google Maps Directions API to calculate travel time
+        function calculateTravelTime(origin, destination, vehicle) {
+            const request = {
+                origin: origin,
+                destination: destination,
+                travelMode: 'WALKING' // 使用步行模式计算时间 / Use 'WALKING' mode to calculate travel time
+            };
+
+            directionsService.route(request, function (result, status) {
+                if (status === 'OK') {
+                    const travelTime = result.routes[0].legs[0].duration.text;
+
+                    // 在车辆列表中显示车辆信息及行驶时间 / Display vehicle information and travel time in the vehicle list
+                    const vehicleDataElement = document.getElementById("vehicle-data");
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${vehicle.name}</td>
+                        <td>${vehicle.vehicle_number}</td>
+                        <td>${vehicle.power}%</td>
+                        <td>${travelTime}</td>
+                        <td><a href="#" class="btn btn-primary">Rent</a></td>
+                    `;
+                    vehicleDataElement.appendChild(row);
+                } else {
+                    console.error("Failed to calculate travel time:", status);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+

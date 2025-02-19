@@ -1,0 +1,48 @@
+{% extends "customer_layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center">Report an Issue with {{ vehicle.name }}</h1>
+    <hr>
+    <form id="reportForm" method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="report_message">Describe the issue you encountered:</label>
+            <textarea id="report_message" name="report_message" class="form-control" rows="5" required></textarea>
+        </div>
+        <div class="d-flex justify-content-center mt-3">
+            <button type="submit" class="btn btn-danger">Submit Report</button>
+        </div>
+    </form>
+
+    <!-- Feedback after submission -->
+    <div id="resultMessage" class="alert alert-info mt-4" style="display:none;"></div>
+</div>
+
+<script>
+    document.getElementById('reportForm').onsubmit = function(event) {
+        event.preventDefault(); // Prevent default form submission
+        const reportMessage = document.getElementById('report_message').value;
+    
+        fetch("{% url 'report_vehicle' history_id vehicle.id %}", {
+            method: "POST",
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({ 'report_message': reportMessage })
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('resultMessage').innerText = data.message;
+            document.getElementById('resultMessage').style.display = 'block';
+            
+            // Add page redirection code here, assuming redirecting to the order page
+            setTimeout(function() {
+                window.location.href = '/customer/order_page/';  // Replace this with the actual URL of the order page
+            }, 2000);  // Redirect after a 2-second delay to give feedback time to the user
+        })
+        .catch(error => console.error('Error:', error));
+};
+</script>
+{% endblock %}

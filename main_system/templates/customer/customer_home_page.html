@@ -1,0 +1,276 @@
+{% extends "customer_layout.html" %}
+{% load static %}
+
+{% block head %}
+<style>
+    /* Background Container Style */
+    .background-container {
+        background-size: cover;
+        background-position: center;
+        height: 150vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+
+    /* Search Box Styling */
+    .search-box {
+        background-color: rgba(255, 255, 255, 0.85);
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        max-width: 800px;
+        width: 100%;
+    }
+
+    /* Form Labels */
+    .form-label {
+        font-weight: bold;
+        color: #555;
+        font-size: 1rem;
+    }
+
+    /* Center Align Rows */
+    .centered-row {
+        display: flex;
+        justify-content: center;
+        gap: 20px
+    }
+
+    /* Form Input Fields */
+    .form-control, .form-select {
+        border-radius: 6px;
+        box-shadow: none;
+        border: 1px solid #ddd;
+        padding: 8px 10px;
+        font-size: 1rem;
+        max-width: 400px;
+        width: 100%;
+    }
+    
+    .form-control:focus {
+        border-color: #6c757d;
+        box-shadow: 0 0 5px rgba(108, 117, 125, 0.3);
+    }
+
+    /* Checkboxes Row */
+    .search-checkboxes .form-check-input {
+        margin-top: 0.5rem;
+        margin-right: 0.4rem;
+    }
+    .search-checkboxes .form-check-label {
+        font-size: 0.9rem;
+        color: #444;
+    }
+
+    /* Search Button Styling */
+    .search-btn-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+    }
+    .search-btn {
+        font-size: 1.1rem;
+        font-weight: 600;
+        background-color: #28a745;
+        border: none;
+        padding: 12px;          
+        border-radius: 8px;
+        transition: background-color 0.3s ease;
+    }
+    .search-btn:hover {
+        background-color: #218838;
+    }
+
+    /* Heading Style */
+    h1.container {
+        color: #333;
+        font-family: 'Arial', sans-serif;
+        font-size: 2rem;
+        font-weight: bold;
+        text-align: center;
+        margin-top: 20px;
+    }
+    .card-header {
+        background-color: #d4f3e2;
+        font-weight: 600;
+        color: #333;
+        font-size: 1.4rem;
+        padding: 1rem;
+        border-top-left-radius: 15px;
+        border-top-right-radius: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="background-container">
+    <div class="card-header">Book Your Vehicle</div><br>
+    <div class="search-box">
+        <form method="POST" action="/customer/home/" onsubmit="return validateForm()">
+            {% csrf_token %}
+            <!-- 隐藏字段存储经纬度信息 -->
+            <input type="hidden" id="latitude" name="latitude" value="{{ request.session.latitude }}">
+            <input type="hidden" id="longitude" name="longitude" value="{{ request.session.longitude }}">
+
+{#            <div class="search-checkboxes mb-3">#}
+{#                <!-- 选择从租车点租车的复选框 -->#}
+{#                <input type="checkbox" id="use-rental-location" onclick="toggleRentalLocation()">#}
+{#                <label for="use-rental-location">Rent from a preset rental location</label>#}
+{#            </div>#}
+
+            <div class="row centered-row mb-3">
+                <!-- Pick-up Location 输入框 -->
+                <div class="col-md-6">
+                    <label for="pickup-location" class="form-label">Pick-up Location</label>
+                    <input type="text" class="form-control" id="pickup-location" name="pickup_location" placeholder="Enter your pick-up location" value="{{ request.session.user_address }}">
+                </div>
+
+                <!-- 选择租车点下拉菜单（默认隐藏） -->
+                <div class="col-md-6" id="rental-location-container" style="display: none;">
+                    <label for="rental-location" class="form-label">Choose Rental Location</label>
+                    <select class="form-select" id="rental-location" onchange="updatePickupLocation(this)">
+                        <option value="">Select a rental location</option>
+                        {% for location in locations %}
+                            <option value="{{ location.address }}" data-lat="{{ location.latitude }}" data-lng="{{ location.longitude }}">
+                                {{ location.address }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- 增加车辆类型选择 -->
+            <div class="row centered-row mb-3">
+                <div class="col-md-6">
+                    <label for="vehicle-type" class="form-label">Vehicle Type</label>
+                    <select class="form-select" id="vehicle-type" name="vehicle_type">
+                        <option value="both" {% if request.session.vehicle_type and 'Scooter' in request.session.vehicle_type and 'E-bike' in request.session.vehicle_type %}selected{% endif %}>Both (Scooter & E-bike)</option>
+                        <option value="Scooter" {% if request.session.vehicle_type == 'Scooter' %}selected{% endif %}>Scooter</option>
+                        <option value="E-bike" {% if request.session.vehicle_type == 'E-bike' %}selected{% endif %}>E-bike</option>
+                    </select>
+                </div>
+            </div>
+            <div class="search-btn-container">
+                <button type="button" class="btn btn-secondary mb-3" onclick="getUserLocation()">Use Current Location</button>
+                <br>
+                <button type="submit" class="btn btn-success search-btn">Search</button>
+            </div>
+        </form>
+    </div>
+</div>
+<br>
+<h1 class="container">Happy Travels!</h1>
+
+<script>
+    let autocomplete;
+
+    function loadGoogleMapsAPI(callback) {
+        const script = document.createElement('script');
+        script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyBIWSxGqGliYcvqVAG1Daba143S98dofDE&libraries=places";
+        script.async = true;
+        script.defer = true;
+        script.onload = callback;
+        document.head.appendChild(script);
+    }
+
+    function initializeAutocomplete() {
+        if (typeof google === 'undefined' || !google.maps || !google.maps.places) {
+            loadGoogleMapsAPI(setupAutocomplete);
+        } else {
+            setupAutocomplete();
+        }
+    }
+
+    function setupAutocomplete() {
+        const pickupLocationInput = document.getElementById('pickup-location');
+        autocomplete = new google.maps.places.Autocomplete(pickupLocationInput, {
+            componentRestrictions: { country: "GB" }
+        });
+        autocomplete.addListener('place_changed', function() {
+            const place = autocomplete.getPlace();
+            if (place.geometry) {
+                document.getElementById("latitude").value = place.geometry.location.lat();
+                document.getElementById("longitude").value = place.geometry.location.lng();
+            }
+        });
+    }
+
+    function getUserLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(position => {
+                const latitude = position.coords.latitude;
+                const longitude = position.coords.longitude;
+                document.getElementById("latitude").value = latitude;
+                document.getElementById("longitude").value = longitude;
+
+                const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=AIzaSyBIWSxGqGliYcvqVAG1Daba143S98dofDE`;
+
+                fetch(geocodeUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.results && data.results[0]) {
+                            document.getElementById("pickup-location").value = data.results[0].formatted_address;
+                        } else {
+                            document.getElementById("pickup-location").placeholder = "Location not found";
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error fetching address:", error);
+                        document.getElementById("pickup-location").placeholder = "Unable to retrieve address";
+                    });
+            }, error => {
+                console.error("Geolocation error:", error);
+                document.getElementById("pickup-location").placeholder = "Location access denied";
+            });
+        } else {
+            alert("Geolocation is not supported by this browser.");
+        }
+    }
+
+    function toggleRentalLocation() {
+        const useRentalLocation = document.getElementById("use-rental-location").checked;
+        const rentalLocationContainer = document.getElementById("rental-location-container");
+        const pickupLocationInput = document.getElementById("pickup-location");
+
+        if (useRentalLocation) {
+            rentalLocationContainer.style.display = "block";
+            pickupLocationInput.value = "";
+            pickupLocationInput.readOnly = true;
+        } else {
+            rentalLocationContainer.style.display = "none";
+            pickupLocationInput.readOnly = false;
+            getUserLocation();
+        }
+    }
+
+    function updatePickupLocation(select) {
+        const selectedOption = select.options[select.selectedIndex];
+        if (selectedOption.value) {
+            document.getElementById("pickup-location").value = selectedOption.value;
+            document.getElementById("latitude").value = selectedOption.getAttribute('data-lat');
+            document.getElementById("longitude").value = selectedOption.getAttribute('data-lng');
+        }
+    }
+
+    function validateForm() {
+        const latitude = document.getElementById("latitude").value;
+        const longitude = document.getElementById("longitude").value;
+        const pickupLocation = document.getElementById("pickup-location").value;
+
+        if (!pickupLocation || !latitude || !longitude) {
+            alert("Please enter a valid pick-up location or enable location access.");
+            return false;
+        }
+        return true;
+    }
+
+    window.onload = function() {
+        initializeAutocomplete();
+        if (!document.getElementById("latitude").value || !document.getElementById("longitude").value) {
+            getUserLocation();
+        }
+    };
+</script>
+{% endblock %}

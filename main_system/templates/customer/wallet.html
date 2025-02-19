@@ -1,0 +1,217 @@
+{% extends "customer_layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Wallet</h2>
+    
+    <!-- Wallet balance & Trip points-->
+    <div class="card mb-3">
+        <div class="card-body">
+            <h2>Current Balance: £{{ balance }}</h2>
+            <h5>Trip Points: {{ points }}</h5>
+            <!-- Top Up button added -->
+            <a href="/customer/wallet/top_up/" class="btn btn-primary float-end">Top up</a>
+        </div>
+    </div>
+
+    <!-- Top up methods (Cards) -->
+    <h4 class="mt-4">Top up Method</h4>
+    <ul class="list-group mb-4">
+        {% for card in cards %}
+        <li class="list-group-item">
+            <button class="btn btn-link" data-bs-toggle="collapse" href="#collapse{{ card.id }}" role="button">
+                {{ card.nickname|default:"Card" }} (**** **** **** {{ card.card_number|slice:"-4:" }})
+            </button>
+            <div id="collapse{{ card.id }}" class="collapse" aria-labelledby="heading{{ card.id }}" data-bs-parent="#cardAccordion">
+                <div class="card card-body">
+                    <p>Card Number: {{ card.card_number }}</p>
+                    <p>Expiry Date: {{ card.expiry_date }}</p>
+                    <a href="/customer/wallet/card/{{ card.id }}/edit/" class="btn btn-outline-secondary">Edit</a>
+                    <a href="/customer/wallet/card/{{ card.id }}/delete/" class="btn btn-outline-danger">Delete</a>
+                </div>
+            </div>
+        </li>
+        {% empty %}
+        <li class="list-group-item">No cards added yet</li>
+        {% endfor %}
+    </ul>
+    <a href="/customer/wallet/card_add/" class="btn btn-outline-primary">+ Add Top up Methods</a>
+
+    <hr>
+
+    <!-- Coupons -->
+    <h4 class="mt-4">Current Coupons</h4>
+    <ul class="list-group mb-4">
+        {% for coupon in coupons %}
+            <li class="list-group-item" {% if coupon.is_valid %}text-success{%  else %}text-muted{% endif %}>
+                <p class="h5 fw-bold">{{ coupon.code }} -- £{{ coupon.discount }} Off </p>
+                <p>
+                    (Min: £{{ coupon.min_order_value }} - Expires: {{ coupon.expiry_date }})
+                    {% if not coupon.is_valid %}
+                        <span class="badge bg-secondary">Expired</span>
+                    {% elif order_total < coupon.min_order_value %}
+                        <span class="badge bg-secondary">Locked</span>
+                    {% endif %}
+                </p>
+            </li>
+        {% empty %}
+            <li class="list-group-item">No coupons available</li>
+        {% endfor %}
+    </ul>
+    <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#addCouponModal">+ Add Coupon Code</button>
+{#    <a href="#" class="btn btn-outline-success">+ Add Coupon Code</a>#}
+    
+    <!-- Trip Points to Coupons -->
+    <button class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#exchangePointsModal">Exchange Points for Coupons</button>
+
+    <!-- Add Coupon Modal-->
+    <div class="modal fade" id="addCouponModal" tabindex="-1" aria-labelledby="addCouponModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addCouponModalLabel">Add Coupon Codes</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" action="/customer/wallet/coupon/">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="couponCode" class="form-label">Coupon Code</label>
+                            <input type="text" class="form-control" id="couponCode" name="coupon_code" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Apply</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Exchange Points Modal -->
+    <div class="modal fade" id="exchangePointsModal" tabindex="-1" aria-labelledby="exchangePointsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exchangePointsModalLabel">Exchange Points for Coupons</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" action="/customer/wallet/exchange_points/">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="exchangePoints" class="form-label">Choose an option</label>
+                            <select class="form-select" id="exchangePoints" name="exchange_points" required>
+                                <option value="500">500 points for £5 coupon</option>
+                                <option value="1000">1000 points for £12.5 coupon</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-info">Exchange</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wallet History Button -->
+    <div class="mt-3">
+        <a href="/customer/wallet/history/">View Wallet History</a>
+    </div>
+    
+    <!-- Wallet History Modal -->
+    <div class="modal fade" id="walletHistoryModal" tabindex="-1" aria-labelledby="walletHistoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="walletHistoryModalLabel">Wallet History</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="list-group">
+                        {% for history in wallet_history %}
+                        <li class="list-group-item">
+                            <p><strong>Type:</strong> {{ history.transaction_type }}</p>
+                            <p><strong>Amount:</strong> £{{ history.amount|default:"-" }}</p>
+                            <p><strong>Trip Points:</strong> {{ history.trip_points|default:"-" }}</p>
+                            <p><strong>Time:</strong> {{ history.date }}</p>
+                            <p><strong>Details:</strong> {{ history.details }}</p>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item">No wallet history available.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+    
+    <!-- Exchange Points Message Modal -->
+    <div class="modal fade" id="messageModal" tabindex="-1" aria-labelledby="messageModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="messageModalLabel">Notification</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <!-- Balance Warning Modal -->
+    <div class="modal fade" id="balanceModal" tabindex="-1" aria-labelledby="balanceModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="balanceModalLabel">Notification</h5>
+                </div>
+                <div class="modal-body">
+                    Your balance is insufficient, please top up!
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    
+    <!-- JavaScript to trigger modal if there are messages -->
+    {% if messages %}
+    <script>
+        window.onload = function() {
+            var messageModal = new bootstrap.Modal(document.getElementById('messageModal'));
+            messageModal.show();
+            
+            // 2秒后隐藏模态框
+            setTimeout(function() {
+                modal.hide();
+            }, 2000);
+    };
+    </script>
+    {% endif %}
+
+    <!-- 只有当 show_balance_warning 为 True 时才显示弹窗 -->
+    {% if show_balance_warning %}
+    <script>
+        window.onload = function() {
+            var modal = new bootstrap.Modal(document.getElementById('balanceModal'));
+            modal.show();  // 显示模态框
+
+            // 2秒后隐藏模态框
+            setTimeout(function() {
+                modal.hide();
+            }, 2000);
+        };
+    </script>
+    {% endif %}
+{% endblock %}

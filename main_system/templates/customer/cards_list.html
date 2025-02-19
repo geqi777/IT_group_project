@@ -1,0 +1,30 @@
+{% extends "customer_layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Your Cards</h2>
+    
+    <ul class="list-group mb-4">
+        {% for card in cards %}
+        <li class="list-group-item">
+            <button class="btn btn-link" data-bs-toggle="collapse" href="#collapse{{ card.id }}" role="button">
+                {{ card.nickname|default:"Card" }} (**** **** **** {{ card.card_number|slice:"-4:" }})
+            </button>
+            <div id="collapse{{ card.id }}" class="collapse" aria-labelledby="heading{{ card.id }}" data-bs-parent="#cardAccordion">
+                <div class="card card-body">
+                    <p>Card Number: {{ card.card_number }}</p>
+                    <p>Expiry Date: {{ card.expiry_date }}</p>
+                    <p>Country: {{ card.country }}</p>
+                    <p>Postcode: {{ card.postcode }}</p>
+                    <a href="{% url 'cards_edit' card.id %}" class="btn btn-outline-secondary">Edit</a>
+                    <a href="{% url 'cards_delete' card.id %}" class="btn btn-outline-danger">Delete</a>
+                </div>
+            </div>
+        </li>
+        {% empty %}
+        <li class="list-group-item">No cards added yet</li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'cards_add' %}" class="btn btn-outline-primary">+ Add Top up Methods</a>
+</div>
+{% endblock %}

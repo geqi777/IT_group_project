@@ -1,0 +1,41 @@
+{% extends "customer_layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Your Trips</h2>
+
+    {% if order_forms %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Vehicle Name</th>
+                <th>Start Time</th>
+                <th>Order Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order_data in order_forms %}
+            <tr>
+                <td>{{ order_data.order.vehicle.name }}</td>  <!-- Vehicle Name -->
+                <td>{{ order_data.order.start_time }}</td> <!-- Order Start Time -->
+                <td>{{ order_data.order.status }}</td>
+                <td>
+                    {% if order_data.order.status == 'ongoing' %}
+                        <button class="btn btn-warning" type="button" onclick="window.location.href='/customer/rent/rent_ing/{{ order_data.order.id }}/{{ order_data.order.vehicle.id }}/return_vehicle'">Return Vehicle</button>
+                        <button class="btn btn-danger" type="button" onclick="window.location.href='/customer/rent/rent_ing/{{ order_data.order.id }}/{{ order_data.order.vehicle.id }}/report_vehicle'">Report Issue</button>
+                    {% else %}
+                        Order Completed
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="text-center mt-5">
+        <h3 style="font-size: 24px; color: #555;">There are no orders at the moment.</h3>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends "customer_layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Add New Card</h2>
+    
+    <form method="post" action="/customer/wallet/card_add/" id="addCardForm">
+        {% csrf_token %}
+        
+        <!-- Credit Card Number -->
+        <div class="mb-3 row">
+            <label for="cardNumber" class="col-sm-3 col-form-label">Card Number</label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" id="cardNumber" name="card_number" maxlength="19" placeholder="1234 5678 9012 3456" required>
+                <div class="form-text">Enter your 16-digit card number without spaces.</div>
+            </div>
+        </div>
+
+        <!-- Expiry Date -->
+        <div class="mb-3 row">
+            <label for="expiryDate" class="col-sm-3 col-form-label">Expiry Date</label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" id="expiryDate" name="expiry_date" maxlength="5" placeholder="MM/YY" pattern="(0[1-9]|1[0-2])\/[0-9]{2}"  required>
+                <div class="form-text">Format: MM/YY</div>
+            </div>
+        </div>
+
+        <!-- CVV -->
+        <div class="mb-3 row">
+            <label for="cvv" class="col-sm-3 col-form-label">CVV</label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" id="cvv" name="cvv" pattern="\d{3,4}" placeholder="123" required>
+                <div class="form-text">3-4 digits CVV code at the back of your card.</div>
+            </div>
+        </div>
+
+        <!-- Country -->
+        <div class="mb-3 row">
+            <label for="country" class="col-sm-3 col-form-label">Country/Area</label>
+            <div class="col-sm-9">
+                <select class="form-control" id="country" name="country" required>
+                    <option value="United Kingdom">United Kingdom</option>
+                    <option value="United States">United States</option>
+                    <option value="China">China</option>
+                    <!-- Add more options as needed -->
+                </select>
+            </div>
+        </div>
+
+        <!-- Postcode -->
+        <div class="mb-3 row">
+            <label for="postcode" class="col-sm-3 col-form-label">Postcode</label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" id="postcode" name="postcode" required>
+            </div>
+        </div>
+
+        <!-- Nickname (Optional) -->
+        <div class="mb-3 row">
+            <label for="nickname" class="col-sm-3 col-form-label">Nickname</label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" id="nickname" name="nickname" placeholder="e.g., Work card">
+                <div class="form-text">Optional: Give a nickname for easy identification (e.g., Work card).</div>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <button type="submit" class="btn btn-primary">Save Card</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Optional: Client-side validation or additional UX improvements
+    // document.getElementById('addCardForm').addEventListener('submit', function() {
+        // Add loading spinner or other interactivity as needed
+        // Example: Show a loading spinner or disable the submit button
+        // document.querySelector('button[type="submit"]').disabled = true;
+    // });
+    
+     // Auto-format card number to add spaces every 4 digits
+    const cardNumberInput = document.getElementById('cardNumber');
+    cardNumberInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\s+/g, ''); // Remove all spaces
+        let formattedValue = value.replace(/(\d{4})(?=\d)/g, '$1 '); // Add space every 4 digits
+        e.target.value = formattedValue;
+    });
+
+    // Auto-format expiry date to MM/YY with valid month
+    const expiryDateInput = document.getElementById('expiryDate');
+    expiryDateInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, ''); // Remove all non-digit characters
+        if (value.length >= 2) {
+            let month = value.substring(0, 2);
+            let year = value.substring(2, 4);
+            
+            // Ensure month is between 01 and 12
+            if (month < 1) month = '01';
+            if (month > 12) month = '12';
+            e.target.value = `${month}/${year}`;
+        } else {
+            e.target.value = value; // Otherwise just keep typing as is
+        }
+    });
+</script>
+{% endblock %}

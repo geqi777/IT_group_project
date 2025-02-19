@@ -1,0 +1,96 @@
+{% extends "customer_layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">User Profile</h2>
+    
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Profile Information</h5>
+            <ul class="list-group">
+                <li class="list-group-item"><strong>Name:</strong> {{ profile.name }}</li>
+                <li class="list-group-item"><strong>Gender:</strong>
+                    {% if profile.gender == 1 %}
+                        Male
+                    {% elif profile.gender == 2 %}
+                        Female
+                    {% elif profile.gender == 3 %}
+                        Other
+                    {% elif profile.gender == 4 %}
+                        Don't want to say
+                    {% else %}
+                        Unknown
+                    {% endif %}
+                </li>
+                <li class="list-group-item"><strong>Date of Birth:</strong> {{ profile.date_of_birth }}</li>
+                <li class="list-group-item"><strong>Phone:</strong> {{ profile.phone }}</li>
+                <li class="list-group-item"><strong>Email:</strong> {{ profile.email }}</li>
+                <li class="list-group-item"><strong>Address:</strong> {{ profile.address }}</li>
+                <li class="list-group-item"><strong>Account:</strong> {{ profile.account }}</li>
+                <li class="list-group-item"><strong>Account Balance:</strong> £{{ profile.account_balance }}</li>
+                <li class="list-group-item">
+                    <strong>Verified:</strong> 
+                    {% if profile.is_verified %}
+                        Yes
+                    {% else %}
+                        No
+                    {% endif %}
+                </li>
+            </ul>
+            <div class="mt-3">
+                <a href="/customer/list/{{ profile.id }}/edit/" class="btn btn-primary">Edit Information</a>
+                <a href="/customer/list/{{ profile.id }}/customer_reset_password/" class="btn btn-warning">Edit Password</a>
+            </div>
+        <!-- 添加验证按钮 -->
+        <br/>
+            <button class="btn btn-primary" id="verifyBtn">Verify Driver's License</button>
+        
+        <!-- 显示成功提交 -->
+        {% if messages %}
+            <div class="alert alert-success">
+                {% for message in messages %}
+                    {{ message }}
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <!-- 验证弹窗 -->
+        <div class="modal fade" id="verifyModal" tabindex="-1" aria-labelledby="verifyModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                 <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="verifyModalLabel">Upload Driver's License</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                     <div class="modal-body">
+                         <!-- 表单提交到 customer_verify 视图-->
+                        <form id="verifyForm" method="post" action="{% url 'customer_verify' %}" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="licenseImage" class="form-label">Choose Image</label>
+                                <input type="file" class="form-control" id="licenseImage" name="license_image" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.getElementById('verifyBtn').addEventListener('click', function () {
+                var myModal = new bootstrap.Modal(document.getElementById('verifyModal'));
+                myModal.show();
+            });
+
+            function openCamera() {
+                // 实现打开相机的逻辑（需要使用特定的 API 或库）
+                alert("Camera functionality not implemented.");
+            }
+        </script>
+        
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,38 @@
+{% extends "customer_layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Top Up Your Wallet</h2>
+
+    <!-- Form to select an existing card or add a new one -->
+    <form method="post" action="/customer/wallet/top_up/">
+        {% csrf_token %}
+        
+        <!-- Existing Cards Section -->
+        <div class="mb-3">
+            <label for="existingCard" class="form-label">Select an Existing Card</label>
+            <select class="form-control" id="existingCard" name="selected_card" required>
+                {% for card in cards %}
+                <option value="{{ card.id }}">
+                    {{ card.nickname }} (**** **** **** {{ card.card_number|slice:"-4:" }})
+                </option>
+                {% endfor %}
+                <option value="new_card">+ Add New Card</option>
+            </select>
+        </div>
+    
+        <!-- Button to redirect to card_add page-->
+        <div class="mb-3">
+            <a href="/customer/wallet/card_add/" class="btn btn-outline-secondary">+ Add New Card</a>
+        </div>
+    
+        <!-- Top up amount -->
+        <div class="mb-3">
+            <label for="topUpAmount" class="form-label">Top Up Amount (£)</label>
+            <input type="number" class="form-control" id="topUpAmount" name="top_up_amount" value="10" required>
+        </div>
+    
+        <button type="submit" class="btn btn-primary">Top Up Wallet</button>
+    </form>
+</div>
+{% endblock %}

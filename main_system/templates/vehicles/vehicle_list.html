@@ -1,0 +1,135 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container-fluid mt-5 px-5">
+    <div class="row mb-5">
+        <div class="col-md-12 d-flex justify-content-between align-items-center">
+            <h2 class="fw-bold text-primary display-4">Vehicle Management</h2>
+            <!-- Action Buttons -->
+            <div class="btn-group">
+                <a class="btn btn-primary btn-lg me-3 shadow-sm fw-bold" href="/operation/vehicle/list/add/">
+                    <i class="bi bi-clipboard-plus-fill me-2"></i>Add Vehicle
+                </a>
+                <a class="btn btn-info btn-lg me-3 shadow-sm fw-bold text-white" href="/operation/vehicle/list/repair">
+                    <i class="bi bi-wrench"></i> Repair Vehicles
+                </a>
+                <a class="btn btn-success btn-lg me-3 shadow-sm fw-bold" href="/operation/vehicle/list/recharge">
+                    <i class="bi bi-battery-half"></i> Recharge Vehicles
+                </a>
+                <a class="btn btn-warning btn-lg shadow-sm fw-bold" href="/operation/vehicle/list/move">
+                    <i class="bi bi-truck"></i> Move Vehicles
+                </a>
+            </div>
+            <!-- Search Box -->
+            <div class="input-group ms-auto" style="width: 50%;">
+                <input type="text" id="search-input" class="form-control form-control-lg rounded-start shadow-sm" placeholder="Search vehicles by ID, name, or type..." aria-label="Search" aria-describedby="search-btn">
+                <button class="btn btn-primary btn-lg rounded-end shadow-sm" type="button" id="search-btn">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="table-responsive-lg shadow-lg">
+                <table class="table table-striped table-bordered table-hover text-center align-middle w-100" id="vehicle-table">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="py-4">ID</th>
+                            <th class="py-4">Name</th>
+                            <th class="py-4">Power</th>
+                            <th class="py-4">Price</th>
+                            <th class="py-4">Situation</th>
+                            <th class="py-4">Type</th>
+                            <th class="py-4">Vehicle Number</th>
+                            <th class="py-4">Availability</th>
+                            <th class="py-4">Rental Time</th>
+                            <th class="py-4">Latitude</th>
+                            <th class="py-4">Longitude</th>
+                            <th class="py-4">Location</th>
+                            <th class="py-4">User</th>
+                            <th class="py-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in page_obj %}
+                        <tr class="table-light {% if not item.is_available %}table-warning{% endif %}">
+                            <td class="py-3">{{ item.id }}</td>
+                            <td class="py-3">{{ item.name }}</td>
+                            <td class="py-3">{{ item.power }}</td>
+                            <td class="py-3">{{ item.price }}</td>
+                            <td class="py-3">{{ item.get_situation_display }}</td>
+                            <td class="py-3">{{ item.get_vehicle_type_display }}</td>
+                            <td class="py-3">{{ item.vehicle_number }}</td>
+                            <td class="py-3">{{ item.is_available|yesno:"Available,Not Available" }}</td>
+                            <td class="py-3">
+                                {% if not item.is_available and item.rental_time %}
+                                    {{ item.rental_time|date:"Y-m-d H:i" }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                            <td class="py-3">{{ item.latitude }}</td>
+                            <td class="py-3">{{ item.longitude }}</td>
+                            <td class="py-3">{{ item.location }}</td>
+                            <td class="py-3">
+                                {% if item.user %}
+                                    {{ item.user.name }}
+                                {% else %}
+                                    No User
+                                {% endif %}
+                            </td>
+                            <td class="py-3">
+                                <div class="btn-group" role="group">
+                                    <a class="btn btn-outline-success btn-lg shadow-sm fw-bold me-3" href="/operation/vehicle/list/{{ item.id }}/edit/">
+                                        <i class="bi bi-pencil-square"></i> Edit
+                                    </a>
+                                    <a class="btn btn-outline-danger btn-lg shadow-sm fw-bold" href="/operation/vehicle/list/{{ item.id }}/delete/">
+                                        <i class="bi bi-trash"></i> Delete
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination and Items per Page -->
+    <nav class="d-flex justify-content-between align-items-center mt-5">
+        <ul class="pagination shadow-sm">
+            {{ page_string }}
+        </ul>
+        <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle shadow-sm fw-bold" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                Items per page
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <li><a class="dropdown-item" href="#" onclick="changePageSize(20)">20</a></li>
+                <li><a class="dropdown-item" href="#" onclick="changePageSize(30)">30</a></li>
+                <li><a class="dropdown-item" href="#" onclick="changePageSize(50)">50</a></li>
+            </ul>
+        </div>
+    </nav>
+</div>
+
+<script>
+    // Real-time Search Functionality
+    document.getElementById('search-input').addEventListener('input', function () {
+        const searchValue = this.value.toLowerCase();
+        const tableRows = document.querySelectorAll('#vehicle-table tbody tr');
+
+        tableRows.forEach(row => {
+            const rowText = row.textContent.toLowerCase();
+            if (rowText.includes(searchValue)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+</script>
+{% endblock %}

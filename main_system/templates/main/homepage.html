@@ -1,0 +1,200 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>EcoRides - Home</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <style>
+        /* General styles */
+        body {
+            font-family: 'PT Sans Caption', "Helvetica Neue", Arial, Helvetica, Geneva, sans-serif;
+            font-size: 3vh;
+        }
+
+        /* Header styles */
+        #header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #logo {
+            text-decoration: none;
+            color: white;
+            font-size: 5vh;
+            font-weight: bold;
+            font-family: Copperplate, Copperplate Gothic Light, fantasy;
+        }
+
+        #menu-icon {
+            font-family: Geneva, sans-serif;
+            font-size: 6vh;
+            cursor: pointer;
+        }
+
+        /* Hero styles */
+        .hero {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100vh;
+            padding: 1em;
+            box-sizing: border-box;
+            color: white;
+            background-image: url('{% static "image/images/denago-ebikes-9d0crqDCUjg-unsplash.jpg" %}');
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            text-align: center; /* Center text in hero section */
+        }
+
+        .hero-title {
+            max-width: 16em;
+            margin: 0 auto;
+            font-size: 12vh;
+            font-weight: bold;
+            line-height: .9;
+        }
+
+        @media only screen and (min-width: 32em) {
+            .hero-title {
+                font-size: 16vh;
+            }
+        }
+
+        .hero-footer {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1em;
+        }
+
+        .button {
+            padding: .5em .67em;
+            color: white;
+            text-decoration: none;
+            border: .1em solid white;
+        }
+
+        .button-primary {
+            color: black;
+            background-color: white;
+        }
+
+        /* Article styles */
+        article {
+            max-width: 36em;
+            margin: 0 auto;
+            padding: 1em;
+        }
+
+        /* Slider Menu Styles */
+        .slider-menu {
+            height: 100%; /* Full-height */
+            width: 0; /* Initially hidden */
+            position: fixed;
+            z-index: 1;
+            top: 0;
+            right: 0;
+            background-color: #111;
+            overflow-x: hidden;
+            transition: 0.5s;
+            padding-top: 60px;
+        }
+
+        .slider-menu a {
+            padding: 8px 8px 8px 32px;
+            text-decoration: none;
+            font-size: 25px;
+            color: white;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .slider-menu a:hover {
+            color: #f1f1f1;
+        }
+
+        .slider-menu .closebtn {
+            position: absolute;
+            top: 0;
+            right: 25px;
+            font-size: 36px;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<section class="hero">
+    <header id="header">
+        <a id="logo" href=' '>EcoRides</a>
+        <nav>
+            <a id="menu-icon" onclick="openMenu()" aria-label="Open Menu">&#8801;</a>
+        </nav>
+    </header>
+    <header class="hero-header">
+        <h1 class="hero-title">Welcome to EcoRides</h1>
+    </header>
+    <div id="myMenu" class="slider-menu">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeMenu()" aria-label="Close Menu">&times;</a>
+        <a href=' '>Home</a>
+{#        <a href="#about">How to Use</a>#}
+        <a href="/operation/employee/login/">For Operators</a>
+        <a href="/operation/manager/page/">For Managers</a>
+{#        <a href="#contact">Contact Us</a>#}
+    </div>
+    <footer class="hero-footer">
+        <a class="button button-primary" href="/customer/login/">Login</a>
+        <a class="button" href="/customer/register/">Register</a>
+    </footer>
+</section>
+<article>
+    <h2>Welcome to EcoRides,</h2>
+    <p>your go-to destination for eco-friendly transportation solutions. Discover our range of bicycles and electric bikes for a sustainable and enjoyable ride around the city.</p>
+</article>
+    <footer style="background-color: #111; color: white; padding: 1em 0; display: flex; justify-content: space-between; align-items: center;">
+     <!-- Left side: Logo -->
+        <div id="footer-logo" style="padding-left: 2em;">
+            <a href="/" id="logo" style="color: white; text-decoration: none; font-size: 2vh; font-family: Copperplate, Copperplate Gothic Light, fantasy;">EcoRides</a>
+        </div>
+
+        <!-- Center: Social media icons -->
+        <div id="footer-socials" style="display: flex; gap: 1em;">
+             <a href="https://twitter.com" target="_blank" style="color: white; text-decoration: none;">
+                <img src="{% static 'icons/twitter.svg' %}" alt="Twitter" style="width: 2vh;">
+            </a>
+            <a href="https://instagram.com" target="_blank" style="color: white; text-decoration: none;">
+                <img src="{% static 'icons/instagram.svg' %}" alt="Instagram" style="width: 2vh;">
+            </a>
+{#            <a href="https://reddit.com" target="_blank" style="color: white; text-decoration: none;">#}
+{#                <img src="{% static 'icons/reddit.svg' %}" alt="Reddit" style="width: 2vh;">#}
+{#            </a>#}
+            <a href="https://youtube.com" target="_blank" style="color: white; text-decoration: none;">
+                <img src="{% static 'icons/youtube.svg' %}" alt="YouTube" style="width: 2vh;">
+            </a>
+            <a href="https://facebook.com" target="_blank" style="color: white; text-decoration: none;">
+                <img src="{% static 'icons/facebook.svg' %}" alt="Facebook" style="width: 2vh;">
+            </a>
+        </div>
+
+        <!-- Right side: Contact details -->
+        <div id="footer-contact" style="padding-right: 2em; text-align: right;">
+            <p style="margin: 0;">123 Eco Street, Glasgow, G12 8QQ</p>
+            <p style="margin: 0;">Email: support@ecorides.com</p>
+            <p style="margin: 0;">Phone: +44 123 456 7890</p>
+        </div>
+    </footer>
+<script>
+    function openMenu() {
+        document.getElementById("myMenu").style.width = "250px";
+    }
+
+    function closeMenu() {
+        document.getElementById("myMenu").style.width = "0";
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+</body>
+</html>
