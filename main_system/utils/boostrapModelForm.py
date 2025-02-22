@@ -26,7 +26,86 @@ class BoostrapModelForm(Boostrap, forms.ModelForm):
 class BoostrapForm(Boostrap, forms.Form):
     pass
 
-# 111111111111
+
+class Product_ModelForm(BoostrapModelForm):
+    class Meta:
+        model = models.Product
+        fields = [
+            "name",
+            "description",
+            "category",
+            "price",
+            "stock",
+            "status",
+            "picture"
+        ]
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 5}),
+            'price': forms.NumberInput(attrs={'step': '0.01'}),
+            'stock': forms.NumberInput(attrs={'min': '0.00'}),
+            'status': forms.Select(attrs={'class': 'form-select'}),
+        }
+
+        def clean_price(self):
+            price = self.cleaned_data.get('price')
+            if price is None or price <= 0:
+                raise ValidationError('Price must be greater than 0.')
+            return price
+        
+        def clean_stock(self):
+            stock = self.cleaned_data.get('stock')
+            if stock is None or stock < 0:
+                raise ValidationError('Stock cannot be negative.')
+            return stock
+
+        def clean(self):
+            cleaned_data = super().clean()
+            stock = cleaned_data.get("stock")
+            status = cleaned_data.get("status")
+
+            # 自动设置状态逻辑
+            if stock == 0 or status == "Locked":  # 手动锁定或库存为 0
+                cleaned_data["status"] = "Locked"
+            else:
+                cleaned_data["status"] = "Active"
+
+            return cleaned_data
+
+
+class Product_EditForm(BoostrapModelForm):
+    class Meta:
+        model = models.Product
+        fields = [
+            "name",
+            "description",
+            "category",
+            "price",
+            "stock",
+            "status",
+            "picture"
+        ]
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 5}),
+            'price': forms.NumberInput(attrs={'step': '0.01'}),
+            'stock': forms.NumberInput(attrs={'min': '0.00'}),
+            'status': forms.Select(choices=[("active", "Active"), ("locked", "Locked")], attrs={'class': 'form-select'}),
+        }
+
+        def clean(self):
+            cleaned_data = super().clean()
+            stock = cleaned_data.get("stock")
+            status = cleaned_data.get("status")
+
+            # 自动设置状态逻辑
+            if stock == 0 or status == "Locked":  # 手动锁定或库存为 0
+                cleaned_data["status"] = "Locked"
+            else:
+                cleaned_data["status"] = "Active"
+
+            return cleaned_data
+
+
+
 class Employee_ModelForm(BoostrapModelForm):
     confirm_password = forms.CharField(label='Confirm Password', widget=forms.PasswordInput)
 

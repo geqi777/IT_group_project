@@ -19,13 +19,26 @@ from django.conf import settings
 from django.conf.urls.static import static
 # 正确的 URL 配置
 from django.urls import path
-from main_system.views import department, employee, maps, vehicle, login, home_page, manager, customer
+from main_system.views import product
 from main_system.views.customer import customer_register, customer_verify, customer_wallet
-from main_system.views import department, employee, maps, vehicle, login, home_page, manager, customer, maps
+from main_system.views import department, employee, vehicle, login, home_page, manager, customer, maps
 from main_system.views.customer import customer_register
 
 urlpatterns = [
-    path('', home_page.homepage, name='homepage'),  # 首页
+    path('', home_page.homepage, name='home'),  # 首页
+    path('home/', home_page.homepage, name='home'),
+    path('subscribe/', home_page.subscribe, name='subscribe'),  # 订阅
+
+# products system
+    path('products/product/list/', product.product_list),
+    path('products/product/list/add/', product.product_add),
+    path('products/product/list/<int:nid>/delete/', product.product_delete),
+    path('products/product/list/<int:nid>/edit/', product.product_edit),
+    path('products/product/page/', product.product_page),
+    path('products/product/<int:nid>/', product.product_detail),
+
+
+
     # Employee_login
     path('operation/employee/login/', login.employee_login),
     # Employee_logout

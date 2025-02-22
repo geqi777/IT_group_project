@@ -1,0 +1,82 @@
+{% extends 'layout.html' %}
+{% block content %}
+
+<div class="container mt-4">
+    <!-- Hero Section -->
+    <section class="text-center mb-5">
+        <h1 class="display-4">Experience the very best online shopping with us.</h1>
+        <p class="lead">Find the best deals on clothing, accessories, gifts, and more.</p>
+        <a href="/products/product/list/" class="btn btn-primary">Shop Now</a>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="mb-5">
+        <h2 class="mb-3">Shop by Category</h2>
+        <div class="row">
+            {% for category in categories %}
+                <div class="col-md-2 col-sm-4 col-6 text-center">
+                    <a href="/products/product/list/?category={{ category_key }}" class="btn-outline-dark">
+                        <div class="card">
+                            <img src="https://via.placeholder.com/150" class="card-img-top" alt="{{ category.name }}">
+                            <div class="card-body">
+                                <p class="card-text">{{ category.name }}</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- New Releases Section -->
+    <section class="mb-5">
+        <h2 class="mb-3">New Releases</h2>
+        <div class="row">
+            {% for product in new_releases %}
+                <div class="col-md-4 col-sm-6 mb-4">
+                    <div class="card">
+                        <a href="/products/product/<int:nid>/">
+                            {% if product.picture %}
+                                <img src="{{ product.picture.url }}" class="card-img-top" alt="{{ product.name }}">
+                            {% else %}
+                                <img src="/static/images/default-product.jpg" class="card-img-top" alt="Default Image">
+                            {% endif %}
+                        </a>
+                        <div class="card-body text-center">
+                            <h5 class="card-title">{{ product.name }}</h5>
+                            <p class="card-text">${{ product.price }}</p>
+                            <a href="/products/product/<int:nid>/" class="btn btn-outline-primary">View</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="mb-5">
+        <h2 class="mb-3">What Our Clients Say</h2>
+        <div class="row">
+            <div class="col-md-4">
+                <blockquote class="blockquote">
+                    <p>"Great shopping experience!"</p>
+                    <footer class="blockquote-footer">Customer 1</footer>
+                </blockquote>
+            </div>
+            <div class="col-md-4">
+                <blockquote class="blockquote">
+                    <p>"Fantastic customer service and fast delivery!"</p>
+                    <footer class="blockquote-footer">Customer 2</footer>
+                </blockquote>
+            </div>
+            <div class="col-md-4">
+                <blockquote class="blockquote">
+                    <p>"Best online store for gifts and clothing!"</p>
+                    <footer class="blockquote-footer">Customer 3</footer>
+                </blockquote>
+            </div>
+        </div>
+    </section>
+</div>
+
+{% endblock %}
