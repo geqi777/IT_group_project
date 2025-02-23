@@ -66,6 +66,7 @@ def product_delete(request, product_id):
 # ==========================
 
 def product_page(request):
+    """ 商品浏览页 + 筛 + 排 """
     query = request.GET.get('q', '')
     category = request.GET.get('category', '')
     sort_by = request.GET.get('sort', 'newest')

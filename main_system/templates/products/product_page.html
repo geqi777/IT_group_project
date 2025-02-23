@@ -3,49 +3,99 @@
 
 {% block content %}
 <div class="container mt-4">
-    <div class="row">
-        <!-- Sidebar: Product Filters -->
+    <!-- 顶部横幅 -->
+    <div class="banner text-white text-center py-5" style="background-color: #e0e0e0;">
+        <div class="container">
+            <h1 class="display-5 fw-bold">Find the Best Products for You</h1>
+            <p class="lead">Discover high-quality products tailored to your needs.</p>
+        </div>
+    </div>
+
+    <!-- 筛选 & 排序 -->
+    <div class="row mt-4">
+        <!-- 侧边筛选栏 -->
         <div class="col-md-3">
-            <h4>Filter and choose your products</h4>
+            <h5>Filter and choose your products</h5>
             <form method="GET" action="">
-                <h5>Brand</h5>
-                {% for brand in brands %}
+                <!-- 商品类型筛选 -->
+                <h6 class="mt-3">Category</h6>
+                {% for category in categories %}
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="brand" value="{{ brand }}" id="brand{{ forloop.counter }}">
-                    <label class="form-check-label" for="brand{{ forloop.counter }}">{{ brand }}</label>
+                    <input class="form-check-input" type="checkbox" name="category" value="{{ category }}" id="category{{ forloop.counter }}">
+                    <label class="form-check-label" for="category{{ forloop.counter }}">{{ category }}</label>
                 </div>
                 {% endfor %}
-                
-                <h5>Color</h5>
-                {% for color in colors %}
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="color" value="{{ color }}" id="color{{ forloop.counter }}">
-                    <label class="form-check-label" for="color{{ forloop.counter }}">{{ color }}</label>
+
+                <!-- 价格筛选 -->
+                <h6 class="mt-3">Price Range</h6>
+                <div class="d-flex align-items-center">
+                    <span class="me-2">$<span id="minPriceDisplay">0</span></span>
+                    <input type="range" id="priceRange" name="price_range" min="0" max="500" step="1" value="250" class="form-range w-100">
+                    <span class="ms-2">$<span id="maxPriceDisplay">500</span></span>
                 </div>
-                {% endfor %}
-                
                 <button type="submit" class="btn btn-primary mt-3">Apply Filters</button>
             </form>
         </div>
-        
-        <!-- Main Product Listing -->
+
+        <!-- 商品列表 -->
         <div class="col-md-9">
-            <h2>Products</h2>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2>Products</h2>
+                <div>
+                    <label for="sort_by" class="me-2">Sort by:</label>
+                    <select id="sort_by" name="sort" class="form-select w-auto d-inline-block">
+                        <option value="newest">Newest</option>
+                        <option value="price_low">Price: Low to High</option>
+                        <option value="price_high">Price: High to Low</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 商品展示 -->
             <div class="row">
                 {% for product in products %}
                 <div class="col-md-4 mb-4">
                     <div class="card">
-                        <img src="{{ product.picture.url }}" class="card-img-top" alt="{{ product.name }}">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ product.name }}</h5>
-                            <p class="card-text">${{ product.price }}</p>
-                            <a href="{% url 'product_detail' product.id %}" class="btn btn-dark">View Details</a>
+                        <a href="{% url 'product_detail' product.id %}">
+                            <img src="{{ product.picture.url }}" class="card-img-top" alt="{{ product.name }}">
+                        </a>
+                        <div class="card-body text-center">
+                            <h6 class="card-title">{{ product.name }}</h6>
+                            <p class="text-muted">{{ product.description|truncatewords:10 }}</p>
+                            <p class="fw-bold">${{ product.price }}</p>
+                            <a href="{% url 'product_detail' product.id %}" class="btn btn-dark w-100">View Details</a>
                         </div>
                     </div>
                 </div>
+                {% empty %}
+                <p class="text-center">No products found.</p>
                 {% endfor %}
             </div>
         </div>
     </div>
 </div>
 {% endblock %}
+
+<!-- JavaScript 让滑轴动态更新 -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    let priceRange = document.getElementById("priceRange");
+    let minPriceDisplay = document.getElementById("minPriceDisplay");
+    let maxPriceDisplay = document.getElementById("maxPriceDisplay");
+
+    let minPrice = 0;
+    let maxPrice = 500;
+    let rangeValue = priceRange.value; // 初始值
+
+    function updatePriceDisplay() {
+        let percentage = priceRange.value / 500; // 计算比例
+        minPrice = Math.round(percentage * 250); // 计算最小值 (范围0-250)
+        maxPrice = Math.round(250 + percentage * 250); // 计算最大值 (范围250-500)
+
+        minPriceDisplay.textContent = minPrice;
+        maxPriceDisplay.textContent = maxPrice;
+    }
+
+    priceRange.addEventListener("input", updatePriceDisplay);
+});
+</script>
