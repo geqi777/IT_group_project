@@ -8,7 +8,7 @@ from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 import string, random
 from django.utils import timezone
 from django.contrib import messages
-
+# 1111
 def employee_list(request):
     data = models.Employee.objects.all()
     # 从请求中获取 page_size，默认为 10
