@@ -105,7 +105,209 @@ class Product_EditForm(BoostrapModelForm):
             return cleaned_data
 
 
+# 管理员
+class Operator_ModelForm(BoostrapModelForm):
+    confirm_password = forms.CharField(label='Confirm Password', widget=forms.PasswordInput())
 
+    class Meta:
+        model = models.Operator
+        fields = [
+            "name",
+            "date_of_birth",
+            "gender",
+            "email",
+            "phone",
+            "account",
+            "password",
+            "confirm_password",
+            "is_operator",
+            "role",
+            "join_time",
+        ]
+        widgets = {
+            'password': forms.PasswordInput(attrs={'class': 'form-control'}),
+        }
+
+    def clean_password(self):
+        data = self.cleaned_data.get('password')
+        md5_password = md5(data)
+        exists = models.Operator.objects.filter(id=self.instance.pk, password=md5_password).exists()
+        if exists:
+            raise ValidationError('This password is the same as your previous password.')
+
+        # 验证密码长度
+        if len(data) < 8:
+            raise ValidationError('Password must be at least 8 characters long.')
+
+        # 验证是否包含至少一个大写字母和一个小写字母
+        if not re.search(r'[A-Z]', data):
+            raise ValidationError('Password must contain at least one uppercase letter.')
+        if not re.search(r'[a-z]', data):
+            raise ValidationError('Password must contain at least one lowercase letter.')
+
+        return md5(data)
+
+    def clean_confirm_password(self):
+        pwd = self.cleaned_data.get('password')
+        confirm = md5(self.cleaned_data.get('confirm_password'))
+        if pwd != confirm:
+            raise ValidationError('Passwords must match.')
+
+        return confirm
+
+class Operator_EditForm(BoostrapModelForm):
+    class Meta:
+        model = models.Operator
+        fields = [
+            "name",
+            "date_of_birth",
+            "gender",
+            "email",
+            "phone",
+            "account",
+            "is_operator",
+            "role",
+            "join_time",
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            if name == 'is_operator':
+                field.widget.attrs['class'] = 'form-check-input'  # 特别为复选框添加样式
+
+
+# 设置密码
+class ResetPasswordForm(BoostrapModelForm):
+    confirm_password = forms.CharField(label='Confirm Password', widget=forms.PasswordInput)
+
+    class Meta:
+        model = models.Employee
+        fields = [
+            "password",
+            "confirm_password",
+        ]
+
+        widgets = {
+            'password': forms.PasswordInput,
+        }
+
+    def clean_password(self):
+        data = self.cleaned_data.get('password')
+
+        # 验证密码长度
+        if len(data) < 8:
+            raise ValidationError('Password must be at least 8 characters long.')
+
+        # 验证是否包含至少一个大写字母和一个小写字母
+        if not re.search(r'[A-Z]', data):
+            raise ValidationError('Password must contain at least one uppercase letter.')
+        if not re.search(r'[a-z]', data):
+            raise ValidationError('Password must contain at least one lowercase letter.')
+
+        return md5(data)
+
+    def clean_confirm_password(self):
+        pwd = self.cleaned_data.get('password')
+        confirm = md5(self.cleaned_data.get('confirm_password'))
+        if pwd != confirm:
+            raise ValidationError('Passwords must match.')
+
+        return confirm
+
+
+# 用户
+class User_ModelForm(BoostrapModelForm):
+    confirm_password = forms.CharField(label='Confirm Password', widget=forms.PasswordInput())
+
+    class Meta:
+        model = models.User
+        fields = [
+            "name",
+            "date_of_birth",
+            "gender",
+            "email",
+            "phone",
+            "address",
+            "account",
+            "password",
+            "confirm_password",
+            "create_time",
+        ]
+        widgets = {
+            'password': forms.PasswordInput(attrs={'class': 'form-control'}),
+        }
+
+    def clean_password(self):
+        data = self.cleaned_data.get('password')
+        md5_password = md5(data)
+        exists = models.User.objects.filter(id=self.instance.pk, password=md5_password).exists()
+        if exists:
+            raise ValidationError('This password is the same as your previous password.')
+
+        # 验证密码长度
+        if len(data) < 8:
+            raise ValidationError('Password must be at least 8 characters long.')
+
+        # 验证是否包含至少一个大写字母和一个小写字母
+        if not re.search(r'[A-Z]', data):
+            raise ValidationError('Password must contain at least one uppercase letter.')
+        if not re.search(r'[a-z]', data):
+            raise ValidationError('Password must contain at least one lowercase letter.')
+
+        return md5(data)
+
+    def clean_confirm_password(self):
+        pwd = self.cleaned_data.get('password')
+        confirm = md5(self.cleaned_data.get('confirm_password'))
+        if pwd != confirm:
+            raise ValidationError('Passwords must match.')
+
+        return confirm
+
+class User_EditForm(BoostrapModelForm):
+    class Meta:
+        model = models.User
+        fields = [
+            "name",
+            "date_of_birth",
+            "gender",
+            "email",
+            "phone",
+            "address",
+        ]
+
+
+# 钱包
+class Wallet_ModelForm(BoostrapModelForm):
+    class Meta:
+        model = models.Wallet
+        fields = [
+            "balance",
+            "points",
+        ]
+        widgets = {
+            'balance': forms.NumberInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+            'points': forms.NumberInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+        }
+
+class WalletTransaction_ModelForm(BoostrapModelForm):
+    class Meta:
+        model = models.WalletTransaction
+        fields = [
+            "wallet",
+            "transaction_type",
+            "amount",
+        ]
+        widgets = {
+            "transaction_type": forms.Select(attrs={'class': 'form-control', 'disabled': 'disabled'}),
+            'amount': forms.NumberInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+            "timestamp": forms.DateInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+        }
+
+
+
+# old
 class Employee_ModelForm(BoostrapModelForm):
     confirm_password = forms.CharField(label='Confirm Password', widget=forms.PasswordInput)
 
@@ -203,43 +405,6 @@ class Employee_EditForm(BoostrapModelForm):
         for name, field in self.fields.items():
             if name == 'is_employee':
                 field.widget.attrs['class'] = 'form-check-input'  # 特别为复选框添加样式
-
-
-class ResetPasswordForm(BoostrapModelForm):
-    confirm_password = forms.CharField(label='Confirm Password', widget=forms.PasswordInput)
-
-    class Meta:
-        model = models.Employee
-        fields = [
-            "password",
-            "confirm_password",
-        ]
-
-        widgets = {
-            'password': forms.PasswordInput,
-        }
-
-    def clean_password(self):
-        data = self.cleaned_data.get('password')
-
-        # 验证密码长度
-        if len(data) < 8:
-            raise ValidationError('Password must be at least 8 characters long.')
-
-        # 验证是否包含至少一个大写字母和一个小写字母
-        if not re.search(r'[A-Z]', data):
-            raise ValidationError('Password must contain at least one uppercase letter.')
-        if not re.search(r'[a-z]', data):
-            raise ValidationError('Password must contain at least one lowercase letter.')
-
-        return md5(data)
-
-    def clean_confirm_password(self):
-        pwd = self.cleaned_data.get('password')
-        confirm = md5(self.cleaned_data.get('confirm_password'))
-        if pwd != confirm:
-            raise ValidationError('Passwords must match.')
-        return confirm
 
 
 class Customer_ModelForm(BoostrapModelForm):
