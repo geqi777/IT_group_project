@@ -7,15 +7,6 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from main_system.utils.map_function import get_lat_lng_from_address
 
 
-# 性别选择
-gender_choice = [
-    (1, 'Male'),
-    (2, 'Female'),
-    (3, 'Other'),
-    (4, "Don't want to say"),
-    (5, "Unknown")
-]
-
 # 订阅
 class Subscription(models.Model):
     name = models.CharField(max_length=120)
@@ -45,7 +36,7 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0.01)])
     stock = models.IntegerField(default=0)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES)
-    picture = models.ImageField(upload_to='products/', blank=True, null=True)
+    picture = models.ImageField(upload_to='static/image/products/', blank=True, null=True)
     created_time = models.DateTimeField(auto_now_add=True)
     updated_time = models.DateTimeField(auto_now=True)
 
@@ -63,7 +54,17 @@ class Product(models.Model):
         return self.name
 
 
-class Admin(models.Model):
+# 性别选择
+gender_choice = [
+    (1, 'Male'),
+    (2, 'Female'),
+    (3, 'Other'),
+    (4, "Don't want to say"),
+    (5, "Unknown")
+]
+
+# 管理员
+class Operator(models.Model):
     name = models.CharField(max_length=50)
     date_of_birth = models.DateField(default=datetime.date.today)
     gender = models.IntegerField(choices=gender_choice, default=5)
@@ -71,47 +72,136 @@ class Admin(models.Model):
     phone = models.CharField(max_length=50)
     account = models.CharField(max_length=50, unique=True)  # 账号必须唯一
     password = models.CharField(max_length=50)
-    is_employee = models.BooleanField(default=False)
+    is_operator = models.BooleanField(default=False)
     role = models.CharField(max_length=50)
     join_time = models.DateField(default=datetime.date.today)
-    department = models.ForeignKey('Department', null=True, blank=True, on_delete=models.CASCADE)  # 使用大写引用
 
-class Department(models.Model):
-    name = models.CharField(max_length=50, unique=True)  # 部门名称最好唯一
+    def __str__(self):
+        return f"{self.name} - {self.role}"
+
+
+# 用户
+class User(models.Model):
+    name = models.CharField(max_length=50)
+    date_of_birth = models.DateField(default=datetime.date.today)
+    gender = models.IntegerField(choices=gender_choice, default=5)
+    email = models.EmailField()
+    phone = models.CharField(max_length=50, null=True, blank=True)
+    address = models.CharField(max_length=50, null=True, blank=True)
+    account = models.CharField(max_length=50, unique=True)
+    password = models.CharField(max_length=50)
+    create_time = models.DateTimeField(default=timezone.now)
+
+    # User 关联 Wallet (1:1)
+    wallet_balance = models.FloatField(default=0.0)
+    wallet = models.OneToOneField('Wallet', on_delete=models.CASCADE, null=True, blank=True)
+
+    # User 关联 PaymentCard (1:n)
+    payment_cards = models.ManyToManyField('PaymentCard', blank=True)
+
+    # User 关联 Coupon (1:n)
+    coupons = models.ManyToManyField('Coupon', blank=True)
+
+    def deduct_balance(self, amount):
+        """ 从钱包中扣除余额 """
+        if self.wallet and self.wallet.balance >= amount:
+            self.wallet.balance -= amount
+            self.wallet.save()
+            return True
+        return False
 
     def __str__(self):
         return self.name
 
 
-class User(models.Model):
-    name = models.CharField(max_length=50)
-    email = models.EmailField()
-    date_of_birth = models.DateField(default=datetime.date.today)
-    gender = models.IntegerField(choices=gender_choice, default=5)
-    phone = models.CharField(max_length=50, null=True, blank=True)
-    address = models.CharField(max_length=50, null=True, blank=True)
-    account = models.CharField(max_length=50, unique=True)
-    password = models.CharField(max_length=50)
-    account_balance = models.FloatField(default=0.0)
-    create_time = models.DateTimeField(default=timezone.now)
-    is_verified = models.BooleanField(default=False)
+# 钱包(balance & points)
+class Wallet(models.Model):
+    user = models.OneToOneField('User', on_delete=models.CASCADE, null=True, blank=True)
+    balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, validators=[MinValueValidator(0.0)])
+    points = models.IntegerField(default=0, validators=[MinValueValidator(0)])
 
+    def add_balance(self, amount):
+        """ 增加余额 """
+        self.balance += amount
+        self.save()
+
+    def add_points(self, points):
+        """ 增加积分 """
+        self.points += points
+        self.save()
+
+    def deduct_points(self, points):
+        """ 扣除积分 """
+        if self.points >= points:
+            self.points -= points
+            self.save()
+            return True
+        return False
+
+    def __str__(self):
+        return f"Wallet of {self.user.name}"
+
+# 钱包交易记录(充值，消费，退款，优惠券使用)
+class WalletTransaction(models.Model):
+    TRANSACTION_TYPES = [
+        ('topup', 'Topup'),
+        ('withdraw', 'Withdraw'),
+        ('purchase', 'Purchase'),
+        ('refund', 'Refund'),
+        ('points_increase', 'Points Increase'),
+        ('points_decrease', 'Points Decrease'),
+        ('coupon_addition', 'Coupon Addition'),
+        ('coupon_deduction', 'Coupon Deduction'),
+        ('coupon_expired', 'Coupon Expired'),
+    ]
+
+    wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE, related_name='transactions')
+    transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPES)  # 充值、扣款、积分兑换等
+    amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Only for balance changes
+    points = models.IntegerField(null=True, blank=True)  # Only for points changes
+    coupon = models.ForeignKey('Coupon', null=True, blank=True, on_delete=models.SET_NULL, related_name="used_transactions")  # For payment with coupon
+    payment_card = models.ForeignKey('PaymentCard', null=True, blank=True, on_delete=models.SET_NULL, related_name="transactions")
+    timestamp = models.DateTimeField(auto_now_add=True)
+    details = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.transaction_type.capitalize()} - {self.wallet.user.name}"
+
+
+# 优惠券
 class Coupon(models.Model):
+    wallet = models.ForeignKey('Wallet', on_delete=models.CASCADE, null=True, blank=True, related_name='coupons')
     code = models.CharField(max_length=10, unique=True)
-    discount = models.DecimalField(max_digits=5, decimal_places=2)
+    discount = models.DecimalField(max_digits=6, decimal_places=2, validators=[MinValueValidator(0.01)])
     expiry_date = models.DateField(null=True, blank=True)
-    min_order_value = models.FloatField(default=0)
-    activated_users = models.ManyToManyField('Customer', related_name='activated_coupons', blank=True)
-    max_activations = models.IntegerField(default=2, validators=[MinValueValidator(0), MaxValueValidator(50)])
+    min_order_value = models.DecimalField(max_digits=6, decimal_places=2, default=10.00, validators=[MinValueValidator(0.01)])
+    max_activations = models.IntegerField(default=5, validators=[MinValueValidator(1), MaxValueValidator(50)])
     created_time = models.DateTimeField(default=timezone.now)
-    is_active = models.BooleanField(default=True)
+    status = models.CharField(max_length=32, choices=[('active', 'Active'), ('used', 'Used'), ('expired', 'Expired')])
 
     def is_valid(self):
         """Check if the coupon is valid for a specific user"""
-        return self.expiry_date >= timezone.now().date() and self.activated_users.count() <= self.max_activations
+        return self.status == 'active' and self.expiry_date >= timezone.now().date()
 
     def __str__(self):
-        return self.code
+        return f"Coupon {self.code} - {self.status}"
+
+# 支付卡
+class PaymentCard(models.Model):
+    wallet = models.ForeignKey('Wallet', on_delete=models.CASCADE, null=True, blank=True, related_name='payment_cards')
+    card_number = models.CharField(max_length=16, unique=True)
+    expiry_date = models.CharField(max_length=5)  # Format: MM/YY
+    cvv = models.CharField(max_length=4)  # 支持3-4位CVV
+    nickname = models.CharField(max_length=50, null=True, blank=True)  # Optional nickname
+    country = models.CharField(max_length=50)
+    postcode = models.CharField(max_length=50)
+    created_time = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.nickname or 'Card'} - {self.card_number[-4:]}"
+
+
+
 
 
 
@@ -226,6 +316,13 @@ class Vehicle(models.Model):
 
         # 保存更新
         super().save(*args, **kwargs)
+
+
+class Department(models.Model):
+    name = models.CharField(max_length=50, unique=True)  # 部门名称最好唯一
+
+    def __str__(self):
+        return self.name
 
 
 class Location(models.Model):
