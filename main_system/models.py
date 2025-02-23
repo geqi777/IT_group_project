@@ -93,8 +93,8 @@ class User(models.Model):
     create_time = models.DateTimeField(default=timezone.now)
 
     # User 关联 Wallet (1:1)
-    wallet_balance = models.FloatField(default=0.0)
-    wallet = models.OneToOneField('Wallet', on_delete=models.CASCADE, null=True, blank=True)
+    # wallet_balance = models.FloatField(default=0.0)
+    # wallet = models.OneToOneField('Wallet', on_delete=models.CASCADE, null=True, blank=True)
 
     # User 关联 PaymentCard (1:n)
     payment_cards = models.ManyToManyField('PaymentCard', blank=True)
@@ -116,7 +116,7 @@ class User(models.Model):
 
 # 钱包(balance & points)
 class Wallet(models.Model):
-    user = models.OneToOneField('User', on_delete=models.CASCADE, null=True, blank=True)
+    user = models.OneToOneField('User', on_delete=models.CASCADE, related_name='wallet_account')
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, validators=[MinValueValidator(0.0)])
     points = models.IntegerField(default=0, validators=[MinValueValidator(0)])
 
@@ -177,7 +177,7 @@ class Coupon(models.Model):
     min_order_value = models.DecimalField(max_digits=6, decimal_places=2, default=10.00, validators=[MinValueValidator(0.01)])
     max_activations = models.IntegerField(default=5, validators=[MinValueValidator(1), MaxValueValidator(50)])
     created_time = models.DateTimeField(default=timezone.now)
-    status = models.CharField(max_length=32, choices=[('active', 'Active'), ('used', 'Used'), ('expired', 'Expired')])
+    status = models.CharField(max_length=32, choices=[('active', 'Active'), ('used', 'Used'), ('expired', 'Expired')], default='active')
 
     def is_valid(self):
         """Check if the coupon is valid for a specific user"""
