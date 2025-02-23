@@ -2,50 +2,58 @@
 {% block content %}
 
 <div class="container mt-4">
-    <!-- Hero Section -->
-    <section class="text-center mb-5">
-        <h1 class="display-4">Experience the very best online shopping with us.</h1>
-        <p class="lead">Find the best deals on clothing, accessories, gifts, and more.</p>
-        <a href="/products/product/list/" class="btn btn-primary">Shop Now</a>
+
+    <!-- Hero Section (中间标题+按钮，底下背景图) -->
+    <section class="text-center position-relative mb-5" style="background: url('https://via.placeholder.com/1200x400') no-repeat center; background-size: cover; padding: 100px 0;">
+        <div class="container position-relative" style="z-index: 1;">
+            <h1 class="display-4">Experience the very best online shopping with us.</h1>
+            <p class="lead">Find the best deals on clothing, accessories, gifts, and more.</p>
+            <a href="/products/product/collection/" class="btn btn-dark">Shop Now</a>
+        </div>
     </section>
 
-    <!-- Categories Section -->
+    <!-- Categories Section (滑动 + 左右按钮) -->
     <section class="mb-5">
-        <h2 class="mb-3">Shop by Category</h2>
-        <div class="row">
-            {% for category in categories %}
-                <div class="col-md-2 col-sm-4 col-6 text-center">
-                    <a href="/products/product/list/?category={{ category_key }}" class="btn-outline-dark">
-                        <div class="card">
-                            <img src="https://via.placeholder.com/150" class="card-img-top" alt="{{ category.name }}">
-                            <div class="card-body">
-                                <p class="card-text">{{ category.name }}</p>
+        <h2 class="text-center">Shop by Category</h2>
+        <div class="position-relative">
+            <button class="category-scroll-btn left-btn" onclick="scrollCategories(-1)">&#8249;</button>
+            <div class="d-flex overflow-hidden py-3" id="categorySlider" style="scroll-behavior: smooth; white-space: nowrap;">
+                {% for category in categories %}
+                    <div class="category-item text-center mx-3 d-inline-block">
+                        <a href="/products/product/list/?category={{ category_key }}" class="text-decoration-none">
+                            <div class="card" style="width: 150px;">
+                                <img src="https://via.placeholder.com/150" class="card-img-top" alt="{{ category.name }}">
+                                <div class="card-body">
+                                    <p class="card-text">{{ category.name }}</p>
+                                </div>
                             </div>
-                        </div>
-                    </a>
-                </div>
-            {% endfor %}
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+            <button class="category-scroll-btn right-btn" onclick="scrollCategories(1)">&#8250;</button>
         </div>
     </section>
 
     <!-- New Releases Section -->
     <section class="mb-5">
-        <h2 class="mb-3">New Releases</h2>
+        <h2 class="text-center">New Releases</h2>
         <div class="row">
             {% for product in new_releases %}
                 <div class="col-md-4 col-sm-6 mb-4">
                     <div class="card">
-                        <a href="/products/product/<int:nid>/">
-                            {% if product.picture %}
-                                <img src="{{ product.picture.url }}" class="card-img-top" alt="{{ product.name }}">
-                            {% else %}
-                                <img src="/static/image/default-product.jpg" class="card-img-top" alt="Default Image">
-                            {% endif %}
+                        <a href="{% url 'product_detail' product.id %}">
+                            <img src="{{ product.picture.url }}" class="card-img-top" alt="{{ product.name }}">
                         </a>
                         <div class="card-body text-center">
-                            <h5 class="card-title">{{ product.name }}</h5>
+                            <a href="{% url 'product_detail' product.id %}" class="text-dark text-decoration-none">
+                                <h5 class="card-title">{{ product.name }}</h5>
+                            </a>
                             <p class="card-text">${{ product.price }}</p>
-                            <a href="/products/product/<int:nid>/" class="btn btn-outline-primary">View</a>
+                            <form action="{% url 'add_to_cart' product.id %}" method="POST">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-dark">Add to Cart</button>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -53,30 +61,107 @@
         </div>
     </section>
 
-    <!-- Testimonials Section -->
+    <!-- Client Comment (滑动)-->
     <section class="mb-5">
-        <h2 class="mb-3">What Our Clients Say</h2>
+        <h2 class="text-center">What Our Clients Say</h2>
+        <p class="text-center">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas tincidunt elit leo.</p>
+
+        <div class="position-relative d-flex justify-content-center">
+            <button class="review-scroll-btn left-btn" onclick="scrollReviews(-1)">&#8249;</button>
+            <div class="overflow-hidden py-3" id="reviewSlider" style="scroll-behavior: smooth; white-space: nowrap; width: 80%;">
+                <div class="d-flex justify-content-start">
+                    {% for review in reviews %}
+                        <div class="review-item text-center mx-3" style="width: 400px; display: inline-block;">
+                            <div class="card p-3 shadow-sm" style="border-radius: 10px; background: #f8f9fa;">
+                                <p class="text-muted">"{{ review.comment }}"</p>
+                                <div class="d-flex align-items-center">
+                                    <img src="https://via.placeholder.com/50" class="rounded-circle me-2" alt="User">
+                                    <div>
+                                        <strong class="d-block">{{ review.user.name }}</strong>
+                                        <small class="text-muted">{{ review.user.email }}</small>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    {% for _ in review.rating|rjust:"5" %}
+                                        <i class="fas fa-star {% if forloop.counter <= review.rating %}text-warning{% else %}text-secondary{% endif %}"></i>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <button class="review-scroll-btn right-btn" onclick="scrollReviews(1)">&#8250;</button>
+        </div>
+    </section>
+
+    <!-- Stories Section -->
+    <section class="mb-5">
+        <h2 class="text-center">Craft Stories</h2>
         <div class="row">
             <div class="col-md-4">
-                <blockquote class="blockquote">
-                    <p>"Great shopping experience!"</p>
-                    <footer class="blockquote-footer">Customer 1</footer>
-                </blockquote>
+                <div class="card">
+                    <img src="https://via.placeholder.com/300x200" class="card-img-top" alt="Story 1">
+                    <div class="card-body">
+                        <h5 class="card-title">Story Title</h5>
+                        <p class="card-text">Short description of the story...</p>
+                        <a href="/story/1/" class="btn btn-dark">Learn More</a>
+                    </div>
+                </div>
             </div>
             <div class="col-md-4">
-                <blockquote class="blockquote">
-                    <p>"Fantastic customer service and fast delivery!"</p>
-                    <footer class="blockquote-footer">Customer 2</footer>
-                </blockquote>
+                <div class="card">
+                    <img src="https://via.placeholder.com/300x200" class="card-img-top" alt="Story 2">
+                    <div class="card-body">
+                        <h5 class="card-title">Story Title</h5>
+                        <p class="card-text">Short description of the story...</p>
+                        <a href="/story/2/" class="btn btn-dark">Learn More</a>
+                    </div>
+                </div>
             </div>
             <div class="col-md-4">
-                <blockquote class="blockquote">
-                    <p>"Best online store for gifts and clothing!"</p>
-                    <footer class="blockquote-footer">Customer 3</footer>
-                </blockquote>
+                <div class="card">
+                    <img src="https://via.placeholder.com/300x200" class="card-img-top" alt="Story 3">
+                    <div class="card-body">
+                        <h5 class="card-title">Story Title</h5>
+                        <p class="card-text">Short description of the story...</p>
+                        <a href="/story/3/" class="btn btn-dark">Learn More</a>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
+
 </div>
+
+<!-- 滑动 JS -->
+<script>
+    function scrollCategories(direction) {
+        let container = document.getElementById("Slider");
+        let scrollAmount = 450 * direction;  // 每次滚动 450px
+        container.scrollBy({ left: scrollAmount, behavior: "smooth" });
+    }
+</script>
+
+<!-- 滑动按钮 CSS -->
+<style>
+    .category-scroll-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
+        font-size: 24px;
+        font-weight: bold;
+        z-index: 2;
+    }
+
+    .left-btn { left: -20px; }
+    .right-btn { right: -20px; }
+</style>
 
 {% endblock %}
