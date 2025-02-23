@@ -81,7 +81,7 @@ WSGI_APPLICATION = 'groupProject.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'new_e_vehicle_share_system.sqlite3',
+        'NAME': BASE_DIR / 'new_unicraft_system.sqlite3',
     }
 }
 
