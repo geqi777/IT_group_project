@@ -38,6 +38,7 @@ def product_add(request):
     form = Product_ModelForm(request.POST, request.FILES)
     if form.is_valid():
         form.save()
+        messages.success(request, "Product added successfully.")
         return redirect('/products/list/')
 
     return render(request, 'main/change.html', {"form": form})

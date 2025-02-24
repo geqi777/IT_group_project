@@ -29,6 +29,9 @@ urlpatterns = [
     path('home/', home_page.homepage, name='home'),
     path('subscribe/', home_page.subscribe, name='subscribe'),  # 订阅
 
+    #admin
+
+
 # products system
     path('products/product/list/', product.product_list),
     path('products/product/list/add/', product.product_add),
