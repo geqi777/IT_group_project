@@ -905,7 +905,7 @@ def apply_coupon(request):
                         transaction_type='Coupon Addition',
                         date=timezone.now(),
                         coupon=coupon,
-                        details=f'Add coupon {coupon.code} with discount {coupon.discount} pounds, expires on {coupon.expiry_date.strftime('%y/%m/%d - %H:%M')}'
+                        details=f'Add coupon {coupon.code} with discount {coupon.discount} pounds, expires on {coupon.expiry_date.strftime("%y/%m/%d - %H:%M")}'
                     )
 
                     messages.success(request, 'Coupon applied successfully')
@@ -994,7 +994,7 @@ def exchange_points(request):
             transaction_type='Coupon Addition',
             date=timezone.now(),
             coupon=new_coupon,
-            details=f'Added {coupon_value} pounds coupon with code {coupon_code}, expires on {expiry_date.strftime('%y/%m/%d - %H:%M')}'
+            details=f'Added {coupon_value} pounds coupon with code {coupon_code}, expires on {expiry_date.strftime("%y/%m/%d - %H:%M")}'
         )
         
         messages.success(request, 'Exchanged points successfully')

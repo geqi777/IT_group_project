@@ -4,7 +4,7 @@ from main_system.models import Product
 from main_system.utils.pagination import PageNumberPagination
 from main_system.utils.boostrapModelForm import Product_ModelForm, Product_EditForm
 from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
-from  django.http import JsonResponse
+from django.http import JsonResponse
 from django.db.models import Q
 from django.utils import timezone
 import string, random
@@ -48,7 +48,8 @@ def product_add(request):
 
 def product_edit(request, product_id):
     """ 编辑商品 """
-    row = get_object_or_404(models.Product, id=product_id)  # 获取需要编辑的产品对象
+
+    row = models.Product.objects.filter(id=product_id).first()  # 获取需要编辑的产品对象
 
     if request.method == 'GET':
         form = Product_EditForm(instance=row)
