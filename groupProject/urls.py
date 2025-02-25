@@ -32,13 +32,14 @@ urlpatterns = [
     #admin
 
 
-# products system
-    path('products/product/list/', product.product_list),
-    path('products/product/list/add/', product.product_add),
-    path('products/product/list/<int:nid>/delete/', product.product_delete),
-    path('products/product/list/<int:nid>/edit/', product.product_edit),
-    path('products/product/collection/', product.product_page),
-    path('products/product/<int:nid>/', product.product_detail),
+# image system
+    path('operator/product/list/', product.product_list),
+    path('operator/product/list/add/', product.product_add),
+    path('operator/product/list/<int:product_id>/delete/', product.product_delete),
+    path('operator/product/list/<int:product_id>/edit/', product.product_edit),
+
+    path('image/product/collection/', product.product_page),
+    path('image/product/<int:product_id>/detail/', product.product_detail),
 
 
 

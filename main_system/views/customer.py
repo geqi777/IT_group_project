@@ -605,14 +605,14 @@ def customer_list(request):
 def customer_add(request):
     if request.method == 'GET':
         form = Customer_ModelForm()
-        return render(request, 'main/customer_change.html', {'form': form})
+        return render(request, 'main/user_change.html', {'form': form})
 
     form = Customer_ModelForm(request.POST)
     if form.is_valid():
         form.save()
         return redirect('/customer/list/')
     else:
-        return render(request, 'main/customer_change.html', {'form': form})
+        return render(request, 'main/user_change.html', {'form': form})
 
 
 def customer_edit(request, nid):
@@ -620,14 +620,14 @@ def customer_edit(request, nid):
 
     if request.method == 'GET':
         form = Customer_Edit2Form(instance=row)
-        return render(request, 'main/customer_change.html', {'form': form})
+        return render(request, 'main/user_change.html', {'form': form})
 
     form = Customer_Edit2Form(request.POST, instance=row)
     if form.is_valid():
         form.save()
         return redirect('/customer/profile/')
 
-    return render(request, 'main/customer_change.html', {'form': form})
+    return render(request, 'main/user_change.html', {'form': form})
 
 
 def customer_delete(nid):
@@ -641,14 +641,14 @@ def customer_reset_password(request, nid):
         return redirect('/customer/profile/')
     if request.method == 'GET':
         form = ResetPasswordForm()
-        return render(request, 'main/customer_change.html', {'form': form})
+        return render(request, 'main/user_change.html', {'form': form})
 
     form = ResetPasswordForm(request.POST, instance=row)
     if form.is_valid():
         form.save()
         return redirect('/customer/profile/')
 
-    return render(request, 'main/customer_change.html', {'form': form})
+    return render(request, 'main/user_change.html', {'form': form})
 
 
 def customer_profile(request):

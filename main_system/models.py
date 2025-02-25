@@ -36,7 +36,7 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0.01)])
     stock = models.IntegerField(default=0)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES)
-    picture = models.ImageField(upload_to='static/image/products/', blank=True, null=True)
+    picture = models.ImageField(upload_to='static/image/image/', blank=True, null=True)
     created_time = models.DateTimeField(auto_now_add=True)
     updated_time = models.DateTimeField(auto_now=True)
 
@@ -93,7 +93,6 @@ class User(models.Model):
     create_time = models.DateTimeField(default=timezone.now)
 
     # User 关联 Wallet (1:1)
-    # wallet_balance = models.FloatField(default=0.0)
     # wallet = models.OneToOneField('Wallet', on_delete=models.CASCADE, null=True, blank=True)
 
     # User 关联 PaymentCard (1:n)
