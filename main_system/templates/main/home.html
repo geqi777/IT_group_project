@@ -42,12 +42,12 @@
             {% for product in new_releases %}
                 <div class="col-md-4 col-sm-6 mb-4">
                     <div class="card">
-                        <a href="/products/product/<int:product_id>/detail/">
+                        <a href="/products/product/{{ product.id }}/detail/">
                             <img src="{% if product.picture %}{{ product.picture.url }}{% else %}/static/image/products/default_product.png{% endif %}"
                                 class="card-img-top" alt="{{ product.name }}">
                         </a>
                         <div class="card-body text-center">
-                            <a href="/products/product/<int:product_id>/detail/" class="text-dark text-decoration-none">
+                            <a href="/products/product/{{ product.id }}/detail/" class="text-dark text-decoration-none">
                                 <h5 class="card-title">{{ product.name }}</h5>
                             </a>
                             <p class="card-text">${{ product.price }}</p>

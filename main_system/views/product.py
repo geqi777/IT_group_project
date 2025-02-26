@@ -10,6 +10,7 @@ from django.utils import timezone
 import string, random
 from django.contrib import messages
 
+
 # ==========================
 # 管理员端功能
 # ==========================
@@ -32,6 +33,7 @@ def product_list(request):
                }
     return render(request, 'products/product_list.html', context)
 
+
 def product_add(request):
     """ 添加新商品 """
     if request.method == 'GET':
@@ -45,6 +47,7 @@ def product_add(request):
         return redirect('/operator/product/list/')
 
     return render(request, 'main/change.html', {"form": form})
+
 
 def product_edit(request, product_id):
     """ 编辑商品 """
@@ -62,6 +65,7 @@ def product_edit(request, product_id):
         return redirect('/operator/product/list/')
 
     return render(request, 'main/change.html', {"form": form})
+
 
 def product_delete(request, product_id):
     """ 删除商品 """
@@ -96,8 +100,8 @@ def product_page(request):
 
     return render(request, 'products/product_page.html', {'image': products, 'query': query, 'sort_by': sort_by})
 
+
 def product_detail(request, product_id):
     """用户查看商品详情（包含库存信息）"""
-    product = get_object_or_404(Product, id = product_id, status='Active')
+    product = get_object_or_404(Product, id=product_id, status='Active')
     return render(request, 'products/product_detail.html', {'image': product})
-
