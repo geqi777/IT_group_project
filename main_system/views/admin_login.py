@@ -27,14 +27,17 @@ def admin_login(request):
         return render(request, 'login/admin_login.html', {'form': form})
 
     form = LoginForm(data=request.POST)
+    print("获取到form")
     if form.is_valid():
         account = form.cleaned_data['account']
         password = form.cleaned_data['password']
 
         # 查找员工对象
-        employee_obj = models.Employee.objects.filter(account=account).first()
+        employee_obj = models.Operator.objects.filter(account=account).first()
+        print(employee_obj.account, md5(employee_obj.password))
         # 验证员工对象是否存在以及密码是否正确
         if not employee_obj or password != employee_obj.password:
+            print('Account or password is incorrect')
             form.add_error('password', 'Account or password is incorrect')
             return render(request, 'login/admin_login.html', {'form': form})
 
@@ -42,7 +45,7 @@ def admin_login(request):
         request.session['info'] = {
             'employee_id': employee_obj.id,
             'employee_account': employee_obj.account,
-            'is_employee': employee_obj.is_employee,
+            'is_employee': employee_obj.is_operator,
             'role': employee_obj.role,
             'name': employee_obj.name,
         }
