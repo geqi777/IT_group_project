@@ -32,15 +32,21 @@ urlpatterns = [
     #admin
 
 
-# image system
+# operator system
     path('operator/product/list/', product.product_list),
     path('operator/product/list/add/', product.product_add),
     path('operator/product/list/<int:product_id>/delete/', product.product_delete),
     path('operator/product/list/<int:product_id>/edit/', product.product_edit),
 
-    path('image/product/collection/', product.product_page),
+    path('products/product/collection/', product.product_page),
     path('products/product/<int:product_id>/detail/', product.product_detail),
     # /products/product/25/detail/
+
+# cart system
+    path("cart/cart/view/", product.cart_view),
+    path("cart/cart/<int:product_id>/add/", product.cart_add),
+    path("cart/cart/<int:cart_item_id>/edit/", product.cart_edit),
+    path("cart/cart/<int:cart_item_id>/delete/", product.cart_delete),
 
 
 

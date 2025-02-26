@@ -9,6 +9,7 @@ from django.db.models import Q
 from django.utils import timezone
 import string, random
 from django.contrib import messages
+# from django.contrib.auth.decorators import  login_required
 
 
 # ==========================
@@ -106,3 +107,89 @@ def product_detail(request, product_id):
     product = get_object_or_404(Product, id=product_id, status='active')
     quantity_range = range(1, product.stock + 1) if product.stock > 0 else []
     return render(request, 'products/product_detail.html', {'product': product, 'quantity_range': quantity_range})
+
+
+# ==========================
+# 购物车
+# ==========================
+
+# 添加商品到购物车
+# @login_required
+def cart_add(request, product_id):
+    product = models.Product.objects.filter(id=product_id)
+
+    # 获取当前用户购物车
+    cart, created = models.Cart.objects.get_or_create(user=request.user)
+
+    # 检查是否已在购物车中
+    cart_item, created = models.CartItem.objects.get_or_create(cart=cart, product=product)
+
+    # 计算新数量
+    new_quantity = cart_item.quantity + 1
+
+    # 确保新数量不超过库存
+    if new_quantity > product.stock:
+        messages.warning(request, f"Stock limit reached: Only {product.stock} available.")
+    else:
+        cart_item.quantity = new_quantity
+        cart_item.save()
+        messages.success(request, f"{product.name} added to cart!")
+
+    return redirect(request.META.get('HTTP_REFERER', 'cart_view'))  # 返回上一个页面
+
+
+# 购物车视图 + 增减商品数量
+# @login_required
+def cart_view(request):
+    """ 显示购物车 """
+    if not request.user.is_authenticated:
+        messages.warning(request, "Please log in to access the cart.")
+        return redirect("login")
+
+    cart, created = models.Cart.objects.get_or_create(user=request.user)
+    return render(request, "cart/cart_view.html", {"cart": cart})
+
+
+# 更新购物车数量
+# @login_required
+def cart_edit(request, cart_item_id):
+    cart_item = models.CartItem.objects.filter(id=cart_item_id, cart__user=request.user)
+
+    if request.method == "POST":
+        new_quantity = int(request.POST.get("quantity", 1))
+        if new_quantity > 0:
+            cart_item.quantity = new_quantity
+            cart_item.save()
+        else:
+            cart_item.delete()  # 如果数量变为 0，则删除该商品
+
+    return redirect("cart_view")
+
+
+# 移除购物项
+# @login_required
+def cart_delete(request, cart_item_id):
+    cart_item = models.CartItem.objects.filter(id=cart_item_id, cart__user=request.user)
+    cart_item.delete()
+    messages.success(request, "Item removed from cart.")
+    return redirect("cart_view")
+
+
+# ==========================
+# 订单
+# ==========================
+
+# 提交订单
+# @login_required
+def checkout(request):
+    cart = get_object_or_404(models.Cart, user=request.user)
+
+    if not cart.items.exists():
+        messages.warning(request, "Your cart is empty!")
+        return redirect("cart_view")
+
+    # <实现支付逻辑>--unfinished
+    messages.success(request, "Order placed successfully!")
+    cart.items.all().delete()  # 清空购物车
+
+    return redirect("home")

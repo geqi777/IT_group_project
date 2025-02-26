@@ -20,7 +20,7 @@
             <div class="d-flex overflow-hidden py-3" id="categorySlider" style="scroll-behavior: smooth; white-space: nowrap;">
                 {% for category in categories %}
                     <div class="category-item text-center mx-3 d-inline-block">
-                        <a href="/operator/product/list/?category={{ category_key }}" class="text-decoration-none">
+                        <a href="/products/product/collection/?category={{ category_key }}" class="text-decoration-none">
                             <div class="card" style="width: 150px;">
                                 <img src="https://via.placeholder.com/150" class="card-img-top" alt="{{ category.name }}">
                                 <div class="card-body">
@@ -51,7 +51,7 @@
                                 <h5 class="card-title">{{ product.name }}</h5>
                             </a>
                             <p class="card-text">${{ product.price }}</p>
-                            <form action="#" method="POST">
+                            <form action="/cart/cart/view/" method="POST">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-dark">Add to Cart</button>
                             </form>

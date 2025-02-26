@@ -22,7 +22,7 @@
 
             <!-- 购买按钮 -->
 {#        #{% url 'add_to_cart' product.id %}#}
-            <form method="POST" action="#"> 
+            <form method="POST" action="/cart/cart/view/">
                 {% csrf_token %}
                 <label for="quantity">数量：</label>
                 <select id="quantity" name="quantity" class="form-select w-25 mb-3">

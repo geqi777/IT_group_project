@@ -54,17 +54,23 @@
             <!-- 商品展示 -->
             <div class="row">
                 {% for product in products %}
-                <div class="col-md-4 mb-4">
+                <div class="col-md-4 col-sm-6 mb-4">
                     <div class="card">
-                        <a href="{% url 'product_detail' product.id %}">
-                            <img src="{{ product.picture.url }}" class="card-img-top" alt="{{ product.name }}">
+                        <a href="/products/product/{{ product.id }}/detail/">
+                            <img src="{% if product.picture %}{{ product.picture.url }}{% else %}/static/image/products/default_product.png{% endif %}"
+                                class="card-img-top" alt="{{ product.name }}">
                         </a>
                         <div class="card-body text-center">
-                            <h6 class="card-title">{{ product.name }}</h6>
-                            <p class="text-muted">{{ product.description|truncatewords:10 }}</p>
+<!--                        # <h6 class="card-title">{{ product.name }}</h6>-->
+                            <a href="/products/product/{{ product.id }}/detail/" class="text-dark text-decoration-none">
+                                <h5 class="card-title">{{ product.name }}</h5>
+                            </a>
+                            <p class="card-text text-muted">{{ product.description|truncatewords:10 }}</p>
                             <p class="fw-bold">${{ product.price }}</p>
-                            <a href="{% url 'product_detail' product.id %}" class="btn btn-dark w-100">View Details</a>
-                        </div>
+                            <form action="/cart/cart/{{ product.id }}/add/" method="POST">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-dark w-100">Add to Cart</button>
+                            </form>
                     </div>
                 </div>
                 {% empty %}
