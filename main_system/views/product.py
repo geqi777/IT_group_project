@@ -103,5 +103,6 @@ def product_page(request):
 
 def product_detail(request, product_id):
     """用户查看商品详情（包含库存信息）"""
-    product = get_object_or_404(Product, id=product_id, status='Active')
-    return render(request, 'products/product_detail.html', {'image': product})
+    product = get_object_or_404(Product, id=product_id, status='active')
+    quantity_range = range(1, product.stock + 1) if product.stock > 0 else []
+    return render(request, 'products/product_detail.html', {'product': product, 'quantity_range': quantity_range})
