@@ -1,0 +1,58 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <div class="container-fluid mt-5 d-flex justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg">
+                <div class="card-body">
+                    <h3 class="card-title text-center text-primary mb-4">Add New Product</h3>
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="name" class="form-label fw-bold">Product Name</label>
+                            <input type="text" class="form-control form-control-lg shadow-sm" id="name" name="name" placeholder="Enter product name" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="category" class="form-label fw-bold">Category</label>
+                            <select class="form-control form-control-lg shadow-sm" id="category" name="category">
+                                {% for key, value in category_choices %}
+                                    <option value="{{ key }}">{{ value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="price" class="form-label fw-bold">Price</label>
+                            <input type="number" step="0.01" class="form-control form-control-lg shadow-sm" id="price" name="price" placeholder="Enter price" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="stock" class="form-label fw-bold">Stock</label>
+                            <input type="number" class="form-control form-control-lg shadow-sm" id="stock" name="stock" placeholder="Enter stock quantity" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="status" class="form-label fw-bold">Status</label>
+                            <select class="form-control form-control-lg shadow-sm" id="status" name="status">
+                                {% for key, value in status_choices %}
+                                    <option value="{{ key }}">{{ value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="picture" class="form-label fw-bold">Product Image</label>
+                            <input type="file" class="form-control form-control-lg shadow-sm" id="picture" name="picture">
+                        </div>
+
+                        <div class="d-flex justify-content-center">
+                            <button type="submit" class="btn btn-primary btn-lg shadow-sm fw-bold">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

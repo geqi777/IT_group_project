@@ -28,7 +28,7 @@ def user_add(request):
     """ 添加新用户 """
     if request.method == 'GET':
         form = User_ModelForm()
-        return render(request, 'main/change.html', {"form": form})
+        return render(request, 'main/user_change.html', {"form": form})
 
     form = User_ModelForm(request.POST)
     if form.is_valid():
@@ -36,7 +36,7 @@ def user_add(request):
         messages.success(request, "New user added successfully.")
         return redirect('/user/list/')
 
-    return render(request, 'main/change.html', {"form": form})
+    return render(request, 'main/user_change.html', {"form": form})
 
 
 def user_edit(request, nid):
@@ -49,7 +49,7 @@ def user_edit(request, nid):
 
     if request.method == 'GET':
         form = User_EditForm(instance=row)
-        return render(request, 'main/change.html', {"form": form})
+        return render(request, 'main/user_change.html', {"form": form})
 
     form = User_EditForm(request.POST, instance=row)
     if form.is_valid():
@@ -57,7 +57,7 @@ def user_edit(request, nid):
         messages.success(request, "User information updated successfully.")
         return redirect('/user/list/')
 
-    return render(request, 'main/change.html', {"form": form})
+    return render(request, 'main/user_change.html', {"form": form})
 
 
 def user_delete(request, nid):
@@ -87,7 +87,7 @@ def reset_password(request, nid):
 
     if request.method == 'GET':
         form = ResetPasswordForm()
-        return render(request, 'main/change.html', {"form": form})
+        return render(request, 'main/user_change.html', {"form": form})
 
     form = ResetPasswordForm(request.POST, instance=row)
     if form.is_valid():
@@ -95,7 +95,7 @@ def reset_password(request, nid):
         messages.success(request, "User password reset successfully.")
         return redirect('/user/list/')
 
-    return render(request, 'main/change.html', {"form": form})
+    return render(request, 'main/user_change.html', {"form": form})
 
 
 def user_profile(request):

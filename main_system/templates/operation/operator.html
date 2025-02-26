@@ -1,6 +1,6 @@
 # 后台管理主页
 
-{% extends 'layout.html' %}
+{% extends 'operator_layout.html' %}
 {% block content %}
 
 <div class="container-fluid">
@@ -39,7 +39,7 @@
     });
 
     document.getElementById("manage-products-btn").addEventListener("click", function() {
-        loadAdminContent("{% url 'admin_product_list' %}");
+        loadAdminContent("/operator/product/list/");
     });
 
     document.getElementById("manage-admins-btn").addEventListener("click", function() {
