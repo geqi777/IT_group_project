@@ -20,6 +20,7 @@ from django.conf.urls.static import static
 # 正确的 URL 配置
 from django.urls import path
 from main_system.views import product
+from main_system.views import admin_login, customer_login
 from main_system.views.customer import customer_register, customer_verify, customer_wallet
 from main_system.views import department, employee, vehicle, login, home_page, manager, customer, maps
 from main_system.views.customer import customer_register
@@ -30,7 +31,11 @@ urlpatterns = [
     path('subscribe/', home_page.subscribe, name='subscribe'),  # 订阅
 
     #admin
+    path('operation/login/',admin_login.admin_login, name='admin_login'),
 
+    #customer
+    path('customer/login/',customer_login.customer_login, name='customer_login'),
+    path('customer/register/',customer.customer_register, name='customer_register'),
 
 # image system
     path('operator/product/list/', product.product_list),

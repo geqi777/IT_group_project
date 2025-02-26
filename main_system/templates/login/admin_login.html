@@ -156,7 +156,7 @@
   <div class="brand">Unicraft</div> <!-- 品牌名称 -->
 
   <div class="container">
-    
+
     <!-- 左侧：登录表单 -->
     <div class="left-panel">
       <h1>Welcome Uni's Administrator</h1>
@@ -164,7 +164,7 @@
 
       <form method="POST">
         {% csrf_token %}
-        
+
         <label for="account">Account</label>
         <input type="text" name="account" id="account" placeholder="Enter your account" required>
         {% if account_error %}
@@ -191,7 +191,7 @@
     <!-- 右侧：图片 -->
     <div class="right-panel">
       <!-- 你可以直接使用图片标签 -->
-      <!-- <img src="/static/images/login-image.jpg" alt="Login Illustration"> -->
+      <img src="/media/login_image/admin_login.jpg" >
     </div>
 
   </div>
