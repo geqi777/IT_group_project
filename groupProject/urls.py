@@ -23,14 +23,33 @@ from main_system.views import product
 from main_system.views.customer import customer_register, customer_verify, customer_wallet
 from main_system.views import department, employee, vehicle, login, home_page, manager, customer, maps
 from main_system.views.customer import customer_register
-
+from main_system.views import operator, user, product
 urlpatterns = [
     path('', home_page.homepage, name='home'),  # 首页
     path('home/', home_page.homepage, name='home'),
     path('subscribe/', home_page.subscribe, name='subscribe'),  # 订阅
 
     #admin
+# 后台管理首页（包含用户、商品、管理员的管理）
+    path('operation/homepage/', operator.operator_list, name="admin_dashboard"),
 
+    # 用户管理
+    path('operation/homepage/users/', user.user_list, name="admin_user_list"),
+    path('operation/homepage/users/add/', user.user_add, name="user_add"),
+    path('operation/homepage/users/edit/<int:nid>/', user.user_edit, name="user_edit"),
+    path('operation/homepage/users/delete/<int:nid>/', user.user_delete, name="user_delete"),
+
+    # 商品管理
+    path('operation/homepage/products/', product.product_list, name="admin_product_list"),
+    path('operation/homepage/products/add/', product.product_add, name="product_add"),
+    path('operation/homepage/products/edit/<int:product_id>/', product.product_edit, name="product_edit"),
+    path('operation/homepage/products/delete/<int:product_id>/', product.product_delete, name="product_delete"),
+
+    # 管理员管理
+    path('operation/homepage/admins/', operator.operator_list, name="admin_operator_list"),
+    path('operation/homepage/admins/add/', operator.operator_add, name="operator_add"),
+    path('operation/homepage/admins/edit/<int:nid>/', operator.operator_edit, name="operator_edit"),
+    path('operation/homepage/admins/delete/<int:nid>/', operator.operator_delete, name="operator_delete"),
 
 # operator system
     path('operator/product/list/', product.product_list),
