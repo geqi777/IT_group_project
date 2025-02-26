@@ -13,7 +13,7 @@ from django.contrib import messages
 # ==========================
 # 管理员端功能
 # ==========================
-
+# 1111
 def product_list(request):
     data = models.Product.objects.all()
     # 从请求中获取 page_size，默认为 20
