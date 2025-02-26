@@ -20,22 +20,57 @@ from django.conf.urls.static import static
 # 正确的 URL 配置
 from django.urls import path
 from main_system.views import product
+from main_system.views import admin_login, customer_login
 from main_system.views.customer import customer_register, customer_verify, customer_wallet
 from main_system.views import department, employee, vehicle, login, home_page, manager, customer, maps
 from main_system.views.customer import customer_register
-
+from main_system.views import operator, user, product
 urlpatterns = [
     path('', home_page.homepage, name='home'),  # 首页
     path('home/', home_page.homepage, name='home'),
     path('subscribe/', home_page.subscribe, name='subscribe'),  # 订阅
 
-# products system
-    path('products/product/list/', product.product_list),
-    path('products/product/list/add/', product.product_add),
-    path('products/product/list/<int:nid>/delete/', product.product_delete),
-    path('products/product/list/<int:nid>/edit/', product.product_edit),
-    path('products/product/page/', product.product_page),
-    path('products/product/<int:nid>/', product.product_detail),
+    #admin
+# 后台管理首页（包含用户、商品、管理员的管理）
+    path('operation/homepage/', operator.operator_list, name="admin_dashboard"),
+
+    # 用户管理
+    path('operation/homepage/users/', user.user_list, name="admin_user_list"),
+    path('operation/homepage/users/add/', user.user_add, name="user_add"),
+    path('operation/homepage/users/edit/<int:nid>/', user.user_edit, name="user_edit"),
+    path('operation/homepage/users/delete/<int:nid>/', user.user_delete, name="user_delete"),
+    path('operation/login/',admin_login.admin_login, name='admin_login'),
+
+    # 商品管理
+    path('operation/homepage/products/', product.product_list, name="admin_product_list"),
+    path('operation/homepage/products/add/', product.product_add, name="product_add"),
+    path('operation/homepage/products/edit/<int:product_id>/', product.product_edit, name="product_edit"),
+    path('operation/homepage/products/delete/<int:product_id>/', product.product_delete, name="product_delete"),
+
+    # 管理员管理
+    path('operation/homepage/admins/', operator.operator_list, name="admin_operator_list"),
+    path('operation/homepage/admins/add/', operator.operator_add, name="operator_add"),
+    path('operation/homepage/admins/edit/<int:nid>/', operator.operator_edit, name="operator_edit"),
+    path('operation/homepage/admins/delete/<int:nid>/', operator.operator_delete, name="operator_delete"),
+    #customer
+    path('customer/login/',customer_login.customer_login, name='customer_login'),
+    path('customer/register/',customer.customer_register, name='customer_register'),
+
+# operator system
+    path('operator/product/list/', product.product_list),
+    path('operator/product/list/add/', product.product_add),
+    path('operator/product/list/<int:product_id>/delete/', product.product_delete),
+    path('operator/product/list/<int:product_id>/edit/', product.product_edit),
+
+    path('products/product/collection/', product.product_page),
+    path('products/product/<int:product_id>/detail/', product.product_detail),
+    # /products/product/25/detail/
+
+# cart system
+    path("cart/cart/view/", product.cart_view),
+    path("cart/cart/<int:product_id>/add/", product.cart_add),
+    path("cart/cart/<int:cart_item_id>/edit/", product.cart_edit),
+    path("cart/cart/<int:cart_item_id>/delete/", product.cart_delete),
 
 
 

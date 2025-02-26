@@ -16,44 +16,6 @@ class Subscription(models.Model):
     def __str__(self):
         return f"{self.name} - {self.email}"
 
-# 商品
-class Product(models.Model):
-    STATUS_CHOICES = [
-        ('active', 'Active'),
-        ('locked', 'Locked'),
-    ]
-
-    CATEGORY_CHOICES = [
-        ("clothing", "Clothing"),
-        ("food", "Food"),
-        ("furniture", "Furniture"),
-        ("accessories", "Accessories"),
-        ("gift", "Gift"),
-    ]
-    name = models.CharField(max_length=120)
-    description = models.TextField(blank=True, null=True)
-    category = models.CharField(max_length=64, choices=CATEGORY_CHOICES)
-    price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0.01)])
-    stock = models.IntegerField(default=0)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
-    picture = models.ImageField(upload_to='static/image/products/', blank=True, null=True)
-    created_time = models.DateTimeField(auto_now_add=True)
-    updated_time = models.DateTimeField(auto_now=True)
-
-    def save(self, *args, **kwargs):
-        # 自动调整产品状态
-        if self.stock == 0:
-            self.status = 'Locked'
-        super().save(*args, **kwargs)
-
-    def is_available(self):
-        # 检查商品是否可用
-        return self.status == 'active' and self.stock > 0
-
-    def __str__(self):
-        return self.name
-
-
 # 性别选择
 gender_choice = [
     (1, 'Male'),
@@ -93,8 +55,7 @@ class User(models.Model):
     create_time = models.DateTimeField(default=timezone.now)
 
     # User 关联 Wallet (1:1)
-    wallet_balance = models.FloatField(default=0.0)
-    wallet = models.OneToOneField('Wallet', on_delete=models.CASCADE, null=True, blank=True)
+    # wallet = models.OneToOneField('Wallet', on_delete=models.CASCADE, null=True, blank=True)
 
     # User 关联 PaymentCard (1:n)
     payment_cards = models.ManyToManyField('PaymentCard', blank=True)
@@ -116,7 +77,7 @@ class User(models.Model):
 
 # 钱包(balance & points)
 class Wallet(models.Model):
-    user = models.OneToOneField('User', on_delete=models.CASCADE, null=True, blank=True)
+    user = models.OneToOneField('User', on_delete=models.CASCADE, related_name='wallet_account')
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, validators=[MinValueValidator(0.0)])
     points = models.IntegerField(default=0, validators=[MinValueValidator(0)])
 
@@ -177,7 +138,7 @@ class Coupon(models.Model):
     min_order_value = models.DecimalField(max_digits=6, decimal_places=2, default=10.00, validators=[MinValueValidator(0.01)])
     max_activations = models.IntegerField(default=5, validators=[MinValueValidator(1), MaxValueValidator(50)])
     created_time = models.DateTimeField(default=timezone.now)
-    status = models.CharField(max_length=32, choices=[('active', 'Active'), ('used', 'Used'), ('expired', 'Expired')])
+    status = models.CharField(max_length=32, choices=[('active', 'Active'), ('used', 'Used'), ('expired', 'Expired')], default='active')
 
     def is_valid(self):
         """Check if the coupon is valid for a specific user"""
@@ -200,6 +161,73 @@ class PaymentCard(models.Model):
     def __str__(self):
         return f"{self.nickname or 'Card'} - {self.card_number[-4:]}"
 
+
+# 商品
+class Product(models.Model):
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('locked', 'Locked'),
+    ]
+
+    CATEGORY_CHOICES = [
+        ("clothing", "Clothing"),
+        ("food", "Food"),
+        ("furniture", "Furniture"),
+        ("accessories", "Accessories"),
+        ("gift", "Gift"),
+    ]
+    name = models.CharField(max_length=120)
+    description = models.TextField(blank=True, null=True)
+    category = models.CharField(max_length=64, choices=CATEGORY_CHOICES)
+    price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0.01)])
+    stock = models.IntegerField(default=0)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+    picture = models.ImageField(upload_to='static/image/image/', blank=True, null=True)
+    created_time = models.DateTimeField(auto_now_add=True)
+    updated_time = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        # 自动调整产品状态
+        if self.stock == 0:
+            self.status = 'Locked'
+        super().save(*args, **kwargs)
+
+    def is_available(self):
+        # 检查商品是否可用
+        return self.status == 'active' and self.stock > 0
+
+    def __str__(self):
+        return self.name
+
+
+# 购物车
+class Cart(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_cart')  # 关联用户
+    created_time = models.DateTimeField(auto_now_add=True)
+
+    def total_price(self):
+        """计算购物车总价"""
+        return sum(item.total_price() for item in self.items.all())
+
+    def total_items(self):
+        """计算购物车商品总数"""
+        return sum(item.quantity for item in self.items.all())
+
+    def __str__(self):
+        return f"Cart of {self.user.name}"
+
+# 购物项
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')  # 关联购物车
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)  # 关联商品
+    quantity = models.IntegerField(default=1)  # 数量
+
+    def total_price(self):
+        """计算单项商品总价"""
+        return self.product.price * self.quantity
+
+    def __str__(self):
+        return f"{self.quantity} of {self.product.name} in {self.cart.user.name}'s cart"
 
 
 

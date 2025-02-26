@@ -28,7 +28,9 @@ def operator_add(request):
     if request.method == 'GET':
         form = Operator_ModelForm()
         return render(request, 'main/change.html', {"form": form})
-    form = Operator_EditForm(request.POST)
+    #form = Operator_EditForm(request.POST)
+    form = Operator_ModelForm(request.POST)
+
     if form.is_valid():
         form.save()
         return redirect('/operation/employee/list/')
@@ -38,7 +40,7 @@ def operator_add(request):
 
 
 def operator_edit(request, nid):
-    row = models.Employee.objects.filter(id=nid).first()  # 获取需要编辑的员工对象
+    row = models.Operator.objects.filter(id=nid).first()  # 获取需要编辑的员工对象
 
     if request.method == 'GET':
         # 当 GET 请求时，使用 instance 参数加载现有数据
@@ -55,14 +57,26 @@ def operator_edit(request, nid):
 
 
 def operator_delete(request, nid):
-    models.Operator.objects.filter(id=nid).delete()
+    operator = models.Operator.objects.filter(id=nid).first()
+    if not operator:
+        messages.error(request, "Operator not found.")
+        return redirect('/operation/employee/list/')
+
+    # if operator.role == "SuperAdmin":
+    #     messages.error(request, "Cannot delete Super Admin!")
+    #     return redirect('/operation/employee/list/')
+
+    operator.delete()
+    messages.success(request, "Operator deleted successfully.")
     return redirect('/operation/employee/list/')
 
 
 def reset_password(request, nid):
     row = models.Operator.objects.filter(id=nid).first()  # 获取需要编辑的员工对象
-    if row is None:
+    if not row:
+        messages.error(request, "The operator does not exist.")
         return redirect('/operation/employee/list/')
+
     if request.method == 'GET':
         # 当 GET 请求时，使用 instance 参数加载现有数据
         form = ResetPasswordForm()
@@ -80,7 +94,7 @@ def reset_password(request, nid):
 def operator_profile(request):
 
     operator_info = request.session.get('info')
-    operator_detail = models.Employee.objects.get(pk=operator_info['employee_id'])
+    operator_detail = models.Operator.objects.get(pk=operator_info['operator_id'])
 
     print(operator_detail)
 

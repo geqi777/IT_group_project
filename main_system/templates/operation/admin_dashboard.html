@@ -1,0 +1,59 @@
+# 后台管理主页
+
+{% extends 'operator_layout.html' %}
+{% block content %}
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- 侧边导航栏 -->
+        <nav class="col-md-2 d-none d-md-block bg-dark sidebar">
+            <div class="position-sticky">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active text-white" id="manage-users-btn" href="#">Manage Users</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" id="manage-products-btn" href="/operator/product/list/">Manage Products</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" id="manage-admins-btn" href="#">Manage Admins</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- 主要内容区域 -->
+        <main class="col-md-10 ms-sm-auto px-md-4">
+            <div id="admin-content">
+                <!-- 默认加载用户管理页面 -->
+                {% include 'admin/admin_user_list.html' %}
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- JavaScript 控制切换 -->
+<script>
+    document.getElementById("manage-users-btn").addEventListener("click", function() {
+        loadAdminContent("{% url 'admin_user_list' %}");
+    });
+
+    document.getElementById("manage-products-btn").addEventListener("click", function() {
+        loadAdminContent("/operator/product/list/");
+    });
+
+    document.getElementById("manage-admins-btn").addEventListener("click", function() {
+        loadAdminContent("{% url 'admin_operator_list' %}");
+    });
+
+    function loadAdminContent(url) {
+        fetch(url)
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById("admin-content").innerHTML = html;
+            })
+            .catch(error => console.error("Error loading content:", error));
+    }
+</script>
+
+{% endblock %}
