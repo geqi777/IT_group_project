@@ -20,6 +20,7 @@ from django.conf.urls.static import static
 # 正确的 URL 配置
 from django.urls import path
 from main_system.views import product
+from main_system.views import admin_login, customer_login
 from main_system.views.customer import customer_register, customer_verify, customer_wallet
 from main_system.views import department, employee, vehicle, login, home_page, manager, customer, maps
 from main_system.views.customer import customer_register
@@ -38,6 +39,7 @@ urlpatterns = [
     path('operation/homepage/users/add/', user.user_add, name="user_add"),
     path('operation/homepage/users/edit/<int:nid>/', user.user_edit, name="user_edit"),
     path('operation/homepage/users/delete/<int:nid>/', user.user_delete, name="user_delete"),
+    path('operation/login/',admin_login.admin_login, name='admin_login'),
 
     # 商品管理
     path('operation/homepage/products/', product.product_list, name="admin_product_list"),
@@ -50,6 +52,9 @@ urlpatterns = [
     path('operation/homepage/admins/add/', operator.operator_add, name="operator_add"),
     path('operation/homepage/admins/edit/<int:nid>/', operator.operator_edit, name="operator_edit"),
     path('operation/homepage/admins/delete/<int:nid>/', operator.operator_delete, name="operator_delete"),
+    #customer
+    path('customer/login/',customer_login.customer_login, name='customer_login'),
+    path('customer/register/',customer.customer_register, name='customer_register'),
 
 # operator system
     path('operator/product/list/', product.product_list),
