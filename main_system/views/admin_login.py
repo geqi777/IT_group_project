@@ -27,14 +27,15 @@ def admin_login(request):
         return render(request, 'login/admin_login.html', {'form': form})
 
     form = LoginForm(data=request.POST)
-    print("获取到form")
+    # print("获取到form")
+    print("admin", md5("Admin123456"))
     if form.is_valid():
         account = form.cleaned_data['account']
         password = form.cleaned_data['password']
 
         # 查找员工对象
         employee_obj = models.Operator.objects.filter(account=account).first()
-        print(employee_obj.account, md5(employee_obj.password))
+        # print(employee_obj.account, md5(employee_obj.password))
         # 验证员工对象是否存在以及密码是否正确
         if not employee_obj or password != employee_obj.password:
             print('Account or password is incorrect')

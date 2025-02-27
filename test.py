@@ -4,6 +4,7 @@ from decimal import Decimal
 from datetime import datetime
 import os
 
+
 # 你的文件路径（请先上传文件）
 file_paths = ["crackers.csv", "Gift sets.csv", "milk.csv"]
 
@@ -38,7 +39,7 @@ for _, row in df.iterrows():
         """, (
             current_id,
             row["name"],
-            row.get("description", ""),  # 允许空值
+            row['description'].replace("'", "").replace("*", ""),
             row["category"],
             float(row["price"]),  # 确保 price 是 float
             int(row["stock"]),  # 确保 stock 是 int
