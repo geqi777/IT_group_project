@@ -162,24 +162,16 @@
       <h1>Sign in now</h1>
       <p class="subtitle">Create a free account</p>
 
-      <form method="POST">
-        {% csrf_token %}
-        
-        <label for="account">Account</label>
-        <input type="text" name="account" id="account" placeholder="Enter your account" required>
-        {% if account_error %}
-          <div class="error-message">{{ account_error }}</div>
-        {% endif %}
-
-        <label for="password">Password</label>
-        <input type="password" name="password" id="password" placeholder="Enter your password" required>
-        {% if password_error %}
-          <div class="error-message">{{ password_error }}</div>
-        {% endif %}
-
-        <button class="signup-btn" type="submit">Sign in</button>
-
-        <p class="login-link">Already have an account? <a href="{% url "customer_login" %}">Log in</a></p>
+      <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-group mb-3">
+                    <label>{{ field.label }}</label>
+                    {{ field }}
+                    <span style="color: red">{{ field.errors.0 }}</span>
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary w-100">Submit</button>
       </form>
     </div>
 

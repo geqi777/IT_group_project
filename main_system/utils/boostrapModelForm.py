@@ -26,6 +26,60 @@ class BoostrapModelForm(Boostrap, forms.ModelForm):
 class BoostrapForm(Boostrap, forms.Form):
     pass
 
+# new versions
+class User_RegisterForm(BoostrapModelForm):
+    confirm_password = forms.CharField(label='Confirm Password', widget=forms.PasswordInput)
+
+    class Meta:
+        model = models.User
+        fields = [
+            "name",
+            # "date_of_birth",
+            # "gender",
+            # "email",
+            # "phone",
+            # "address",
+            "account",
+            "password"
+            # "account_balance",
+            # "create_time",
+            # "is_verified"
+        ]
+        widgets = {
+            'password': forms.PasswordInput,
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            if name == 'is_verified':
+                field.widget.attrs['class'] = 'form-check-input'  # 特别为复选框添加样式
+
+    def clean_password(self):
+        data = self.cleaned_data.get('password')
+        md5_password = md5(data)
+        exists = models.Employee.objects.filter(id=self.instance.pk, password=md5_password).exists()
+        if exists:
+            raise ValidationError('This password is the same as your previous password.')
+
+        # 验证密码长度
+        if len(data) < 8:
+            raise ValidationError('Password must be at least 8 characters long.')
+
+        # 验证是否包含至少一个大写字母和一个小写字母
+        if not re.search(r'[A-Z]', data):
+            raise ValidationError('Password must contain at least one uppercase letter.')
+        if not re.search(r'[a-z]', data):
+            raise ValidationError('Password must contain at least one lowercase letter.')
+
+        return md5(data)
+
+    def clean_confirm_password(self):
+        pwd = self.cleaned_data.get('password')
+        confirm = md5(self.cleaned_data.get('confirm_password'))
+        if pwd != confirm:
+            raise ValidationError('Passwords must match.')
+        return confirm
 
 class Product_ModelForm(BoostrapModelForm):
     class Meta:

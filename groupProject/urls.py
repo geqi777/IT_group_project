@@ -20,18 +20,19 @@ from django.conf.urls.static import static
 # 正确的 URL 配置
 from django.urls import path
 from main_system.views import product
-from main_system.views import admin_login, customer_login
+from main_system.views import admin_login, user_login
 from main_system.views.customer import customer_register, customer_verify, customer_wallet
 from main_system.views import department, employee, vehicle, login, home_page, manager, customer, maps
 from main_system.views.customer import customer_register
 from main_system.views import operator, user, product
+
 urlpatterns = [
     path('', home_page.homepage, name='home'),  # 首页
     path('home/', home_page.homepage, name='home'),
     path('subscribe/', home_page.subscribe, name='subscribe'),  # 订阅
 
     #admin
-# 后台管理首页（包含用户、商品、管理员的管理）
+    # 后台管理首页（包含用户、商品、管理员的管理）
     path('operation/homepage/', operator.operator_list, name="admin_dashboard"),
 
     # 用户管理
@@ -39,7 +40,7 @@ urlpatterns = [
     path('operation/homepage/users/add/', user.user_add, name="user_add"),
     path('operation/homepage/users/edit/<int:nid>/', user.user_edit, name="user_edit"),
     path('operation/homepage/users/delete/<int:nid>/', user.user_delete, name="user_delete"),
-    path('operation/login/',admin_login.admin_login, name='admin_login'),
+    path('operation/login/', admin_login.admin_login, name='admin_login'),
 
     # 商品管理
     path('operation/homepage/products/', product.product_list, name="admin_product_list"),
@@ -52,11 +53,12 @@ urlpatterns = [
     path('operation/homepage/admins/add/', operator.operator_add, name="operator_add"),
     path('operation/homepage/admins/edit/<int:nid>/', operator.operator_edit, name="operator_edit"),
     path('operation/homepage/admins/delete/<int:nid>/', operator.operator_delete, name="operator_delete"),
-    #customer
-    path('customer/login/',customer_login.customer_login, name='customer_login'),
-    path('customer/register/',customer.customer_register, name='customer_register'),
 
-# operator system
+    # User
+    path('customer/login/', user_login.user_login, name='customer_login'),
+    path('customer/register/', user_login.user_register, name='customer_register'),
+    path('customer/profile/', user_login.user_profile, name='customer_profile'),
+    # operator system
     path('operator/product/list/', product.product_list),
     path('operator/product/list/add/', product.product_add),
     path('operator/product/list/<int:product_id>/delete/', product.product_delete),
@@ -66,13 +68,11 @@ urlpatterns = [
     path('products/product/<int:product_id>/detail/', product.product_detail),
     # /products/product/25/detail/
 
-# cart system
+    # cart system
     path("cart/cart/view/", product.cart_view),
     path("cart/cart/<int:product_id>/add/", product.cart_add),
     path("cart/cart/<int:cart_item_id>/edit/", product.cart_edit),
     path("cart/cart/<int:cart_item_id>/delete/", product.cart_delete),
-
-
 
     # Employee_login
     path('operation/employee/login/', login.employee_login),
