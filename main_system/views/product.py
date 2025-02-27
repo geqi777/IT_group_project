@@ -84,8 +84,8 @@ def product_page(request):
     category = request.GET.get('category', '')
     sort_by = request.GET.get('sort', 'newest')
 
-    products = Product.objects.filter(status='Active')
-
+    products = Product.objects.filter(status='active')
+    print(len(products))
     if query:
         products = products.filter(name__icontains=query)
 

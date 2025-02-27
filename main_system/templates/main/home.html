@@ -1,16 +1,23 @@
 {% extends 'layout.html' %}
 {% block content %}
-
+{% load static %}
 <div class="container mt-4">
 
-    <!-- Hero Section (中间标题+按钮，底下背景图) -->
-    <section class="text-center position-relative mb-5" style="background: url('https://via.placeholder.com/1200x400') no-repeat center; background-size: cover; padding: 100px 0;">
-        <div class="container position-relative" style="z-index: 1;">
-            <h1 class="display-4">Experience the very best online shopping with us.</h1>
-            <p class="lead">Find the best deals on clothing, accessories, gifts, and more.</p>
-            <a href="/products/product/collection/" class="btn btn-dark">Shop Now</a>
-        </div>
-    </section>
+{#/static/image/liugou.jpg#}
+<section class="text-center position-relative mb-5" 
+    style="position: relative; padding: 100px 0; background: url('{% static "image/background.jpg" %}') no-repeat center; background-size: cover;">
+    
+    <!-- 半透明遮罩层 -->
+    <div class="overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5);"></div>
+
+    <div class="container position-relative" style="z-index: 1;">
+        <h1 class="display-4 text-white">Experience the very best online shopping with us.</h1>
+        <p class="lead text-white">Find the best deals on clothing, accessories, gifts, and more.</p>
+        <a href="/products/product/collection/" class="btn btn-light">Shop Now</a>
+    </div>
+</section>
+
+
 
     <!-- Categories Section (滑动 + 左右按钮) -->
     <section class="mb-5">
