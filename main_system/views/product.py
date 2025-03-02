@@ -16,7 +16,7 @@ from django.core.paginator import Paginator
 # ==========================
 # 管理员端功能
 # ==========================
-# 1111
+# 1-1
 def product_list(request):
     """ 查看并管理商品列表 """
     data = models.Product.objects.all()
