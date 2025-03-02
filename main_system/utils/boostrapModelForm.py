@@ -360,6 +360,20 @@ class WalletTransaction_ModelForm(BoostrapModelForm):
         }
 
 
+class Order_ModelForm(BoostrapModelForm):
+    class Meta:
+        model = models.Order
+        fields = ['order_status', 'payment_method', 'shipping_address']
+        widgets = {
+            'shipping_address': forms.Textarea(attrs={'rows': 3}),
+        }
+
+class OrderItem_ModelForm(BoostrapModelForm):
+    class Meta:
+        model = models.OrderItem
+        fields = ['quantity']
+
+
 
 # old
 class Employee_ModelForm(BoostrapModelForm):

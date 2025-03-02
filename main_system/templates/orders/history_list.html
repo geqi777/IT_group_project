@@ -1,0 +1,115 @@
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-4">支付历史</h2>
+    
+    {% if payments %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>交易类型</th>
+                        <th>金额</th>
+                        <th>支付方式</th>
+                        <th>状态</th>
+                        <th>时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in payments %}
+                    <tr>
+                        <td>{{ payment.get_payment_type_display }}</td>
+                        <td>
+                            <span class="{% if payment.payment_type == 'order_refund' or payment.payment_type == 'points_exchange' %}text-success{% else %}text-danger{% endif %}">
+                                {% if payment.payment_type == 'order_refund' or payment.payment_type == 'points_exchange' %}+{% else %}-{% endif %}
+                                £{{ payment.amount }}
+                            </span>
+                        </td>
+                        <td>{{ payment.payment_method }}</td>
+                        <td>
+                            <span class="badge {% if payment.status == 'success' %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ payment.status }}
+                            </span>
+                        </td>
+                        <td>{{ payment.timestamp|date:"Y-m-d H:i" }}</td>
+                        <td>
+                            {% if payment.order %}
+                                <a href="{% url 'order_detail' payment.order.id %}" class="btn btn-sm btn-primary">查看订单</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- 分页 -->
+        {% if payments.has_other_pages %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if payments.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ payments.previous_page_number }}">&laquo;</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&laquo;</span>
+                    </li>
+                {% endif %}
+
+                {% for i in payments.paginator.page_range %}
+                    {% if payments.number == i %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ i }}</span>
+                        </li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if payments.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ payments.next_page_number }}">&raquo;</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&raquo;</span>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-info">
+            暂无支付记录
+        </div>
+    {% endif %}
+
+    <!-- 钱包余额和积分信息 -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">钱包余额</h5>
+                    <p class="card-text display-6">£{{ request.user.wallet.balance }}</p>
+                    <button class="btn btn-primary" disabled>充值（即将上线）</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">我的积分</h5>
+                    <p class="card-text display-6">{{ request.user.wallet.points }}</p>
+                    <button class="btn btn-primary" disabled>兑换（即将上线）</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

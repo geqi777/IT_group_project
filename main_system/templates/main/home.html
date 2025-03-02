@@ -8,9 +8,9 @@
     style="position: relative; padding: 100px 0; background: url('{% static "image/background.jpg" %}') no-repeat center; background-size: cover;">
     
     <!-- 半透明遮罩层 -->
-    <div class="overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5);"></div>
+    <div class="overlay"></div>
 
-    <div class="container position-relative" style="z-index: 1;">
+    <div class="container position-relative content-container">
         <h1 class="display-4 text-white">Experience the very best online shopping with us.</h1>
         <p class="lead text-white">Find the best deals on clothing, accessories, gifts, and more.</p>
         <a href="/products/product/collection/" class="btn btn-light">Shop Now</a>
@@ -19,26 +19,22 @@
 
 
 
-    <!-- Categories Section (滑动 + 左右按钮) -->
+    <!-- Categories Section -->
     <section class="mb-5">
-        <h2 class="text-center">Shop by Category</h2>
-        <div class="position-relative">
-            <button class="category-scroll-btn left-btn" onclick="scrollCategories(-1)">&#8249;</button>
-            <div class="d-flex overflow-hidden py-3" id="categorySlider" style="scroll-behavior: smooth; white-space: nowrap;">
-                {% for category in categories %}
-                    <div class="category-item text-center mx-3 d-inline-block">
-                        <a href="/products/product/collection/?category={{ category_key }}" class="text-decoration-none">
-                            <div class="card" style="width: 150px;">
-                                <img src="https://via.placeholder.com/150" class="card-img-top" alt="{{ category.name }}">
-                                <div class="card-body">
-                                    <p class="card-text">{{ category.name }}</p>
-                                </div>
-                            </div>
-                        </a>
+        <h2 class="text-center mb-4">Shop by Category</h2>
+        <div class="row">
+            {% for category in categories %}
+            <div class="col-md-3 mb-4">
+                <a href="/products/product/collection/?category={{ category.key }}" class="text-decoration-none">
+                    <div class="card category-card h-100">
+                        <img src="{% static 'image/category/'|add:category.key|add:'.jpg' %}" class="card-img-top" alt="{{ category.name }}">
+                        <div class="card-body text-center">
+                            <h5 class="card-title text-dark">{{ category.name }}</h5>
+                        </div>
                     </div>
-                {% endfor %}
+                </a>
             </div>
-            <button class="category-scroll-btn right-btn" onclick="scrollCategories(1)">&#8250;</button>
+            {% endfor %}
         </div>
     </section>
 
@@ -58,7 +54,7 @@
                                 <h5 class="card-title">{{ product.name }}</h5>
                             </a>
                             <p class="card-text">${{ product.price }}</p>
-                            <form action="/cart/cart/view/" method="POST">
+                            <form action="/cart/cart/{{ product.id }}/add/" method="POST">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-dark">Add to Cart</button>
                             </form>
@@ -151,25 +147,54 @@
     }
 </script>
 
-<!-- 滑动按钮 CSS -->
+<!-- CSS -->
 <style>
-    .category-scroll-btn {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        background: white;
-        border: 1px solid #ccc;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        cursor: pointer;
-        font-size: 24px;
-        font-weight: bold;
-        z-index: 2;
+    .content-container {
+        z-index: 1;
+    }
+    .hero-banner {
+        position: relative;
+        padding: 100px 0;
+        background: url('{% static "image/background.jpg" %}') no-repeat center;
+        background-size: cover;
     }
 
-    .left-btn { left: -20px; }
-    .right-btn { right: -20px; }
+    .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+    }
+
+    /* Category card styles */
+    .category-card {
+        transition: transform 0.3s ease;
+        border: none;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .category-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .category-card img {
+        height: 200px;
+        object-fit: cover;
+    }
+
+    .category-card .card-body {
+        background: rgba(255, 255, 255, 0.9);
+        padding: 1rem;
+    }
+
+    .category-card .card-title {
+        margin: 0;
+        font-weight: 600;
+    }
 </style>
 
 {% endblock %}

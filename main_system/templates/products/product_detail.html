@@ -20,23 +20,27 @@
                 {% endif %}
             </p>
 
-            <!-- 购买按钮 -->
-{#        #{% url 'add_to_cart' product.id %}#}
-            <form method="POST" action="/cart/cart/view/">
-                {% csrf_token %}
-                <label for="quantity">数量：</label>
-                <select id="quantity" name="quantity" class="form-select w-25 mb-3">
-                    {% for i in quantity_range %}
-                        <option value="{{ i }}">{{ i }}</option>
-                    {% endfor %}
-                </select>
+            <!-- 商品详情页的添加到购物车表单 -->
+            <div class="card-body">
+                <h5 class="card-title">{{ product.name }}</h5>
+                <p class="card-text">{{ product.description }}</p>
+                <p class="price mb-3">£{{ product.price }}</p>
                 
-                {% if product.stock > 0 %}
-                    <button type="submit" class="btn btn-primary">Add To Cart</button>
-                {% else %}
-                    <button type="button" class="btn btn-secondary" disabled>Out Of Stock</button>
-                {% endif %}
-            </form>
+                <form action="/customer/cart/{{ product_id }}/add/" method="POST" class="mb-3">
+                    {% csrf_token %}
+                    <div class="d-flex align-items-center mb-3">
+                        <label for="quantity" class="me-2">数量:</label>
+                        <select name="quantity" id="quantity" class="form-select" style="width: auto;">
+                            {% for i in quantity_range %}
+                                <option value="{{ i }}">{{ i }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-dark w-100 {% if not product.stock %}disabled{% endif %}">
+                        {% if product.stock %}加入购物车{% else %}暂时缺货{% endif %}
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 

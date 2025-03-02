@@ -47,20 +47,31 @@
                     <li class="nav-item"><a class="nav-link" href="/about/">About us</a></li>
                     <li class="nav-item"><a class="nav-link" href="/contact/">Contact</a></li>
                 </ul>
-                <form class="d-flex">
-                    <input class="form-control me-2 search-bar" type="search" placeholder="Search" aria-label="Search">
-                    <button class="btn btn-outline-dark" type="submit"><i class="fas fa-search"></i></button>
+                <form class="d-flex" action="/search/" method="get">
+                    <input class="form-control me-2" type="search" name="q" placeholder="Search products..." aria-label="Search" value="{{ search_query|default:'' }}">
+                    <button class="btn btn-outline-success" type="submit">Search</button>
                 </form>
-                <a href="/cart/cart/view/" class="btn btn-outline-dark cart-btn"><i class="fas fa-shopping-cart"></i></a>
-                <div class="dropdown">
-                    <button class="btn btn-outline-dark dropdown-toggle account-btn" type="button" id="accountDropdown" data-bs-toggle="dropdown">
-                        <i class="fas fa-user"></i>
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="accountDropdown">
-                        <li><a class="dropdown-item" href="/profile/">Profile</a></li>
-                        <li><a class="dropdown-item" href="/settings/">Settings</a></li>
-                        <li><a class="dropdown-item" href="/logout/">Log out</a></li>
-                    </ul>
+                <div class="navbar-nav ms-auto">
+                    {% if request.session.customer_info %}
+                        <a class="nav-link" href="/customer/cart/">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="badge bg-dark">{{ request.user.user_cart.first.total_items|default:"0" }}</span>
+                        </a>
+                        <div class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                {{ request.session.customer_info.name }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item" href="{% url 'profile' %}">个人中心</a></li>
+                                <li><a class="dropdown-item" href="{% url 'orders' %}">我的订单</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'logout' %}">退出登录</a></li>
+                            </ul>
+                        </div>
+                    {% else %}
+                        <a class="nav-link" href="/customer/login/">Login</a>
+                        <a class="nav-link" href="/customer/register/">Sign up</a>
+                    {% endif %}
                 </div>
             </div>
         </div>

@@ -5,10 +5,11 @@ from main_system.utils.pagination import PageNumberPagination
 from main_system.utils.boostrapModelForm import Product_ModelForm, Product_EditForm
 from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.http import JsonResponse
-from django.db.models import Q
+from django.db.models import Q, Case, When, IntegerField
 from django.utils import timezone
 import string, random
 from django.contrib import messages
+from django.core.paginator import Paginator
 # from django.contrib.auth.decorators import  login_required
 
 
@@ -79,27 +80,73 @@ def product_delete(request, product_id):
 # ==========================
 
 def product_page(request):
-    """ 商品浏览页 + 筛 + 排 """
+    """ 商品浏览页 + 筛选 + 排序 """
+    # 获取筛选参数
     query = request.GET.get('q', '')
-    category = request.GET.get('category', '')
+    categories = request.GET.getlist('category', [])
     sort_by = request.GET.get('sort', 'newest')
+    price_range = request.GET.get('price_range', 'any')
+    price_min = request.GET.get('price_min')
+    price_max = request.GET.get('price_max')
 
+    # 基础查询：只显示激活状态的商品
     products = Product.objects.filter(status='active')
-    print(len(products))
+
+    # 应用搜索过滤
     if query:
-        products = products.filter(name__icontains=query)
+        products = products.filter(Q(name__icontains=query) | Q(description__icontains=query))
 
-    if category:
-        products = products.filter(category__name__icontains=category)
+    # 应用类别过滤
+    if categories:
+        products = products.filter(category__in=categories)
 
+    # 应用价格过滤
+    if price_range != 'any':
+        if price_range == 'custom' and price_min and price_max:
+            products = products.filter(price__gte=float(price_min), price__lte=float(price_max))
+        elif price_range != 'custom':
+            price_min, price_max = price_range.split(',')
+            if price_min:
+                products = products.filter(price__gte=float(price_min))
+            if price_max:
+                products = products.filter(price__lte=float(price_max))
+
+    # 应用排序
     if sort_by == 'price_low':
         products = products.order_by('price')
     elif sort_by == 'price_high':
         products = products.order_by('-price')
-    else:
+    elif sort_by == 'newest':
+        products = products.order_by('-created_time')
+    elif sort_by == 'relevance' and query:  # 只在有搜索查询时应用相关性排序
+        products = products.annotate(
+            relevance=Case(
+                When(name__icontains=query, then=2),  # 名称匹配权重更高
+                When(description__icontains=query, then=1),  # 描述匹配权重较低
+                default=0,
+                output_field=IntegerField(),
+            )
+        ).order_by('-relevance', '-created_time')
+    else:  # 默认按最新排序
         products = products.order_by('-created_time')
 
-    return render(request, 'products/product_page.html', {'image': products, 'query': query, 'sort_by': sort_by})
+    # 分页
+    page_number = request.GET.get('page', 1)
+    paginator = Paginator(products, 9)  # 每页显示9个商品
+    page_obj = paginator.get_page(page_number)
+
+    # 准备分类选项
+    all_categories = [{'key': key, 'name': name} for key, name in Product.CATEGORY_CHOICES]
+
+    context = {
+        'products': page_obj,
+        'categories': all_categories,
+        'selected_categories': categories,
+        'current_sort': sort_by,
+        'selected_price_range': price_range,
+    }
+
+    return render(request, 'products/product_page.html', context)
 
 
 def product_detail(request, product_id):
@@ -109,87 +156,27 @@ def product_detail(request, product_id):
     return render(request, 'products/product_detail.html', {'product': product, 'quantity_range': quantity_range})
 
 
-# ==========================
-# 购物车
-# ==========================
-
-# 添加商品到购物车
-# @login_required
-def cart_add(request, product_id):
-    product = models.Product.objects.filter(id=product_id)
-
-    # 获取当前用户购物车
-    cart, created = models.Cart.objects.get_or_create(user=request.user)
-
-    # 检查是否已在购物车中
-    cart_item, created = models.CartItem.objects.get_or_create(cart=cart, product=product)
-
-    # 计算新数量
-    new_quantity = cart_item.quantity + 1
-
-    # 确保新数量不超过库存
-    if new_quantity > product.stock:
-        messages.warning(request, f"Stock limit reached: Only {product.stock} available.")
+def search_products(request):
+    """搜索商品"""
+    query = request.GET.get('q', '')
+    if query:
+        # 从名称和类别中搜索
+        products = Product.objects.filter(
+            Q(name__icontains=query) |  # 名称包含关键词
+            Q(category__icontains=query)  # 类别包含关键词
+        ).filter(status='active').distinct()  # 只显示激活状态的商品
     else:
-        cart_item.quantity = new_quantity
-        cart_item.save()
-        messages.success(request, f"{product.name} added to cart!")
+        products = Product.objects.filter(status='active')
 
-    return redirect(request.META.get('HTTP_REFERER', 'cart_view'))  # 返回上一个页面
+    # 分页
+    paginator = Paginator(products, 12)  # 每页12个商品
+    page = request.GET.get('page')
+    products = paginator.get_page(page)
 
-
-# 购物车视图 + 增减商品数量
-# @login_required
-def cart_view(request):
-    """ 显示购物车 """
-    if not request.user.is_authenticated:
-        messages.warning(request, "Please log in to access the cart.")
-        return redirect("login")
-
-    cart, created = models.Cart.objects.get_or_create(user=request.user)
-    return render(request, "cart/cart_view.html", {"cart": cart})
+    return render(request, 'products/product_page.html', {
+        'products': products,
+        'search_query': query,
+        'categories': [{'key': key, 'name': name} for key, name in Product.CATEGORY_CHOICES]  # 添加分类选项
+    })
 
 
-# 更新购物车数量
-# @login_required
-def cart_edit(request, cart_item_id):
-    cart_item = models.CartItem.objects.filter(id=cart_item_id, cart__user=request.user)
-
-    if request.method == "POST":
-        new_quantity = int(request.POST.get("quantity", 1))
-        if new_quantity > 0:
-            cart_item.quantity = new_quantity
-            cart_item.save()
-        else:
-            cart_item.delete()  # 如果数量变为 0，则删除该商品
-
-    return redirect("cart_view")
-
-
-# 移除购物项
-# @login_required
-def cart_delete(request, cart_item_id):
-    cart_item = models.CartItem.objects.filter(id=cart_item_id, cart__user=request.user)
-    cart_item.delete()
-    messages.success(request, "Item removed from cart.")
-    return redirect("cart_view")
-
-
-# ==========================
-# 订单
-# ==========================
-
-# 提交订单
-# @login_required
-def checkout(request):
-    cart = get_object_or_404(models.Cart, user=request.user)
-
-    if not cart.items.exists():
-        messages.warning(request, "Your cart is empty!")
-        return redirect("cart_view")
-
-    # <实现支付逻辑>--unfinished
-    messages.success(request, "Order placed successfully!")
-    cart.items.all().delete()  # 清空购物车
-
-    return redirect("home")

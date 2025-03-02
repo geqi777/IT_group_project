@@ -24,16 +24,18 @@ from main_system.views import admin_login, user_login
 from main_system.views.customer import customer_register, customer_verify, customer_wallet
 from main_system.views import department, employee, vehicle, login, home_page, manager, customer, maps
 from main_system.views.customer import customer_register
-from main_system.views import operator, user, product
+from main_system.views import operator, user, product, cart, order
+from main_system.views.order import order_detail
 
 urlpatterns = [
     path('', home_page.homepage, name='home'),  # 首页
     path('home/', home_page.homepage, name='home'),
     path('subscribe/', home_page.subscribe, name='subscribe'),  # 订阅
+    path('search/', product.search_products),    # 商品搜索
 
     #admin
     # 后台管理首页（包含用户、商品、管理员的管理）
-    path('operation/homepage/', operator.operator_list, name="admin_dashboard"),
+    path('operation/homepage/', operator.operator_list),
 
     # 用户管理
     path('operation/homepage/users/', user.user_list, name="admin_user_list"),
@@ -68,16 +70,26 @@ urlpatterns = [
     path('products/product/<int:product_id>/detail/', product.product_detail),
     # /products/product/25/detail/
 
-    # cart system
-    path("cart/cart/view/", product.cart_view),
-    path("cart/cart/<int:product_id>/add/", product.cart_add),
-    path("cart/cart/<int:cart_item_id>/edit/", product.cart_edit),
-    path("cart/cart/<int:cart_item_id>/delete/", product.cart_delete),
+    # Cart
+    path("customer/cart/", cart.cart_view),
+    path("customer/cart/<int:product_id>/add/", cart.cart_add),
+    path("customer/cart/<int:cart_item_id>/edit/", cart.cart_edit),
+    path("customer/cart/<int:cart_item_id>/delete/", cart.cart_delete),
+    path("customer/checkout/", cart.checkout),
+
+    # Order
+    path('customer/order/', order.order_list),
+    path('customer/order/<int:order_id>/', order.order_detail),
+    path('customer/order/history/', order.history_list),
+    path('operator/orders/', order.admin_order_list),
+    path('operator/orders/<int:order_id>/update-status/', order.update_order_status),
+
 
     # Employee_login
     path('operation/employee/login/', login.employee_login),
     # Employee_logout
     path('logout/', login.logout),
+
 
     # department system
     path('operation/department/list/', department.department_list),
