@@ -83,7 +83,7 @@ def order_list(request):
         'orders': orders
     })
 
-
+# 1
 def admin_order_list(request):
     """管理员查看所有订单"""
     # 检查管理员是否登录
