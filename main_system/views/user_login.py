@@ -35,25 +35,29 @@ def user_login(request):
         account = form.cleaned_data['account']
         password = form.cleaned_data['password']
 
-        # 查找员工对象
-        employee_obj = models.User.objects.filter(account=account).first()
-        # 验证员工对象是否存在以及密码是否正确
-        if not employee_obj or password != employee_obj.password:
+        # 查找用户对象
+        user_obj = models.User.objects.filter(account=account).first()
+        # 验证用户对象是否存在以及密码是否正确
+        if not user_obj or password != user_obj.password:
             form.add_error('password', 'Account or password is incorrect')
             return render(request, 'login/user_login.html', {'form': form})
 
         # 设置 session 信息
-        request.session['customer_info'] = {
-            'employee_id': employee_obj.id,
-            'employee_account': employee_obj.account,
-            'name': employee_obj.name,
+        request.session['info'] = {
+            'user_id': user_obj.id,
+            'user_account': user_obj.account,
+            'name': user_obj.name,
         }
 
-        print(request.session['customer_info'])
+        print(request.session['info'])
         # if request.session['info']['role'] == 'manager':
         #     return redirect('/operation/manager/page/')
-        print('准备跳转到profile')
-        return redirect('/customer/profile/')
+        print('准备跳转到home')
+        # 获取来源页面，如果没有则默认跳转到首页
+        next_url = request.GET.get('next')
+        if next_url:
+            return redirect(next_url)
+        return redirect('/home/')
 
     return render(request, 'login/user_login.html', {'form': form})
 

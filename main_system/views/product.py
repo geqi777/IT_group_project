@@ -16,7 +16,7 @@ from django.core.paginator import Paginator
 # ==========================
 # 管理员端功能
 # ==========================
-# 1111
+# 1-1
 def product_list(request):
     """ 查看并管理商品列表 """
     data = models.Product.objects.all()
@@ -151,7 +151,7 @@ def product_page(request):
 
 def product_detail(request, product_id):
     """用户查看商品详情（包含库存信息）"""
-    product = get_object_or_404(Product, id=product_id, status='active')
+    product = models.Product.objects.filter(id=product_id, status='active').first()
     quantity_range = range(1, product.stock + 1) if product.stock > 0 else []
     return render(request, 'products/product_detail.html', {'product': product, 'quantity_range': quantity_range})
 

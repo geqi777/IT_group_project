@@ -5,6 +5,7 @@ from django.utils import timezone
 import datetime
 from django.core.validators import MinValueValidator, MaxValueValidator
 from main_system.utils.map_function import get_lat_lng_from_address
+from decimal import Decimal
 
 
 # 订阅
@@ -63,11 +64,18 @@ class User(models.Model):
     # User 关联 Coupon (1:n)
     coupons = models.ManyToManyField('Coupon', blank=True)
 
+    @property
+    def wallet_balance(self):
+        """获取用户钱包余额"""
+        wallet = Wallet.objects.filter(user=self).first()
+        return wallet.balance if wallet else Decimal('0.00')
+
     def deduct_balance(self, amount):
-        """ 从钱包中扣除余额 """
-        if self.wallet and self.wallet.balance >= amount:
-            self.wallet.balance -= amount
-            self.wallet.save()
+        """从钱包中扣除余额"""
+        wallet = Wallet.objects.filter(user=self).first()
+        if wallet and wallet.balance >= amount:
+            wallet.balance -= amount
+            wallet.save()
             return True
         return False
 
@@ -77,7 +85,7 @@ class User(models.Model):
 
 # 钱包(balance & points)
 class Wallet(models.Model):
-    user = models.OneToOneField('User', on_delete=models.CASCADE, related_name='wallet_account')
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, validators=[MinValueValidator(0.0)])
     points = models.IntegerField(default=0, validators=[MinValueValidator(0)])
 
@@ -102,50 +110,55 @@ class Wallet(models.Model):
     def __str__(self):
         return f"Wallet of {self.user.name}"
 
-# 钱包交易记录(充值，消费，退款，优惠券使用)
+# 钱包交易记录(充值，消费，退款，积分变动，优惠码使用)
 class WalletTransaction(models.Model):
     TRANSACTION_TYPES = [
         ('topup', 'topup'),
-        ('withdraw', 'withdraw'),
         ('purchase', 'purchase'),
         ('refund', 'refund'),
-        ('points_increase', 'points increase'),
-        ('points_decrease', 'points decrease'),
-        ('coupon_addition', 'coupon addition'),
-        ('coupon_deduction', 'coupon deduction'),
-        ('coupon_expired', 'coupon expired'),
+        ('points_earned', 'points earned'),
+        ('points_used', 'points used'),
+        ('promo_code_used', 'promo code used'),
     ]
 
     wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE, related_name='transactions')
-    transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPES)  # 充值、扣款、积分兑换等
-    amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Only for balance changes
-    points = models.IntegerField(null=True, blank=True)  # Only for points changes
-    coupon = models.ForeignKey('Coupon', null=True, blank=True, on_delete=models.SET_NULL, related_name="used_transactions")  # For payment with coupon
-    payment_card = models.ForeignKey('PaymentCard', null=True, blank=True, on_delete=models.SET_NULL, related_name="transactions")
+    transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPES)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # 金额变动
+    points = models.IntegerField(null=True, blank=True)  # 积分变动
+    order = models.ForeignKey('Order', on_delete=models.SET_NULL, null=True, blank=True, related_name='transactions')  # 关联订单
+    promo_code = models.ForeignKey('PromoCode', on_delete=models.SET_NULL, null=True, blank=True, related_name='transactions')  # 关联优惠码
+    payment_card = models.ForeignKey('PaymentCard', on_delete=models.SET_NULL, null=True, blank=True, related_name='transactions')  # 关联支付卡
+    original_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # 优惠前金额
+    final_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # 优惠后金额
     timestamp = models.DateTimeField(auto_now_add=True)
     details = models.TextField(null=True, blank=True)
 
     def __str__(self):
-        return f"{self.transaction_type.capitalize()} - {self.wallet.user.name}"
+        return f"{self.get_transaction_type_display()} - {self.wallet.user.name} - {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}"
+
+    class Meta:
+        ordering = ['-timestamp']
+        verbose_name = '钱包交易记录'
+        verbose_name_plural = '钱包交易记录'
 
 
-# 优惠券
-class Coupon(models.Model):
-    wallet = models.ForeignKey('Wallet', on_delete=models.CASCADE, null=True, blank=True, related_name='coupons')
+# 优惠码
+class PromoCode(models.Model):
     code = models.CharField(max_length=10, unique=True)
     discount = models.DecimalField(max_digits=6, decimal_places=2, validators=[MinValueValidator(0.01)])
-    expiry_date = models.DateField(null=True, blank=True)
     min_order_value = models.DecimalField(max_digits=6, decimal_places=2, default=10.00, validators=[MinValueValidator(0.01)])
-    max_activations = models.IntegerField(default=5, validators=[MinValueValidator(1), MaxValueValidator(50)])
+    expiry_date = models.DateTimeField()
     created_time = models.DateTimeField(default=timezone.now)
-    status = models.CharField(max_length=32, choices=[('active', 'active'), ('used', 'used'), ('expired', 'expired')], default='active')
+    description = models.TextField(blank=True, null=True)
+    status = models.CharField(max_length=32, choices=[('active', 'active'), ('inactive', 'inactive'), ('expired', 'expired')], default='active')
 
     def is_valid(self):
-        """Check if the coupon is valid for a specific user"""
-        return self.status == 'active' and self.expiry_date >= timezone.now().date()
+        """检查优惠码是否有效"""
+        return self.status == 'active' and self.expiry_date > timezone.now().date()
 
     def __str__(self):
-        return f"Coupon {self.code} - {self.status}"
+        return f"PromoCode: {self.code} (£{self.discount})"
+
 
 # 支付卡
 class PaymentCard(models.Model):
@@ -208,9 +221,26 @@ class Cart(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_cart')  # 关联用户
     created_time = models.DateTimeField(auto_now_add=True)
 
+    def get_subtotal_amount(self):
+        """计算商品小计金额"""
+        TWO_PLACES = Decimal('0.01')
+        return sum(item.get_item_subtotal() for item in self.items.all()).quantize(TWO_PLACES)
+
+    def get_shipping_fee(self):
+        """计算运费，订单金额>30免运费，否则收取5英镑运费"""
+        TWO_PLACES = Decimal('0.01')
+        subtotal = self.get_subtotal_amount()
+        return (Decimal('0') if subtotal >= Decimal('30') else Decimal('5')).quantize(TWO_PLACES)
+
+    def get_vat(self):
+        """计算增值税，为商品小计的5%"""
+        TWO_PLACES = Decimal('0.01')
+        return (self.get_subtotal_amount() * Decimal('0.05')).quantize(TWO_PLACES)
+
     def get_total_amount(self):
-        """计算购物车总金额"""
-        return sum(item.get_subtotal() for item in self.items.all())
+        """计算购物车总金额（含运费和增值税）"""
+        TWO_PLACES = Decimal('0.01')
+        return (self.get_subtotal_amount() + self.get_shipping_fee() + self.get_vat()).quantize(TWO_PLACES)
 
     def total_items(self):
         """计算购物车商品总数"""
@@ -226,9 +256,9 @@ class CartItem(models.Model):
     quantity = models.IntegerField(default=1)  # 数量
     add_time = models.DateTimeField(default=timezone.now)  # 将auto_now_add改为default
 
-    def get_subtotal(self):
+    def get_item_subtotal(self):
         """计算单个商品的小计金额"""
-        return self.product.price * self.quantity
+        return self.product.price * Decimal(str(self.quantity))
 
     def __str__(self):
         return f"{self.quantity} of {self.product.name} in {self.cart.user.name}'s cart"
@@ -254,32 +284,41 @@ class Order(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
     order_number = models.CharField(max_length=20, unique=True)  # 订单号
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    final_amount = models.DecimalField(max_digits=10, decimal_places=2)  # 优惠后金额
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    shipping_fee = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    vat = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True) 
+    final_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # 优惠后金额
     order_status = models.CharField(max_length=32, choices=ORDER_STATUS_CHOICES, default='pending')
     payment_method = models.CharField(max_length=32, choices=PAYMENT_METHOD_CHOICES, default='wallet')
     payment_status = models.BooleanField(default=False)  # 支付状态
     shipping_address = models.TextField()  # 收货地址
-    coupon = models.ForeignKey('Coupon', on_delete=models.SET_NULL, null=True, blank=True)
     payment_card = models.ForeignKey('PaymentCard', on_delete=models.SET_NULL, null=True, blank=True)
     points_used = models.IntegerField(default=0)  # 使用的积分数
     points_earned = models.IntegerField(default=0)  # 获得的积分数
     timestamp = models.DateTimeField(auto_now_add=True)  # 创建时间
     paid_time = models.DateTimeField(null=True, blank=True)  # 支付时间
     complete_time = models.DateTimeField(null=True, blank=True)  # 完成时间
+    promo_code = models.ForeignKey(PromoCode, on_delete=models.SET_NULL, null=True, blank=True)
+    promo_discount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     def save(self, *args, **kwargs):
+        TWO_PLACES = Decimal('0.01')
+        
         # 生成订单号
         if not self.order_number:
             self.order_number = timezone.now().strftime('%Y%m%d%H%M%S') + str(self.user.id).zfill(4)
 
+        # 计算总金额
+        if not self.total_amount:
+            self.total_amount = self.get_total_amount()
+
         # 计算最终金额
         if not self.final_amount:
             self.final_amount = self.total_amount
-            if self.coupon and self.coupon.is_valid():
-                self.final_amount -= self.coupon.discount
-            if self.points_used > 0:
-                self.final_amount -= self.points_used * 0.01  # 1积分=0.01元
+            # 如果使用了优惠码且优惠码有效，应用优惠码折扣
+            if self.promo_code and self.promo_code.is_valid():
+                self.promo_discount = min(self.promo_code.discount, self.total_amount)
+                self.final_amount -= self.promo_discount
 
         super().save(*args, **kwargs)
 
@@ -297,6 +336,14 @@ class Order(models.Model):
     def __str__(self):
         return f"Order {self.order_number} ({self.get_order_status_display()})"
 
+    def get_total_amount(self):
+        """计算订单总金额（含运费和增值税）"""
+        TWO_PLACES = Decimal('0.01')
+        subtotal = sum(item.item_subtotal for item in self.items.all())
+        shipping = Decimal('0') if subtotal >= Decimal('30') else Decimal('5')
+        vat = subtotal * Decimal('0.05')
+        return (subtotal + shipping + vat).quantize(TWO_PLACES)
+
 
 # 订单项
 class OrderItem(models.Model):
@@ -304,13 +351,13 @@ class OrderItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2)  # 下单时的价格
-    subtotal = models.DecimalField(max_digits=10, decimal_places=2)
+    item_subtotal = models.DecimalField(max_digits=10, decimal_places=2)
 
     def save(self, *args, **kwargs):
         # 保存下单时的价格和小计
         if not self.price:
             self.price = self.product.price
-        self.subtotal = self.price * self.quantity
+        self.item_subtotal = self.price * Decimal(str(self.quantity))
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -331,14 +378,18 @@ class HistoryNew(models.Model):
         ('wallet_purchase', '钱包消费'),
         ('points_earned', '获得积分'),
         ('points_used', '使用积分'),
+        ('promo_code_used', '使用优惠码'),  # 新增：优惠码使用记录
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='history')
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True, blank=True, related_name='history')
+    order = models.ForeignKey(Order, on_delete=models.SET_NULL, null=True, blank=True, related_name='history')
     history_type = models.CharField(max_length=32, choices=HISTORY_TYPE_CHOICES)
     amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # 涉及金额
     points = models.IntegerField(null=True, blank=True)  # 涉及积分
     details = models.TextField(blank=True, null=True)  # 详细信息
+    promo_code = models.ForeignKey('PromoCode', on_delete=models.SET_NULL, null=True, blank=True)  # 新增：关联优惠码
+    original_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # 新增：优惠前金额
+    final_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)    # 新增：优惠后金额
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -351,6 +402,25 @@ class HistoryNew(models.Model):
 
 
 # old
+# 优惠券
+class Coupon(models.Model):
+    wallet = models.ForeignKey('Wallet', on_delete=models.CASCADE, null=True, blank=True, related_name='coupons')
+    code = models.CharField(max_length=10, unique=True)
+    discount = models.DecimalField(max_digits=6, decimal_places=2, validators=[MinValueValidator(0.01)])
+    expiry_date = models.DateField(null=True, blank=True)
+    min_order_value = models.DecimalField(max_digits=6, decimal_places=2, default=10.00, validators=[MinValueValidator(0.01)])
+    max_activations = models.IntegerField(default=5, validators=[MinValueValidator(1), MaxValueValidator(50)])
+    created_time = models.DateTimeField(default=timezone.now)
+    status = models.CharField(max_length=32, choices=[('active', 'active'), ('used', 'used'), ('expired', 'expired')], default='active')
+
+    def is_valid(self):
+        """Check if the coupon is valid for a specific user"""
+        return self.status == 'active' and self.expiry_date >= timezone.now().date()
+
+    def __str__(self):
+        return f"Coupon {self.code} - {self.status}"
+
+
 class Customer(models.Model):
     name = models.CharField(max_length=50)
     email = models.EmailField()

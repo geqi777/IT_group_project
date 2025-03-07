@@ -1,5 +1,6 @@
 {% extends 'layout.html' %}
 {% load static %}
+{% load custom_filters %}
 
 {% block content %}
 <div class="container py-5">
@@ -130,7 +131,7 @@
                     {% if order.points_used > 0 %}
                     <div class="mb-3">
                         <strong>积分抵扣：</strong>
-                        <span class="float-end">-£{{ order.points_used|multiply:0.01 }}</span>
+                        <span class="float-end">-£{{ order.points_value }}</span>
                     </div>
                     {% endif %}
                     {% if order.coupon %}

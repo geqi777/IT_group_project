@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django import forms
 from main_system import models
 from django.core.exceptions import ValidationError
@@ -352,14 +353,35 @@ class WalletTransaction_ModelForm(BoostrapModelForm):
             "wallet",
             "transaction_type",
             "amount",
+            "order",
+            "promo_code",
+            "original_amount",
+            "final_amount",
+            # "timestamp"
         ]
         widgets = {
+            "wallet": forms.Select(attrs={'class': 'form-control', 'disabled': 'disabled'}),
             "transaction_type": forms.Select(attrs={'class': 'form-control', 'disabled': 'disabled'}),
             'amount': forms.NumberInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
-            "timestamp": forms.DateInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+            'original_amount': forms.NumberInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+            'final_amount': forms.NumberInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+            # "timestamp": forms.DateTimeInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+            "order": forms.Select(attrs={'class': 'form-control', 'disabled': 'disabled'}),
+            "promo_code": forms.Select(attrs={'class': 'form-control', 'disabled': 'disabled'})
+        }
+        labels = {
+            'wallet': '钱包',
+            'transaction_type': '交易类型',
+            'amount': '交易金额',
+            'original_amount': '原始金额',
+            'final_amount': '最终金额',
+            # 'timestamp': '交易时间',
+            'order': '关联订单',
+            'promo_code': '优惠码'
         }
 
 
+# 订单
 class Order_ModelForm(BoostrapModelForm):
     class Meta:
         model = models.Order
@@ -374,6 +396,64 @@ class OrderItem_ModelForm(BoostrapModelForm):
         fields = ['quantity']
 
 
+# 优惠码
+class PromoCode_ModelForm(BoostrapModelForm):
+    class Meta:
+        model = models.PromoCode
+        fields = ['code', 'discount', 'min_order_value', 'expiry_date', 'description', 'status']
+        widgets = {
+            'code': forms.TextInput(),
+            'discount': forms.NumberInput(attrs={'min': '0.01', 'step': '0.01'}),
+            'min_order_value': forms.NumberInput(attrs={'min': '0.01', 'step': '0.01'}),
+            'expiry_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'description': forms.Textarea(attrs={'rows': 3}),
+            'status': forms.Select(choices=[('active', 'active'), ('inactive', 'inactive'), ('expired', 'expired')], attrs={'class': 'form-select'})
+        }
+        labels = {
+            'code': '优惠码',
+            'discount': '折扣金额',
+            'min_order_value': '最低订单金额',
+            'expiry_date': '过期日期',
+            'description': '描述',
+            'status': '状态'
+        }
+
+    def clean_expiry_date(self):
+        expiry_date = self.cleaned_data.get('expiry_date')
+        if expiry_date and expiry_date < timezone.now():
+            raise ValidationError('过期日期不能早于当前时间')
+        return expiry_date
+
+
+class PromoCode_EditForm(BoostrapModelForm):
+    """优惠码编辑表单"""
+    class Meta:
+        model = models.PromoCode
+        fields = ['code', 'discount', 'min_order_value', 'expiry_date', 'description', 'status']
+        widgets = {
+            'code': forms.TextInput(attrs={'readonly': 'readonly'}),  # 编辑时code只读
+            'discount': forms.NumberInput(attrs={'min': '0.01', 'step': '0.01'}),
+            'min_order_value': forms.NumberInput(attrs={'min': '0.01', 'step': '0.01'}),
+            'expiry_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'description': forms.Textarea(attrs={'rows': 3}),
+            'status': forms.Select(choices=[('active', 'active'), ('inactive', 'inactive'), ('expired', 'expired')], attrs={'class': 'form-select'})
+        }
+        labels = {
+            'code': '优惠码',
+            'discount': '折扣金额',
+            'min_order_value': '最低订单金额',
+            'expiry_date': '过期日期',
+            'description': '描述',
+            'status': '状态'
+        }
+
+    def clean_expiry_date(self):
+        expiry_date = self.cleaned_data.get('expiry_date')
+        if expiry_date and expiry_date < timezone.now():
+            raise ValidationError('过期日期不能早于当前时间')
+        return expiry_date 
+
+    
 
 # old
 class Employee_ModelForm(BoostrapModelForm):

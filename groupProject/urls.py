@@ -24,7 +24,7 @@ from main_system.views import admin_login, user_login
 from main_system.views.customer import customer_register, customer_verify, customer_wallet
 from main_system.views import department, employee, vehicle, login, home_page, manager, customer, maps
 from main_system.views.customer import customer_register
-from main_system.views import operator, user, product, cart, order
+from main_system.views import operator, user, product, cart, order, promo_code
 from main_system.views.order import order_detail
 
 urlpatterns = [
@@ -75,14 +75,25 @@ urlpatterns = [
     path("customer/cart/<int:product_id>/add/", cart.cart_add),
     path("customer/cart/<int:cart_item_id>/edit/", cart.cart_edit),
     path("customer/cart/<int:cart_item_id>/delete/", cart.cart_delete),
-    path("customer/checkout/", cart.checkout),
+    path("customer/cart/checkout/", cart.checkout),
 
     # Order
     path('customer/order/', order.order_list),
-    path('customer/order/<int:order_id>/', order.order_detail),
+    path('customer/order/<int:order_id>/detail/', order.order_detail),
+    path('customer/order/<int:order_id>/shipping/', order.shipping),  # 新增：配送信息页面
+    path('customer/order/<int:order_id>/payment/', order.payment),  # 新增：支付页面
     path('customer/order/history/', order.history_list),
-    path('operator/orders/', order.admin_order_list),
+    path('operator/orders/list/', order.admin_order_list),
     path('operator/orders/<int:order_id>/update-status/', order.update_order_status),
+
+    # Promo Code
+    path('operator/promo-codes/list', promo_code.promo_code_list),
+    path('operator/promo-codes/list/add/', promo_code.promo_code_add),
+    path('operator/promo-codes/list/<int:code_id>/edit/', promo_code.promo_code_edit),
+    path('operator/promo-codes/list/<int:code_id>/delete/', promo_code.promo_code_delete),
+    
+    # API
+    path('api/apply-promo-code/', promo_code.apply_promo_code),
 
 
     # Employee_login
@@ -90,7 +101,7 @@ urlpatterns = [
     # Employee_logout
     path('logout/', login.logout),
 
-
+    # old
     # department system
     path('operation/department/list/', department.department_list),
     path('operation/department/list/add/', department.department_add),

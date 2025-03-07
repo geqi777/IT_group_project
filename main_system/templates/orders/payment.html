@@ -1,0 +1,118 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">选择支付方式</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <div class="form-check mb-3">
+                                <input type="radio" class="form-check-input" id="wallet" name="payment_method" value="wallet" {% if user.wallet.balance < order.final_amount %}disabled{% endif %}>
+                                <label class="form-check-label" for="wallet">
+                                    钱包支付 (余额：£{{ user.wallet.balance }})
+                                    {% if user.wallet.balance < order.final_amount %}
+                                    <small class="text-danger">余额不足</small>
+                                    {% endif %}
+                                </label>
+                            </div>
+
+                            <div class="form-check mb-3">
+                                <input type="radio" class="form-check-input" id="points" name="payment_method" value="points" {% if not can_use_points %}disabled{% endif %}>
+                                <label class="form-check-label" for="points">
+                                    积分支付 (当前积分：{{ user.wallet.points }})
+                                    {% if can_use_points %}
+                                    <small class="text-muted">需要{{ points_needed }}积分</small>
+                                    {% else %}
+                                    <small class="text-danger">积分不足，需要{{ points_needed }}积分</small>
+                                    {% endif %}
+                                </label>
+                            </div>
+
+                            <div class="form-check mb-3">
+                                <input type="radio" class="form-check-input" id="card" name="payment_method" value="card">
+                                <label class="form-check-label" for="card">银行卡支付</label>
+                            </div>
+                        </div>
+
+                        <div id="card_details" class="mb-4" style="display: none;">
+                            <h5>卡片信息</h5>
+                            <div class="mb-3">
+                                <label for="card_number" class="form-label">卡号</label>
+                                <input type="text" class="form-control" id="card_number" name="card_number">
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="expiry_date" class="form-label">有效期</label>
+                                    <input type="text" class="form-control" id="expiry_date" name="expiry_date" placeholder="MM/YY">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="cvv" class="form-label">CVV</label>
+                                    <input type="text" class="form-control" id="cvv" name="cvv">
+                                </div>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input type="checkbox" class="form-check-input" id="save_card" name="save_card">
+                                <label class="form-check-label" for="save_card">保存卡片信息</label>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">确认支付</button>
+                            <a href="/customer/order/{{order.id}}/detail/" class="btn btn-outline-secondary">返回订单详情</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">订单摘要</h5>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>商品小计</span>
+                        <span>£{{ order.total_amount }}</span>
+                    </div>
+                    {% if order.promo_code %}
+                    <div class="d-flex justify-content-between mb-2 text-success">
+                        <span>优惠码折扣</span>
+                        <span>-£{{ order.promo_discount }}</span>
+                    </div>
+                    {% endif %}
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <strong>应付金额</strong>
+                        <strong>£{{ order.final_amount }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const cardDetails = document.getElementById('card_details');
+    const paymentMethods = document.getElementsByName('payment_method');
+    
+    paymentMethods.forEach(method => {
+        method.addEventListener('change', function() {
+            if (this.value === 'card') {
+                cardDetails.style.display = 'block';
+            } else {
+                cardDetails.style.display = 'none';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+{% endblock %} 

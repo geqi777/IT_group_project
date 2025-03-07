@@ -38,9 +38,9 @@
                         <td>£{{ order.final_amount }}</td>
                         <td>{{ order.timestamp|date:"Y-m-d H:i" }}</td>
                         <td>
-                            <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-primary">查看详情</a>
+                            <a href="/customer/order/{{ order_id }}/detail/" class="btn btn-sm btn-primary">查看详情</a>
                             {% if order.order_status == 'pending' %}
-                                <form action="{% url 'order_detail' order.id %}" method="post" class="d-inline">
+                                <form action="/customer/order/{{ order_id }}/detail/" method="post" class="d-inline">
                                     {% csrf_token %}
                                     <input type="hidden" name="action" value="cancel">
                                     <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('确定要取消订单吗？')">取消订单</button>
