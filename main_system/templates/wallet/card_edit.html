@@ -1,0 +1,99 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm rounded-3 border-0">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="mb-0">编辑支付卡</h4>
+                        <a href="/customer/wallet/cards/" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>返回列表
+                        </a>
+                    </div>
+
+                    <form method="POST" id="edit-card-form" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- 卡片昵称 -->
+                        <div class="mb-3">
+                            <label for="nickname" class="form-label">卡片昵称</label>
+                            <input type="text" class="form-control" id="nickname" name="nickname" value="{{ card.nickname|default:'' }}" placeholder="为您的卡片取个名字">
+                        </div>
+
+                        <!-- 卡号（只读） -->
+                        <div class="mb-3">
+                            <label for="card_number" class="form-label">卡号</label>
+                            <input type="text" class="form-control" value="**** **** **** {{ card.card_number|slice:'-4:' }}" readonly disabled>
+                            <small class="text-muted">出于安全考虑，卡号无法修改</small>
+                        </div>
+
+                        <!-- 有效期 -->
+                        <div class="mb-3">
+                            <label for="expiry_date" class="form-label">有效期 (MM/YY)</label>
+                            <input type="text" class="form-control" id="expiry_date" name="expiry_date" value="{{ card.expiry_date }}" required pattern="\d{2}/\d{2}" placeholder="MM/YY">
+                            <div class="invalid-feedback">请输入有效的有效期 (MM/YY)</div>
+                        </div>
+
+                        <!-- 账单地址 -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="country" class="form-label">国家</label>
+                                <input type="text" class="form-control" id="country" name="country" value="{{ card.country }}" required placeholder="账单地址所在国家">
+                                <div class="invalid-feedback">请输入国家</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="postcode" class="form-label">邮编</label>
+                                <input type="text" class="form-control" id="postcode" name="postcode" value="{{ card.postcode }}" required placeholder="账单地址邮编">
+                                <div class="invalid-feedback">请输入邮编</div>
+                            </div>
+                        </div>
+
+                        <!-- 提交按钮 -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>保存修改
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('edit-card-form');
+    
+    // 表单验证
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    });
+    
+    // 格式化有效期输入
+    const expiryDate = document.getElementById('expiry_date');
+    expiryDate.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 4) value = value.slice(0, 4);
+        if (value.length > 2) {
+            value = value.slice(0, 2) + '/' + value.slice(2);
+        }
+        e.target.value = value;
+    });
+    
+    // 邮编格式化（根据国家可以添加不同的格式验证）
+    const postcode = document.getElementById('postcode');
+    postcode.addEventListener('input', function(e) {
+        let value = e.target.value.toUpperCase();
+        e.target.value = value;
+    });
+});
+</script>
+{% endblock %} 

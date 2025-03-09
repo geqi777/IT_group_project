@@ -9,15 +9,41 @@
             <div class="card shadow-sm rounded-3 border-0 mb-4">
                 <div class="card-body p-4">
                     <h4 class="mb-4">配送信息</h4>
-                    <form method="POST" action="/customer/order/{{order.id}}/shipping/">
+                    <form method="POST" action="/customer/order/{{order.id}}/shipping/" id="shipping-form">
                         {% csrf_token %}
+                        
+                        <!-- 联系人信息 -->
+                        <div class="mb-4">
+                            <h5 class="mb-3">联系人信息</h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="first_name" class="form-label">名字</label>
+                                    <input type="text" class="form-control" id="first_name" name="first_name" value="{{ user.first_name }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="last_name" class="form-label">姓氏</label>
+                                    <input type="text" class="form-control" id="last_name" name="last_name" value="{{ user.last_name }}" required>
+                                </div>
+                                <div class="col-12">
+                                    <label for="email" class="form-label">电子邮箱</label>
+                                    <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- 地址选择部分 -->
                         <div class="mb-4">
+                            <h5 class="mb-3">配送地址</h5>
                             <div class="form-check mb-3">
                                 <input class="form-check-input" type="radio" name="address_choice" id="existing_address" value="existing" {% if user.address %}checked{% endif %}>
                                 <label class="form-check-label" for="existing_address">
                                     使用已保存的地址
                                 </label>
+                                {% if user.address %}
+                                <div class="mt-2 ms-4 text-muted">
+                                    {{ user.address }}
+                                </div>
+                                {% endif %}
                             </div>
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="address_choice" id="new_address" value="new" {% if not user.address %}checked{% endif %}>
@@ -35,21 +61,18 @@
                                         详细地址 <span class="text-danger">*</span>
                                     </label>
                                     <input type="text" class="form-control" id="shipping_address" name="shipping_address" required>
-                                    <div class="invalid-feedback">请输入详细地址</div>
                                 </div>
                                 <div class="col-md-6">
                                     <label for="city" class="form-label">
                                         城市 <span class="text-danger">*</span>
                                     </label>
                                     <input type="text" class="form-control" id="city" name="city" required>
-                                    <div class="invalid-feedback">请输入城市</div>
                                 </div>
                                 <div class="col-md-6">
                                     <label for="postcode" class="form-label">
                                         邮编 <span class="text-danger">*</span>
                                     </label>
                                     <input type="text" class="form-control" id="postcode" name="postcode" required>
-                                    <div class="invalid-feedback">请输入邮编</div>
                                 </div>
                                 <div class="col-12">
                                     <label for="country" class="form-label">
@@ -61,31 +84,39 @@
                                         <option value="US">United States</option>
                                         <option value="CN">China</option>
                                     </select>
-                                    <div class="invalid-feedback">请选择国家/地区</div>
                                 </div>
                             </div>
-                            <div class="form-check mb-3">
+                            <div class="form-check mt-3">
                                 <input type="checkbox" class="form-check-input" id="save_info" name="save_info">
                                 <label class="form-check-label" for="save_info">保存为默认地址</label>
                             </div>
                         </div>
 
                         <!-- 订阅选项 -->
-                        <div class="form-check mb-4">
+                        <div class="form-check mt-4">
                             <input type="checkbox" class="form-check-input" id="newsletter" name="newsletter">
                             <label class="form-check-label" for="newsletter">订阅我们的新闻和优惠信息</label>
                         </div>
 
-                        <!-- 按钮组 -->
-                        <div class="d-flex justify-content-between mt-4">
-                            <button type="submit" name="action" value="cancel" class="btn btn-outline-secondary btn-lg px-4">
-                                <i class="fas fa-arrow-left me-2"></i>返回购物车
-                            </button>
-                            <button type="submit" class="btn btn-primary btn-lg px-4">
+                        <!-- 继续支付按钮 -->
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <div></div> <!-- 占位，确保继续支付按钮在右侧 -->
+                            <button type="submit" name="action" value="continue" class="btn btn-primary">
                                 继续支付<i class="fas fa-arrow-right ms-2"></i>
                             </button>
                         </div>
                     </form>
+
+                    <!-- 按钮组容器 -->
+                    <div class="d-flex justify-content-between align-items-center" style="margin-top: -38px;">
+                        <!-- 返回购物车按钮 -->
+                        <form action="/customer/order/{{order.id}}/shipping/" method="post">
+                            {% csrf_token %}
+                            <button type="submit" name="action" value="cancel" class="btn btn-outline-secondary" formnovalidate>
+                                <i class="fas fa-arrow-left me-2"></i>返回购物车
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -128,26 +159,26 @@
                     <!-- Order Summary -->
                     <div class="d-flex justify-content-between mb-3">
                         <span class="text-muted">商品小计</span>
-                        <span class="fw-bold">£{{ order.subtotal_amount }}</span>
+                        <span class="fw-bold">£{{ order.subtotal_amount|floatformat:2 }}</span>
                     </div>
                     <div class="d-flex justify-content-between mb-3">
                         <span class="text-muted">运费</span>
-                        <span class="fw-bold">{% if order.shipping_fee > 0 %}£{{ order.shipping_fee }}{% else %}免运费{% endif %}</span>
+                        <span class="fw-bold">{% if order.shipping_fee > 0 %}£{{ order.shipping_fee|floatformat:2 }}{% else %}免运费{% endif %}</span>
                     </div>
                     <div class="d-flex justify-content-between mb-3">
                         <span class="text-muted">增值税 (5%)</span>
-                        <span class="fw-bold">£{{ order.vat }}</span>
+                        <span class="fw-bold">£{{ order.vat|floatformat:2 }}</span>
                     </div>
                     {% if order.promo_discount %}
                     <div class="d-flex justify-content-between mb-3 text-success">
                         <span>优惠折扣</span>
-                        <span>-£{{ order.promo_discount }}</span>
+                        <span>-£{{ order.promo_discount|floatformat:2 }}</span>
                     </div>
                     {% endif %}
                     <hr class="my-4">
                     <div class="d-flex justify-content-between">
                         <span class="fw-bold">总计</span>
-                        <span class="fw-bold fs-5">£{{ order.total_amount }}</span>
+                        <span class="fw-bold fs-5">£{{ order.total_amount|floatformat:2 }}</span>
                     </div>
                 </div>
             </div>
@@ -185,18 +216,20 @@ document.addEventListener('DOMContentLoaded', function() {
     // 地址选择切换
     const addressChoice = document.getElementsByName('address_choice');
     const newAddressForm = document.getElementById('new_address_form');
+    const newAddressInputs = newAddressForm.querySelectorAll('input:not([type="checkbox"]), select');
     
-    if (addressChoice.length > 0) {
-        addressChoice.forEach(function(radio) {
-            radio.addEventListener('change', function() {
-                if (this.value === 'new') {
-                    newAddressForm.style.display = 'block';
-                } else {
-                    newAddressForm.style.display = 'none';
-                }
-            });
+    function toggleNewAddressForm(showNewAddress) {
+        newAddressForm.style.display = showNewAddress ? 'block' : 'none';
+        newAddressInputs.forEach(input => {
+            input.required = showNewAddress;
         });
     }
+    
+    addressChoice.forEach(function(radio) {
+        radio.addEventListener('change', function() {
+            toggleNewAddressForm(this.value === 'new');
+        });
+    });
 
     // 表单验证
     const form = document.getElementById('shipping-form');
@@ -217,19 +250,32 @@ function applyPromoCode() {
         return;
     }
 
-    fetch(`/api/apply-promo-code/`, {
+    fetch('/api/apply-promo-code/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
         },
         body: JSON.stringify({
+            order_id: '{{order.id}}',
             promo_code: promoCode
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('网络请求失败');
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
+            // 更新页面上的金额显示
+            const discountElement = document.querySelector('.text-success .fw-bold');
+            if (discountElement) {
+                discountElement.textContent = `-£${data.discount}`;
+            }
+            document.querySelector('.fw-bold.fs-5').textContent = `£${data.final_amount}`;
+            alert('优惠码应用成功！');
             location.reload();  // 刷新页面显示新的金额
         } else {
             alert(data.message || '优惠码无效');
@@ -237,7 +283,7 @@ function applyPromoCode() {
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('应用优惠码时出错');
+        alert('应用优惠码时出错：' + error.message);
     });
 }
 </script>

@@ -16,27 +16,37 @@ from main_system.views.order import create_order
 def cart_view(request):
     """购物车页面"""
     # 检查用户是否登录
-    user_info = request.session.get('info')
+    user_info = request.session.get('customer_info')
+    print("购物车页面 - Session信息:", request.session.items())  # 添加调试信息
+    
     if not user_info:
+        print("购物车页面 - 未找到用户信息，重定向到登录页面")  # 添加调试信息
         messages.error(request, '请先登录')
         return redirect('/customer/login/')
     
+    print("购物车页面 - 用户信息:", user_info)  # 添加调试信息
+    
     # 获取用户的购物车
     user = User.objects.filter(id=user_info['user_id']).first()
+    if not user:
+        print("购物车页面 - 用户不存在，重定向到注册页面")  # 添加调试信息
+        messages.error(request, '用户不存在')
+        return redirect('/customer/register/')
+        
     cart = Cart.objects.filter(user=user).first()
-    
     if not cart:
         cart = Cart.objects.create(user=user)
     
     return render(request, 'cart/cart_view.html', {
-        'cart': cart
+        'cart': cart,
+        'user_info': user_info  # 传递用户信息到模板
     })
 
 
 def cart_add(request, product_id):
     """添加商品到购物车"""
     # 检查用户是否登录
-    user_info = request.session.get('info')
+    user_info = request.session.get('customer_info')
     if not user_info:
         messages.error(request, '请先登录')
         return redirect('/customer/login/')
@@ -54,6 +64,10 @@ def cart_add(request, product_id):
         
         # 获取或创建购物车
         user = User.objects.filter(id=user_info['user_id']).first()
+        if not user:
+            messages.error(request, '用户不存在')
+            return redirect('/customer/register/')
+            
         cart = Cart.objects.filter(user=user).first()
         if not cart:
             cart = Cart.objects.create(user=user)
@@ -95,7 +109,7 @@ def cart_add(request, product_id):
 def cart_edit(request, cart_item_id):
     """编辑购物车商品数量"""
     # 检查用户是否登录
-    user_info = request.session.get('info')
+    user_info = request.session.get('customer_info')
     if not user_info:
         messages.error(request, '请先登录')
         return redirect('/customer/login/')
@@ -136,7 +150,7 @@ def cart_edit(request, cart_item_id):
 def cart_delete(request, cart_item_id):
     """删除购物车商品"""
     # 检查用户是否登录
-    user_info = request.session.get('info')
+    user_info = request.session.get('customer_info')
     if not user_info:
         messages.error(request, '请先登录')
         return redirect('/customer/login/')
@@ -165,7 +179,7 @@ def cart_delete(request, cart_item_id):
 def checkout(request):
     """从购物车创建订单并跳转到配送信息页面"""
     # 检查用户是否登录
-    user_info = request.session.get('info')
+    user_info = request.session.get('customer_info')
     if not user_info:
         messages.error(request, '请先登录')
         return redirect('/customer/login/')

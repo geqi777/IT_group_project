@@ -4,92 +4,158 @@
 {% block content %}
 <div class="container py-5">
     <div class="row">
+        <!-- 左侧支付表单 -->
         <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">选择支付方式</h5>
-                </div>
-                <div class="card-body">
-                    <form method="post">
+            <div class="card shadow-sm rounded-3 border-0 mb-4">
+                <div class="card-body p-4">
+                    <h4 class="mb-4">选择支付方式</h4>
+                    <form method="POST" action="/customer/order/{{order.id}}/payment/" id="payment-form" class="needs-validation" novalidate>
                         {% csrf_token %}
+                        
+                        <!-- 支付方式选择 -->
                         <div class="mb-4">
                             <div class="form-check mb-3">
-                                <input type="radio" class="form-check-input" id="wallet" name="payment_method" value="wallet" {% if user.wallet.balance < order.final_amount %}disabled{% endif %}>
+                                <input class="form-check-input" type="radio" name="payment_method" id="wallet" value="wallet" {% if wallet.balance >= order.final_amount %}{% else %}disabled{% endif %}>
                                 <label class="form-check-label" for="wallet">
-                                    钱包支付 (余额：£{{ user.wallet.balance }})
-                                    {% if user.wallet.balance < order.final_amount %}
-                                    <small class="text-danger">余额不足</small>
-                                    {% endif %}
+                                    钱包支付 (余额: £{{ wallet.balance|floatformat:2 }})
+                                    {% if wallet.balance < order.final_amount %}<span class="text-danger">余额不足</span>{% endif %}
                                 </label>
                             </div>
-
                             <div class="form-check mb-3">
-                                <input type="radio" class="form-check-input" id="points" name="payment_method" value="points" {% if not can_use_points %}disabled{% endif %}>
+                                <input class="form-check-input" type="radio" name="payment_method" id="points" value="points" {% if can_use_points %}{% else %}disabled{% endif %}>
                                 <label class="form-check-label" for="points">
-                                    积分支付 (当前积分：{{ user.wallet.points }})
-                                    {% if can_use_points %}
-                                    <small class="text-muted">需要{{ points_needed }}积分</small>
-                                    {% else %}
-                                    <small class="text-danger">积分不足，需要{{ points_needed }}积分</small>
-                                    {% endif %}
+                                    积分支付 (当前积分: {{ wallet.points }})
+                                    {% if not can_use_points %}<span class="text-danger">积分不足，需要{{ points_needed }}积分</span>{% endif %}
                                 </label>
                             </div>
-
-                            <div class="form-check mb-3">
-                                <input type="radio" class="form-check-input" id="card" name="payment_method" value="card">
-                                <label class="form-check-label" for="card">银行卡支付</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method" id="card" value="card" checked>
+                                <label class="form-check-label" for="card">
+                                    银行卡支付
+                                </label>
                             </div>
                         </div>
 
-                        <div id="card_details" class="mb-4" style="display: none;">
-                            <h5>卡片信息</h5>
+                        <!-- 已保存的卡片选择 -->
+                        <div id="saved-cards" class="mt-4" style="display: none;">
+                            <h5 class="mb-3">选择已保存的卡片</h5>
+                            {% if saved_cards %}
+                            <div class="mb-3">
+                                <select class="form-select" id="saved_card_id" name="saved_card_id">
+                                    <option value="">使用新卡片</option>
+                                    {% for card in saved_cards %}
+                                    <option value="{{ card.id }}">{{ card.nickname|default:"未命名卡片" }} (**** **** **** {{ card.card_number|slice:"-4:" }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- 卡片信息 -->
+                        <div id="card-info" class="mt-4">
+                            <h5 class="mb-3">卡片信息</h5>
+                            <div class="mb-3">
+                                <label for="nickname" class="form-label">卡片昵称</label>
+                                <input type="text" class="form-control" id="nickname" name="nickname" placeholder="为您的卡片取个名字">
+                            </div>
                             <div class="mb-3">
                                 <label for="card_number" class="form-label">卡号</label>
-                                <input type="text" class="form-control" id="card_number" name="card_number">
+                                <input type="text" class="form-control" id="card_number" name="card_number" required maxlength="19" placeholder="16位卡号">
+                                <div class="invalid-feedback">请输入有效的16位卡号</div>
                             </div>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="expiry_date" class="form-label">有效期</label>
-                                    <input type="text" class="form-control" id="expiry_date" name="expiry_date" placeholder="MM/YY">
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label for="expiry_date" class="form-label">有效期 (MM/YY)</label>
+                                    <input type="text" class="form-control" id="expiry_date" name="expiry_date" required pattern="\d{2}/\d{2}" placeholder="MM/YY">
+                                    <div class="invalid-feedback">请输入有效的有效期 (MM/YY)</div>
                                 </div>
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-6">
                                     <label for="cvv" class="form-label">CVV</label>
-                                    <input type="text" class="form-control" id="cvv" name="cvv">
+                                    <input type="text" class="form-control" id="cvv" name="cvv" required pattern="\d{3}" placeholder="3位安全码">
+                                    <div class="invalid-feedback">请输入有效的3位CVV码</div>
+                                </div>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label for="country" class="form-label">国家</label>
+                                    <input type="text" class="form-control" id="country" name="country" required placeholder="账单地址所在国家">
+                                    <div class="invalid-feedback">请输入国家</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="postcode" class="form-label">邮编</label>
+                                    <input type="text" class="form-control" id="postcode" name="postcode" required placeholder="账单地址邮编">
+                                    <div class="invalid-feedback">请输入邮编</div>
                                 </div>
                             </div>
                             <div class="form-check mb-3">
                                 <input type="checkbox" class="form-check-input" id="save_card" name="save_card">
-                                <label class="form-check-label" for="save_card">保存卡片信息</label>
+                                <label class="form-check-label" for="save_card">保存卡片信息以便下次使用</label>
                             </div>
                         </div>
 
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">确认支付</button>
-                            <a href="/customer/order/{{order.id}}/detail/" class="btn btn-outline-secondary">返回订单详情</a>
+                        <!-- 按钮组 -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="/customer/order/{{order.id}}/shipping/" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Return to Shipping
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                确认支付<i class="fas fa-arrow-right ms-2"></i>
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
 
+        <!-- 右侧订单摘要 -->
         <div class="col-md-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">订单摘要</h5>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>商品小计</span>
-                        <span>£{{ order.total_amount }}</span>
+            <div class="card shadow-sm rounded-3 border-0">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-4">订单摘要</h5>
+                    
+                    <!-- 商品列表 -->
+                    {% for item in order.items.all %}
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-shrink-0">
+                            {% if item.product.picture %}
+                            <img src="{{ item.product.picture.url }}" alt="{{ item.product.name }}" style="width: 60px; height: 60px; object-fit: cover;" class="rounded">
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-0">{{ item.product.name }}</h6>
+                            <small class="text-muted">数量: {{ item.quantity }}</small>
+                            <div class="text-end">
+                                <span class="fw-bold">£{{ item.item_subtotal|floatformat:2 }}</span>
+                            </div>
+                        </div>
                     </div>
-                    {% if order.promo_code %}
-                    <div class="d-flex justify-content-between mb-2 text-success">
-                        <span>优惠码折扣</span>
-                        <span>-£{{ order.promo_discount }}</span>
+                    {% endfor %}
+
+                    <hr class="my-3">
+
+                    <!-- 金额明细 -->
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">商品小计</span>
+                        <span class="fw-bold">£{{ order.subtotal_amount|floatformat:2 }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">运费</span>
+                        <span class="fw-bold">{% if order.shipping_fee > 0 %}£{{ order.shipping_fee|floatformat:2 }}{% else %}免运费{% endif %}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">增值税 (5%)</span>
+                        <span class="fw-bold">£{{ order.vat|floatformat:2 }}</span>
+                    </div>
+                    {% if order.promo_discount > 0 %}
+                    <div class="d-flex justify-content-between mb-3 text-success">
+                        <span>优惠折扣</span>
+                        <span>-£{{ order.promo_discount|floatformat:2 }}</span>
                     </div>
                     {% endif %}
-                    <hr>
+                    <hr class="my-4">
                     <div class="d-flex justify-content-between">
-                        <strong>应付金额</strong>
-                        <strong>£{{ order.final_amount }}</strong>
+                        <span class="fw-bold">应付金额</span>
+                        <span class="fw-bold fs-5">£{{ order.final_amount|floatformat:2 }}</span>
                     </div>
                 </div>
             </div>
@@ -97,22 +163,138 @@
     </div>
 </div>
 
-{% block extra_js %}
+<style>
+.form-control:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+.card {
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.form-check-input:disabled + .form-check-label {
+    opacity: 0.65;
+}
+</style>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const cardDetails = document.getElementById('card_details');
+    const paymentForm = document.getElementById('payment-form');
+    const cardInfo = document.getElementById('card-info');
+    const savedCards = document.getElementById('saved-cards');
     const paymentMethods = document.getElementsByName('payment_method');
+    const savedCardSelect = document.getElementById('saved_card_id');
     
-    paymentMethods.forEach(method => {
-        method.addEventListener('change', function() {
-            if (this.value === 'card') {
-                cardDetails.style.display = 'block';
-            } else {
-                cardDetails.style.display = 'none';
-            }
+    // 根据支付方式显示/隐藏卡片信息
+    function toggleCardInfo() {
+        const selectedMethod = document.querySelector('input[name="payment_method"]:checked').value;
+        const isCardPayment = selectedMethod === 'card';
+        
+        savedCards.style.display = isCardPayment ? 'block' : 'none';
+        cardInfo.style.display = isCardPayment ? 'block' : 'none';
+        
+        // 根据支付方式设置必填字段
+        const cardInputs = cardInfo.querySelectorAll('input[required]');
+        cardInputs.forEach(input => {
+            input.required = isCardPayment && (!savedCardSelect || savedCardSelect.value === '');
         });
+    }
+    
+    // 监听支付方式变化
+    paymentMethods.forEach(method => {
+        method.addEventListener('change', toggleCardInfo);
+    });
+    
+    // 监听已保存卡片选择变化
+    if (savedCardSelect) {
+        savedCardSelect.addEventListener('change', function() {
+            const useNewCard = this.value === '';
+            const cardInputs = cardInfo.querySelectorAll('input');
+            cardInputs.forEach(input => {
+                input.disabled = !useNewCard;
+                if (input.hasAttribute('required')) {
+                    input.required = useNewCard;
+                }
+            });
+            cardInfo.style.opacity = useNewCard ? '1' : '0.5';
+        });
+    }
+    
+    // 初始化表单状态
+    toggleCardInfo();
+    
+    // 表单验证
+    paymentForm.addEventListener('submit', function(event) {
+        if (!paymentForm.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        } else {
+            // 在提交前移除卡号中的空格
+            const cardNumber = document.getElementById('card_number');
+            if (cardNumber && cardNumber.value) {
+                cardNumber.value = cardNumber.value.replace(/\s/g, '');
+            }
+        }
+        paymentForm.classList.add('was-validated');
+    });
+    
+    // 格式化卡号输入
+    const cardNumber = document.getElementById('card_number');
+    cardNumber.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 16) value = value.slice(0, 16);
+        // 添加空格分隔
+        value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+        e.target.value = value;
+
+        // 自定义验证
+        if (value.replace(/\s/g, '').length === 16) {
+            this.setCustomValidity('');
+        } else {
+            this.setCustomValidity('请输入16位卡号');
+        }
+    });
+    
+    // 格式化有效期输入
+    const expiryDate = document.getElementById('expiry_date');
+    expiryDate.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 4) value = value.slice(0, 4);
+        if (value.length > 2) {
+            value = value.slice(0, 2) + '/' + value.slice(2);
+        }
+        e.target.value = value;
+    });
+    
+    // 格式化CVV输入
+    const cvv = document.getElementById('cvv');
+    cvv.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 3) value = value.slice(0, 3);
+        e.target.value = value;
+    });
+    
+    // 邮编格式化（根据国家可以添加不同的格式验证）
+    const postcode = document.getElementById('postcode');
+    postcode.addEventListener('input', function(e) {
+        let value = e.target.value.toUpperCase();
+        e.target.value = value;
     });
 });
 </script>
-{% endblock %}
 {% endblock %} 

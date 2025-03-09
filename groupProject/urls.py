@@ -24,7 +24,7 @@ from main_system.views import admin_login, user_login
 from main_system.views.customer import customer_register, customer_verify, customer_wallet
 from main_system.views import department, employee, vehicle, login, home_page, manager, customer, maps
 from main_system.views.customer import customer_register
-from main_system.views import operator, user, product, cart, order, promo_code
+from main_system.views import operator, user, product, cart, order, promo_code, wallet
 from main_system.views.order import order_detail
 
 urlpatterns = [
@@ -83,8 +83,14 @@ urlpatterns = [
     path('customer/order/<int:order_id>/shipping/', order.shipping),  # 新增：配送信息页面
     path('customer/order/<int:order_id>/payment/', order.payment),  # 新增：支付页面
     path('customer/order/history/', order.history_list),
+    path('customer/order/<int:order_id>/cancel/', order.order_cancel),
+    path('customer/order/<int:order_id>/confirm-receipt/', order.order_confirm_receipt),
+    path('customer/order/<int:order_id>/review/', order.order_review),
+    path('customer/order/<int:order_id>/refund/', order.order_return),
+    path('customer/order/<int:order_id>/delete/', order.order_delete),
+
     path('operator/orders/list/', order.admin_order_list),
-    path('operator/orders/<int:order_id>/update-status/', order.update_order_status),
+    path('operator/orders/<int:order_id>/detail/', order.update_order_status),
 
     # Promo Code
     path('operator/promo-codes/list', promo_code.promo_code_list),
@@ -94,6 +100,15 @@ urlpatterns = [
     
     # API
     path('api/apply-promo-code/', promo_code.apply_promo_code),
+
+    # Wallet
+    path('customer/wallet/', wallet.wallet_view),
+    path('customer/wallet/cards/', wallet.payment_card_list),
+    path('customer/wallet/cards/add/', wallet.payment_card_add),
+    path('customer/wallet/cards/<int:card_id>/edit/', wallet.payment_card_edit),
+    path('customer/wallet/cards/<int:card_id>/delete/', wallet.payment_card_delete),
+    path('customer/wallet/wallet-top-up/', wallet.wallet_top_up),
+    path('customer/wallet/transactions/', wallet.transaction_history),
 
 
     # Employee_login

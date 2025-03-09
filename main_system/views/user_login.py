@@ -43,16 +43,23 @@ def user_login(request):
             return render(request, 'login/user_login.html', {'form': form})
 
         # 设置 session 信息
-        request.session['info'] = {
+        request.session['customer_info'] = {
             'user_id': user_obj.id,
             'user_account': user_obj.account,
             'name': user_obj.name,
         }
+        
+        # 设置session过期时间为7天
+        request.session.set_expiry(7 * 24 * 60 * 60)
+        
+        # 确保session被保存
+        request.session.modified = True
 
-        print(request.session['info'])
+        print('用户登录成功:', request.session['customer_info'])
         # if request.session['info']['role'] == 'manager':
         #     return redirect('/operation/manager/page/')
         print('准备跳转到home')
+        
         # 获取来源页面，如果没有则默认跳转到首页
         next_url = request.GET.get('next')
         if next_url:

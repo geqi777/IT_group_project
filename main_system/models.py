@@ -59,7 +59,7 @@ class User(models.Model):
     # wallet = models.OneToOneField('Wallet', on_delete=models.CASCADE, null=True, blank=True)
 
     # User 关联 PaymentCard (1:n)
-    payment_cards = models.ManyToManyField('PaymentCard', blank=True)
+    #payment_cards = models.ManyToManyField('PaymentCard', blank=True)
 
     # User 关联 Coupon (1:n)
     coupons = models.ManyToManyField('Coupon', blank=True)
@@ -113,7 +113,7 @@ class Wallet(models.Model):
 # 钱包交易记录(充值，消费，退款，积分变动，优惠码使用)
 class WalletTransaction(models.Model):
     TRANSACTION_TYPES = [
-        ('topup', 'topup'),
+        ('top_up', 'top up'),
         ('purchase', 'purchase'),
         ('refund', 'refund'),
         ('points_earned', 'points earned'),
@@ -162,7 +162,8 @@ class PromoCode(models.Model):
 
 # 支付卡
 class PaymentCard(models.Model):
-    wallet = models.ForeignKey('Wallet', on_delete=models.CASCADE, null=True, blank=True, related_name='payment_cards')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_payment_cards', null=True)  # 临时允许null
+    wallet = models.ForeignKey('Wallet', on_delete=models.CASCADE, null=True, blank=True, related_name='wallet_cards')
     card_number = models.CharField(max_length=16, unique=True)
     expiry_date = models.CharField(max_length=5)  # Format: MM/YY
     cvv = models.CharField(max_length=4)  # 支持3-4位CVV
@@ -173,6 +174,12 @@ class PaymentCard(models.Model):
 
     def __str__(self):
         return f"{self.nickname or 'Card'} - {self.card_number[-4:]}"
+
+    def save(self, *args, **kwargs):
+        # 确保postcode总是大写存储
+        if self.postcode:
+            self.postcode = self.postcode.upper()
+        super().save(*args, **kwargs)
 
 
 # 商品
@@ -212,8 +219,46 @@ class Product(models.Model):
         # 检查商品是否可用
         return self.status == 'active' and self.stock > 0
 
+    @property
+    def average_rating(self):
+        """获取商品平均评分"""
+        reviews = self.reviews.filter(is_deleted=False)
+        if reviews.exists():
+            return reviews.aggregate(models.Avg('rating'))['rating__avg']
+        return 0
+
+    @property
+    def total_sales(self):
+        """获取商品总销量"""
+        return OrderItem.objects.filter(
+            product=self,
+            order__order_status='completed'
+        ).aggregate(
+            total=models.Sum('quantity')
+        )['total'] or 0
+
     def __str__(self):
         return self.name
+
+
+# 商品评价
+class Review(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
+    order_item = models.OneToOneField('OrderItem', on_delete=models.CASCADE, related_name='review')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
+    rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    comment = models.TextField()
+    created_time = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_time']
+        indexes = [
+            models.Index(fields=['product', '-created_time']),
+            models.Index(fields=['user', '-created_time']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.name}'s review for {self.product.name}"
 
 
 # 购物车
@@ -284,14 +329,17 @@ class Order(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
     order_number = models.CharField(max_length=20, unique=True)  # 订单号
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    shipping_fee = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    vat = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True) 
+    subtotal_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # 商品小计
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # 总金额（含运费和税）
+    shipping_fee = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # 运费
+    vat = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # 增值税
     final_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # 优惠后金额
     order_status = models.CharField(max_length=32, choices=ORDER_STATUS_CHOICES, default='pending')
     payment_method = models.CharField(max_length=32, choices=PAYMENT_METHOD_CHOICES, default='wallet')
     payment_status = models.BooleanField(default=False)  # 支付状态
     shipping_address = models.TextField()  # 收货地址
+    contact_name = models.CharField(max_length=100, null=True, blank=True)  # 联系人姓名
+    contact_email = models.EmailField(null=True, blank=True)  # 联系人邮箱
     payment_card = models.ForeignKey('PaymentCard', on_delete=models.SET_NULL, null=True, blank=True)
     points_used = models.IntegerField(default=0)  # 使用的积分数
     points_earned = models.IntegerField(default=0)  # 获得的积分数
@@ -308,9 +356,21 @@ class Order(models.Model):
         if not self.order_number:
             self.order_number = timezone.now().strftime('%Y%m%d%H%M%S') + str(self.user.id).zfill(4)
 
-        # 计算总金额
+        # 计算商品小计
+        if not self.subtotal_amount:
+            self.subtotal_amount = sum(item.item_subtotal for item in self.items.all())
+
+        # 计算运费
+        if not self.shipping_fee:
+            self.shipping_fee = Decimal('0') if self.subtotal_amount >= Decimal('30') else Decimal('5')
+
+        # 计算增值税
+        if not self.vat:
+            self.vat = (self.subtotal_amount * Decimal('0.05')).quantize(TWO_PLACES)
+
+        # 计算总金额（含运费和税）
         if not self.total_amount:
-            self.total_amount = self.get_total_amount()
+            self.total_amount = (self.subtotal_amount + self.shipping_fee + self.vat).quantize(TWO_PLACES)
 
         # 计算最终金额
         if not self.final_amount:
@@ -318,7 +378,7 @@ class Order(models.Model):
             # 如果使用了优惠码且优惠码有效，应用优惠码折扣
             if self.promo_code and self.promo_code.is_valid():
                 self.promo_discount = min(self.promo_code.discount, self.total_amount)
-                self.final_amount -= self.promo_discount
+                self.final_amount = (self.final_amount - self.promo_discount).quantize(TWO_PLACES)
 
         super().save(*args, **kwargs)
 
@@ -347,14 +407,31 @@ class Order(models.Model):
 
 # 订单项
 class OrderItem(models.Model):
+    RETURN_STATUS_CHOICES = [
+        ('none', '未申请'),
+        ('pending', '待审核'),
+        ('approved', '已批准'),
+        ('rejected', '已拒绝'),
+        ('shipped', '已寄出'),
+        ('received', '已收到'),
+        ('refunded', '已退款')
+    ]
+
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2)  # 下单时的价格
     item_subtotal = models.DecimalField(max_digits=10, decimal_places=2)
 
+    # 退货相关字段
+    return_status = models.CharField(max_length=20, choices=RETURN_STATUS_CHOICES, default='none')
+    return_reason = models.CharField(max_length=50, null=True, blank=True)
+    return_details = models.TextField(null=True, blank=True)
+    return_time = models.DateTimeField(null=True, blank=True)
+    refund_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    refund_time = models.DateTimeField(null=True, blank=True)
+
     def save(self, *args, **kwargs):
-        # 保存下单时的价格和小计
         if not self.price:
             self.price = self.product.price
         self.item_subtotal = self.price * Decimal(str(self.quantity))
@@ -362,6 +439,32 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.quantity} x {self.product.name} in Order {self.order.order_number}"
+
+    def add_review(self, rating, comment):
+        """添加评价"""
+        Review.objects.create(
+            product=self.product,
+            order_item=self,
+            user=self.order.user,
+            rating=rating,
+            comment=comment
+        )
+
+    def apply_return(self, reason, details):
+        """申请退货"""
+        self.return_status = 'pending'
+        self.return_reason = reason
+        self.return_details = details
+        self.return_time = timezone.now()
+        self.save()
+
+    def process_return(self, status, refund_amount=None):
+        """处理退货申请"""
+        self.return_status = status
+        if status == 'refunded' and refund_amount:
+            self.refund_amount = refund_amount
+            self.refund_time = timezone.now()
+        self.save()
 
 
 # 历史记录（合并订单历史和支付历史）
