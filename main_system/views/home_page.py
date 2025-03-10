@@ -5,12 +5,19 @@ from django.contrib import  messages
 
 def homepage(request):
     """主页视图"""
-    categories = Product.CATEGORY_CHOICES
-    new_releases = Product.objects.filter(status='active').order_by('-created_time')[:6]  # 最新发布的6个商品
+    # 获取用户信息
+    user_info = request.session.get('info')
+    
+    # 准备分类选项
+    categories = [{'key': key, 'name': name} for key, name in Product.CATEGORY_CHOICES]
+    
+    # 获取最新商品
+    new_releases = Product.objects.filter(status='active').order_by('-created_time')[:6]
 
-    return render(request, 'main/home.html',{
+    return render(request, 'main/home.html', {
         'categories': categories,
         'new_releases': new_releases,
+        'user_info': user_info,  # 传递用户信息到模板
     })
 
 def subscribe(request):

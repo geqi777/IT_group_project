@@ -164,6 +164,9 @@
 
       <form method="POST">
         {% csrf_token %}
+        {% if next %}
+          <input type="hidden" name="next" value="{{ next }}">
+        {% endif %}
         
         <label for="account">Account</label>
         <input type="text" name="account" id="account" placeholder="Enter your account" required>

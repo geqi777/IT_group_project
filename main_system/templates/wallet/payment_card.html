@@ -1,0 +1,105 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm rounded-3 border-0">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="mb-0">我的支付卡</h4>
+                        <div>
+                            <a href="/customer/wallet/cards/add/" class="btn btn-primary me-2">
+                                <i class="fas fa-plus me-2"></i>添加新卡
+                            </a>
+                            <a href="/customer/wallet/" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>返回钱包
+                            </a>
+                        </div>
+                    </div>
+
+                    {% if payment_cards %}
+                    <div class="list-group">
+                        {% for card in payment_cards %}
+                        <div class="list-group-item">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <div class="bg-light rounded-circle p-3">
+                                        <i class="fas fa-credit-card fa-lg text-primary"></i>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <h6 class="mb-1">{{ card.nickname|default:"未命名卡片" }}</h6>
+                                    <p class="mb-1 text-muted">**** **** **** {{ card.card_number|slice:"-4:" }}</p>
+                                    <small class="text-muted">
+                                        有效期至: {{ card.expiry_date }}
+                                        <span class="mx-2">|</span>
+                                        {{ card.country }}
+                                    </small>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-link text-dark" type="button" data-bs-toggle="dropdown">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <a class="dropdown-item" href="/customer/wallet/cards/{{ card.id }}/edit/">
+                                                    <i class="fas fa-edit me-2"></i>编辑
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item text-danger" href="/customer/wallet/cards/{{ card.id }}/delete/" onclick="deleteCard({{ card.id }})">
+                                                    <i class="fas fa-trash-alt me-2"></i>删除
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-credit-card fa-3x mb-3"></i>
+                        <p class="mb-4">您还没有添加任何支付卡</p>
+                        <a href="/customer/wallet/cards/add/" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>添加支付卡
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 删除确认弹窗 -->
+<div class="modal fade" id="deleteCardModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">确认删除</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>确定要删除这张支付卡吗？此操作无法撤销。</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <a href="#" id="confirmDelete" class="btn btn-danger">确认删除</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function deleteCard(cardId) {
+    const modal = new bootstrap.Modal(document.getElementById('deleteCardModal'));
+    document.getElementById('confirmDelete').href = `/customer/wallet/cards/${cardId}/delete/`;
+    modal.show();
+}
+</script>
+{% endblock %} 
