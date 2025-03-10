@@ -42,18 +42,14 @@ def employee_login(request):
             return render(request, 'main/employee_login.html', {'form': form})
 
         # 设置 session 信息
-        request.session['info'] = {
+        request.session['admin_info'] = {
             'employee_id': employee_obj.id,
             'employee_account': employee_obj.account,
             'is_employee': employee_obj.is_employee,
             'role': employee_obj.role,
             'name': employee_obj.name,
         }
-
-        print(request.session['info'])
-        if request.session['info']['role'] == 'manager':
-            return redirect('/operation/manager/page/')
-        return redirect('/operation/vehicle/list/')
+        return redirect('/operation/homepage/')
 
     return render(request, 'main/employee_login.html', {'form': form})
 

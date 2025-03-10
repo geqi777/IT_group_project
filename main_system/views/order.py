@@ -679,7 +679,7 @@ def order_review(request, order_id):
                         item.add_review(int(rating), comment)
                 
                 messages.success(request, '评价提交成功')
-                return redirect('order_list')
+                return redirect('/customer/order/')
         except Exception as e:
             messages.error(request, f'评价提交失败：{str(e)}')
     
@@ -718,7 +718,7 @@ def order_return(request, order_id):
     
     if order.order_status != 'completed':
         messages.error(request, '只能对已完成的订单申请退货')
-        return redirect('order_list')
+        return redirect('/customer/order/')
     
     if request.method == 'POST':
         try:
@@ -775,13 +775,13 @@ def order_delete(request, order_id):
 def admin_order_list(request):
     """管理员查看所有订单"""
     # 检查管理员是否登录
-    operator_info = request.session.get('operator_info')
+    operator_info = request.session.get('admin_info')
     if not operator_info:
         messages.error(request, '请先登录')
         return redirect('/operation/login/')
 
     # 验证是否是管理员
-    operator = Operator.objects.filter(id=operator_info).first()
+    operator = Operator.objects.filter(id=operator_info['employee_id']).first()
     if not operator or not operator.is_operator:
         messages.error(request, '权限不足')
         return redirect('/operation/login/')
@@ -804,13 +804,13 @@ def admin_order_list(request):
 def update_order_status(request, order_id):
     """管理员更新订单状态"""
     # 检查管理员是否登录
-    operator_id = request.session.get('operator_info')
+    operator_id = request.session.get('admin_info')
     if not operator_id:
         messages.error(request, '请先登录')
         return redirect('/operation/login/')
 
     # 验证是否是管理员
-    operator = Operator.objects.filter(id=operator_id, is_operator=True).first()
+    operator = Operator.objects.filter(id=operator_id['employee_id'], is_operator=True).first()
     if not operator:
         messages.error(request, '权限不足')
         return redirect('/operation/register/')
@@ -838,19 +838,19 @@ def update_order_status(request, order_id):
         else:
             messages.error(request, '无效的订单状态')
 
-    return redirect('/operator/order/')
+    return redirect('/operator/orders/list/')
 
 
 def process_return(request, order_id, item_id):
     """管理员处理退货申请"""
     # 检查管理员是否登录
-    operator_id = request.session.get('operator_info')
+    operator_id = request.session.get('admin_info')
     if not operator_id:
         messages.error(request, '请先登录')
         return redirect('/operation/login/')
 
     # 验证是否是管理员
-    operator = Operator.objects.filter(id=operator_id, is_operator=True).first()
+    operator = Operator.objects.filter(id=operator_id['employee_id'], is_operator=True).first()
     if not operator:
         messages.error(request, '权限不足')
         return redirect('/operation/register/')

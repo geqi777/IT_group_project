@@ -26,7 +26,7 @@ from main_system.views import department, employee, vehicle, login, home_page, m
 from main_system.views.customer import customer_register
 from main_system.views import operator, user, product, cart, order, promo_code, wallet
 from main_system.views.order import order_detail
-from main_system.views import admin_dashboard, admin_login, user, product, operator
+from main_system.views import admin_login, user, product, operator
 
 urlpatterns = [
     path('', home_page.homepage, name='home'),  # 首页
@@ -34,10 +34,10 @@ urlpatterns = [
     path('subscribe/', home_page.subscribe, name='subscribe'),  # 订阅
     path('search/', product.search_products),    # 商品搜索
 
-    #admin
+    # admin
     # 后台管理首页（包含用户、商品、管理员的管理）
     path('operation/homepage/', operator.operator_list),
-    path('operation/homepage/', admin_dashboard.admin_dashboard, name="admin_dashboard"),
+    # path('operation/homepage/', admin_dashboard.admin_dashboard, name="admin_dashboard"),
 
     # 用户管理
     path('operation/homepage/users/', user.user_list, name="admin_user_list"),
@@ -62,6 +62,7 @@ urlpatterns = [
     path('customer/login/', user_login.user_login, name='customer_login'),
     path('customer/register/', user_login.user_register, name='customer_register'),
     path('customer/profile/', user_login.user_profile, name='customer_profile'),
+
     # operator system
     path('operator/product/list/', product.product_list),
     path('operator/product/list/add/', product.product_add),
@@ -88,11 +89,12 @@ urlpatterns = [
     path('customer/order/<int:order_id>/cancel/', order.order_cancel),
     path('customer/order/<int:order_id>/confirm-receipt/', order.order_confirm_receipt),
     path('customer/order/<int:order_id>/review/', order.order_review),
-    path('customer/order/<int:order_id>/refund/', order.order_return),
+    path('customer/order/<int:order_id>/return/', order.order_return),
     path('customer/order/<int:order_id>/delete/', order.order_delete),
 
+
     path('operator/orders/list/', order.admin_order_list),
-    path('operator/orders/<int:order_id>/detail/', order.update_order_status),
+    path('operator/orders/<int:order_id>/detail/', order.update_order_status, name='update_order_status'),
 
     # Promo Code
     path('operator/promo-codes/list', promo_code.promo_code_list),
@@ -171,7 +173,7 @@ urlpatterns = [
     path('customer/rent/rent_ing/<int:history_id>/<int:vehicle_id>/report_vehicle', customer.report_vehicle,
          name='report_vehicle'),
     # path('customer/rent/rent_ing/<int:vehicle_id>/return_vehicle', customer.return_vehicle, name='return_vehicle'),
-    #path('customer/redirect_to_order/', customer.redirect_to_order, name='redirect_to_order'),
+    # path('customer/redirect_to_order/', customer.redirect_to_order, name='redirect_to_order'),
     # 其他路径...
     path('customer/wallet/', customer.customer_wallet),
     path('customer/wallet/top_up/', customer.top_up_wallet),

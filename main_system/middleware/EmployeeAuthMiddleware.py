@@ -13,10 +13,11 @@ class EmployeeAuthMiddleware(MiddlewareMixin):
             return None
 
         # 检查用户是否已登录
-        employee_info = request.session.get('info')
+        employee_info = request.session.get('admin_info')
+        print(employee_info)
         print("进入了 EmployeeAuthMiddleware")
 
         # 如果用户未登录，则重定向到 employee 登录页面
-        if not employee_info or not employee_info.get('is_employee'):
+        if not employee_info:
             return redirect('/operation/login/')
 
