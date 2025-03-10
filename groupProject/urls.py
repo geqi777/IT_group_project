@@ -26,6 +26,7 @@ from main_system.views import department, employee, vehicle, login, home_page, m
 from main_system.views.customer import customer_register
 from main_system.views import operator, user, product, cart, order, promo_code, wallet
 from main_system.views.order import order_detail
+from main_system.views import admin_dashboard, admin_login, user, product, operator
 
 urlpatterns = [
     path('', home_page.homepage, name='home'),  # 首页
@@ -36,6 +37,7 @@ urlpatterns = [
     #admin
     # 后台管理首页（包含用户、商品、管理员的管理）
     path('operation/homepage/', operator.operator_list),
+    path('operation/homepage/', admin_dashboard.admin_dashboard, name="admin_dashboard"),
 
     # 用户管理
     path('operation/homepage/users/', user.user_list, name="admin_user_list"),
@@ -97,7 +99,7 @@ urlpatterns = [
     path('operator/promo-codes/list/add/', promo_code.promo_code_add),
     path('operator/promo-codes/list/<int:code_id>/edit/', promo_code.promo_code_edit),
     path('operator/promo-codes/list/<int:code_id>/delete/', promo_code.promo_code_delete),
-    
+
     # API
     path('api/apply-promo-code/', promo_code.apply_promo_code),
 
