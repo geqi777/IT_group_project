@@ -38,12 +38,48 @@
                         <td>£{{ order.final_amount }}</td>
                         <td>{{ order.timestamp|date:"Y-m-d H:i" }}</td>
                         <td>
-                            <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-primary">查看详情</a>
-                            {% if order.order_status == 'pending' %}
-                                <form action="{% url 'order_detail' order.id %}" method="post" class="d-inline">
+                            <a href="/customer/order/{{ order.id }}/detail/" class="btn btn-sm btn-primary">查看详情</a>
+                            
+                            {% if order.order_status == 'pending' or order.order_status == 'paid' or order.order_status == 'shipped' %}
+                                <!-- 未支付、已支付或已发货的订单可以取消 -->
+                                <form action="/customer/order/{{ order.id }}/cancel/" method="post" class="d-inline">
                                     {% csrf_token %}
-                                    <input type="hidden" name="action" value="cancel">
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('确定要取消订单吗？')">取消订单</button>
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('确定要取消此订单吗？')">
+                                        取消订单
+                                    </button>
+                                </form>
+                            {% elif order.order_status == 'delivered' %}
+                                <!-- 已送达的订单可以确认收货 -->
+                                <form action="/customer/order/{{ order.id }}/confirm-receipt/" method="post" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('确认已收到商品吗？')">确认收货</button>
+                                </form>
+                            {% elif order.order_status == 'completed' %}
+                                <!-- 已完成的订单可以评价和退货 -->
+                                {% with has_reviewed=False %}
+                                    {% for item in order.items.all %}
+                                        {% if item.review %}
+                                            {% with has_reviewed=True %}{% endwith %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if has_reviewed %}
+                                        <form action="/customer/order/{{ order.id }}/review/delete/" method="post" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('确定要删除评价吗？此操作不可恢复。')">删除评价</button>
+                                        </form>
+                                    {% else %}
+                                        <a href="/customer/order/{{ order.id }}/review/" class="btn btn-sm btn-info">评价订单</a>
+                                    {% endif %}
+                                {% endwith %}
+                                <a href="/customer/order/{{ order.id }}/return/" class="btn btn-sm btn-warning">申请退货</a>
+                            {% endif %}
+
+                            {% if order.order_status != 'pending' %}
+                                <!-- 除了未支付订单外，其他状态都可以删除记录 -->
+                                <form action="/customer/order/{{ order.id }}/delete/" method="post" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('确定要删除此订单记录吗？此操作不可恢复。')">删除记录</button>
                                 </form>
                             {% endif %}
                         </td>

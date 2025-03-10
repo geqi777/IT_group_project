@@ -1,39 +1,40 @@
+{% extends "operation/admin_dashboard.html" %}
+{% block dashboard_content %}
 <div class="container mt-4">
+    <h2>Product Management</h2>
+    <a href="{% url 'product_add' %}" class="btn btn-success mb-3">Add New Product</a>
 
-    <h2 class="mb-4">Manage Products</h2>
-
-    <div class="d-flex justify-content-between mb-3">
-        <input type="text" id="searchProduct" class="form-control me-2" placeholder="Search by Product Name" onkeyup="searchProducts()">
-        <a href="{% url 'product_add' %}" class="btn btn-success">Add Product</a>
-    </div>
-
-    <table class="table table-hover">
+    <table class="table table-bordered">
         <thead class="table-dark">
             <tr>
                 <th>ID</th>
                 <th>Name</th>
+                <th>Image</th>
                 <th>Category</th>
                 <th>Price</th>
                 <th>Stock</th>
+                <th>Status</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             {% for product in page_obj %}
-            <tr class="product-row">
+            <tr>
                 <td>{{ product.id }}</td>
                 <td>{{ product.name }}</td>
+                <td><img src="{{ product.picture.url }}" alt="{{ product.name }}" width="50"></td>
                 <td>{{ product.category }}</td>
                 <td>${{ product.price }}</td>
                 <td>{{ product.stock }}</td>
+                <td><span class="badge bg-{% if product.status == 'active' %}success{% else %}danger{% endif %}">{{ product.status }}</span></td>
                 <td>
-                    <a href="{% url 'product_edit' product.id %}" class="btn btn-sm btn-primary">Edit</a>
+                    <a href="{% url 'product_edit' product.id %}" class="btn btn-sm btn-warning">Edit</a>
                     <a href="{% url 'product_delete' product.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
                 </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="6" class="text-center">No products found.</td>
+                <td colspan="8" class="text-center">No products found.</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -42,5 +43,5 @@
     <div class="d-flex justify-content-center">
         {{ page_string|safe }}
     </div>
-
 </div>
+{% endblock %}

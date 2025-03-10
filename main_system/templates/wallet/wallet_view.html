@@ -1,0 +1,159 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- 左侧钱包信息 -->
+        <div class="col-md-8">
+            <div class="card shadow-sm rounded-3 border-0 mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="mb-0">我的钱包</h4>
+                        <a href="/customer/wallet/wallet-top-up/" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>充值
+                        </a>
+                    </div>
+                    
+                    <!-- 余额和积分信息 -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-2">钱包余额</h6>
+                                    <h2 class="card-title mb-0">£{{ wallet.balance|floatformat:2 }}</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-2">可用积分</h6>
+                                    <h2 class="card-title mb-0">{{ wallet.points }}</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 最近交易记录 -->
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">最近交易</h5>
+                            <a href="/customer/wallet/transactions/" class="text-decoration-none">查看全部</a>
+                        </div>
+                        {% if transactions %}
+                        <div class="list-group">
+                            {% for transaction in transactions %}
+                            <div class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">{{ transaction.details }}</h6>
+                                        <small class="text-muted">{{ transaction.timestamp|date:"Y-m-d H:i" }}</small>
+                                    </div>
+                                    <div class="text-end">
+                                        {% if transaction.amount %}
+                                            <span class="{% if transaction.transaction_type == 'top up' %}text-success{% else %}text-danger{% endif %} fw-bold">
+                                                {% if transaction.transaction_type == 'top up' %}+{% else %}-{% endif %}£{{ transaction.amount|floatformat:2 }}
+                                            </span>
+                                        {% endif %}
+                                        {% if transaction.points %}
+                                            <span class="{% if transaction.transaction_type == 'points earned' %}text-success{% else %}text-danger{% endif %} fw-bold">
+                                                {% if transaction.transaction_type == 'points earned' %}+{% else %}-{% endif %}{{ transaction.points }} 积分
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-history fa-3x mb-3"></i>
+                            <p>暂无交易记录</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧支付卡信息 -->
+        <div class="col-md-4">
+            <div class="card shadow-sm rounded-3 border-0">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="mb-0">我的支付卡</h5>
+                        <a href="/customer/wallet/cards/add/" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-plus me-1"></i>添加
+                        </a>
+                    </div>
+                    
+                    {% if payment_cards %}
+                    <div class="list-group">
+                        {% for card in payment_cards %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ card.nickname|default:"未命名卡片" }}</h6>
+                                    <small class="text-muted">**** **** **** {{ card.card_number|slice:"-4:" }}</small>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-link text-dark" type="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a class="dropdown-item" href="/customer/wallet/cards/{{ card.id }}/edit/">
+                                                <i class="fas fa-edit me-2"></i>编辑
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item text-danger" href="/customer/wallet/cards/{{ card.id }}/delete/" onclick="deleteCard({{ card.id }})">
+                                                <i class="fas fa-trash-alt me-2"></i>删除
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-credit-card fa-3x mb-3"></i>
+                        <p>暂无支付卡</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 删除确认弹窗 -->
+<div class="modal fade" id="deleteCardModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">确认删除</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>确定要删除这张支付卡吗？此操作无法撤销。</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <a href="#" id="confirmDelete" class="btn btn-danger">确认删除</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function deleteCard(cardId) {
+    const modal = new bootstrap.Modal(document.getElementById('deleteCardModal'));
+    document.getElementById('confirmDelete').href = `/customer/wallet/cards/{{ card.id }}/delete/`;
+    modal.show();
+}
+</script>
+{% endblock %} 

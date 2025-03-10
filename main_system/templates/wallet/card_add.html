@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+</body>
+</html>{% extends "layout.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm rounded-3 border-0">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="mb-0">添加支付卡</h4>
+                        <a href="/customer/wallet/cards/" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>返回列表
+                        </a>
+                    </div>
+
+                    <form method="POST" id="add-card-form" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- 卡片昵称 -->
+                        <div class="mb-3">
+                            <label for="nickname" class="form-label">卡片昵称</label>
+                            <input type="text" class="form-control" id="nickname" name="nickname" placeholder="为您的卡片取个名字">
+                        </div>
+
+                        <!-- 卡号 -->
+                        <div class="mb-3">
+                            <label for="card_number" class="form-label">卡号</label>
+                            <input type="text" class="form-control" id="card_number" name="card_number" required maxlength="19" placeholder="16位卡号">
+                            <div class="invalid-feedback">请输入有效的16位卡号</div>
+                        </div>
+
+                        <!-- 有效期和CVV -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="expiry_date" class="form-label">有效期 (MM/YY)</label>
+                                <input type="text" class="form-control" id="expiry_date" name="expiry_date" required pattern="\d{2}/\d{2}" placeholder="MM/YY">
+                                <div class="invalid-feedback">请输入有效的有效期 (MM/YY)</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="cvv" class="form-label">CVV</label>
+                                <input type="text" class="form-control" id="cvv" name="cvv" required pattern="\d{3}" placeholder="3位安全码">
+                                <div class="invalid-feedback">请输入有效的3位CVV码</div>
+                            </div>
+                        </div>
+
+                        <!-- 账单地址 -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="country" class="form-label">国家</label>
+                                <input type="text" class="form-control" id="country" name="country" required placeholder="账单地址所在国家">
+                                <div class="invalid-feedback">请输入国家</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="postcode" class="form-label">邮编</label>
+                                <input type="text" class="form-control" id="postcode" name="postcode" required placeholder="账单地址邮编">
+                                <div class="invalid-feedback">请输入邮编</div>
+                            </div>
+                        </div>
+
+                        <!-- 提交按钮 -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>保存卡片
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('add-card-form');
+    
+    // 表单验证
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        
+        // 验证卡号
+        const cardNumber = document.getElementById('card_number');
+        const cardValue = cardNumber.value.replace(/\s/g, '');
+        if (!/^\d{16}$/.test(cardValue)) {
+            cardNumber.setCustomValidity('请输入有效的16位卡号');
+            form.classList.add('was-validated');
+            return;
+        }
+        cardNumber.setCustomValidity('');
+        
+        // 如果验证通过，提交表单
+        if (form.checkValidity()) {
+            // 在提交前移除卡号中的空格
+            cardNumber.value = cardValue;
+            form.submit();
+        } else {
+            form.classList.add('was-validated');
+        }
+    });
+    
+    // 格式化卡号输入
+    const cardNumber = document.getElementById('card_number');
+    cardNumber.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 16) value = value.slice(0, 16);
+        // 添加空格分隔
+        value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+        e.target.value = value;
+        
+        // 实时验证
+        const cardValue = value.replace(/\s/g, '');
+        if (cardValue.length === 16) {
+            this.setCustomValidity('');
+        } else {
+            this.setCustomValidity('请输入有效的16位卡号');
+        }
+    });
+    
+    // 格式化有效期输入
+    const expiryDate = document.getElementById('expiry_date');
+    expiryDate.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 4) value = value.slice(0, 4);
+        if (value.length > 2) {
+            value = value.slice(0, 2) + '/' + value.slice(2);
+        }
+        e.target.value = value;
+    });
+    
+    // 格式化CVV输入
+    const cvv = document.getElementById('cvv');
+    cvv.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 3) value = value.slice(0, 3);
+        e.target.value = value;
+    });
+    
+    // 邮编格式化（根据国家可以添加不同的格式验证）
+    const postcode = document.getElementById('postcode');
+    postcode.addEventListener('input', function(e) {
+        let value = e.target.value.toUpperCase();
+        e.target.value = value;
+    });
+});
+</script>
+{% endblock %} 

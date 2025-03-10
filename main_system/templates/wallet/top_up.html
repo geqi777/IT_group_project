@@ -1,0 +1,139 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm rounded-3 border-0">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="mb-0">钱包充值</h4>
+                        <a href="/customer/wallet/" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>返回钱包
+                        </a>
+                    </div>
+
+                    <!-- 当前余额 -->
+                    <div class="alert alert-info mb-4">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-wallet fa-2x me-3"></i>
+                            <div>
+                                <h6 class="mb-1">当前余额</h6>
+                                <h4 class="mb-0">£{{ wallet.balance|floatformat:2 }}</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="POST" id="recharge-form" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- 充值金额 -->
+                        <div class="mb-4">
+                            <label for="amount" class="form-label">充值金额</label>
+                            <div class="input-group">
+                                <span class="input-group-text">£</span>
+                                <input type="number" class="form-control" id="amount" name="amount" required min="0.01" step="0.01" placeholder="请输入充值金额">
+                                <div class="invalid-feedback">请输入有效的充值金额</div>
+                            </div>
+                        </div>
+
+                        <!-- 快速选择金额 -->
+                        <div class="mb-4">
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button type="button" class="btn btn-outline-primary amount-btn" data-amount="10">£10</button>
+                                <button type="button" class="btn btn-outline-primary amount-btn" data-amount="20">£20</button>
+                                <button type="button" class="btn btn-outline-primary amount-btn" data-amount="50">£50</button>
+                                <button type="button" class="btn btn-outline-primary amount-btn" data-amount="100">£100</button>
+                                <button type="button" class="btn btn-outline-primary amount-btn" data-amount="200">£200</button>
+                            </div>
+                        </div>
+
+                        <!-- 选择支付卡 -->
+                        <div class="mb-4">
+                            <label for="payment_card_id" class="form-label">选择支付卡</label>
+                            {% if payment_cards %}
+                            <select class="form-select" id="payment_card_id" name="payment_card_id" required>
+                                <option value="">请选择支付卡</option>
+                                {% for card in payment_cards %}
+                                <option value="{{ card.id }}">{{ card.nickname|default:"未命名卡片" }} (**** **** **** {{ card.card_number|slice:"-4:" }})</option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">请选择支付卡</div>
+                            {% else %}
+                            <div class="alert alert-warning mb-0">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                您还没有添加支付卡，请先
+                                <a href="/customer/wallet/cards/add/" class="alert-link">添加支付卡</a>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- 提交按钮 -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary" {% if not payment_cards %}disabled{% endif %}>
+                                <i class="fas fa-check me-2"></i>确认充值
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('recharge-form');
+    const amountInput = document.getElementById('amount');
+    const amountButtons = document.querySelectorAll('.amount-btn');
+    
+    // 快速选择金额
+    amountButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const amount = this.dataset.amount;
+            amountInput.value = amount;
+            // 移除其他按钮的active类
+            amountButtons.forEach(btn => btn.classList.remove('active'));
+            // 添加当前按钮的active类
+            this.classList.add('active');
+        });
+    });
+    
+    // 表单验证
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    });
+    
+    // 金额输入格式化
+    amountInput.addEventListener('input', function(e) {
+        let value = e.target.value;
+        // 限制小数点后两位
+        if (value.includes('.')) {
+            const parts = value.split('.');
+            if (parts[1].length > 2) {
+                e.target.value = parts[0] + '.' + parts[1].slice(0, 2);
+            }
+        }
+        // 移除所有按钮的active类
+        amountButtons.forEach(btn => btn.classList.remove('active'));
+    });
+});
+</script>
+
+<style>
+.amount-btn.active {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.amount-btn:hover {
+    background-color: #0b5ed7;
+    color: white;
+}
+</style>
+{% endblock %} 
