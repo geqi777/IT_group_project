@@ -771,7 +771,7 @@ def order_delete(request, order_id):
     return redirect('/customer/order/')
 
 
-# 管理员端口
+# 管理员端口 1
 def admin_order_list(request):
     """管理员查看所有订单"""
     # 检查管理员是否登录
