@@ -1,11 +1,8 @@
+{% extends "operation/admin_dashboard.html" %}
+{% block dashboard_content %}
 <div class="container mt-4">
-
-    <h2 class="mb-4">Manage Administrators</h2>
-
-    <div class="d-flex justify-content-between mb-3">
-        <input type="text" id="searchAdmin" class="form-control me-2" placeholder="Search by Name or Email" onkeyup="searchAdmins()">
-        <a href="{% url 'operator_add' %}" class="btn btn-primary">Add Admin</a>
-    </div>
+    <h2>Manage Administrators</h2>
+    <a href="{% url 'operator_add' %}" class="btn btn-primary mb-3">Add Admin</a>
 
     <table class="table table-hover">
         <thead class="table-dark">
@@ -20,14 +17,14 @@
         </thead>
         <tbody>
             {% for admin in page_obj %}
-            <tr class="admin-row">
+            <tr>
                 <td>{{ admin.id }}</td>
                 <td>{{ admin.name }}</td>
                 <td>{{ admin.email }}</td>
                 <td>{{ admin.phone }}</td>
                 <td>{{ admin.role }}</td>
                 <td>
-                    <a href="{% url 'operator_edit' admin.id %}" class="btn btn-sm btn-primary">Edit</a>
+                    <a href="{% url 'operator_edit' admin.id %}" class="btn btn-sm btn-warning">Edit</a>
                     <a href="{% url 'operator_delete' admin.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
                 </td>
             </tr>
@@ -42,5 +39,5 @@
     <div class="d-flex justify-content-center">
         {{ page_string|safe }}
     </div>
-
 </div>
+{% endblock %}

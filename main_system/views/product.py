@@ -32,7 +32,7 @@ def product_list(request):
     context = {'page_obj': page_obj.queryset,
                'page_string': page_obj.html(),
                }
-    return render(request, 'products/product_list.html', context)
+    return render(request, 'operation/admin_product_list.html', context)
 
 
 def product_add(request):

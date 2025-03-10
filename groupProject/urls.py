@@ -24,7 +24,7 @@ from main_system.views import admin_login, user_login
 from main_system.views.customer import customer_register, customer_verify, customer_wallet
 from main_system.views import department, employee, vehicle, login, home_page, manager, customer, maps
 from main_system.views.customer import customer_register
-from main_system.views import operator, user, product
+from main_system.views import admin_dashboard, admin_login, user, product, operator
 
 urlpatterns = [
     path('', home_page.homepage, name='home'),  # 首页
@@ -33,7 +33,7 @@ urlpatterns = [
 
     #admin
     # 后台管理首页（包含用户、商品、管理员的管理）
-    path('operation/homepage/', operator.operator_list, name="admin_dashboard"),
+    path('operation/homepage/', admin_dashboard.admin_dashboard, name="admin_dashboard"),
 
     # 用户管理
     path('operation/homepage/users/', user.user_list, name="admin_user_list"),

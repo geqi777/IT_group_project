@@ -21,22 +21,22 @@ def user_list(request):
         'page_obj': page_obj.queryset,
         'page_string': page_obj.html(),
     }
-    return render(request, 'user/user_list.html', context)
+    return render(request, 'operation/admin_user_list.html', context)
 
 
 def user_add(request):
     """ 添加新用户 """
     if request.method == 'GET':
         form = User_ModelForm()
-        return render(request, 'main/user_change.html', {"form": form})
+        return render(request, 'operation/admin_user_add.html', {"form": form})
 
     form = User_ModelForm(request.POST)
     if form.is_valid():
         form.save()
         messages.success(request, "New user added successfully.")
-        return redirect('/user/list/')
+        return redirect('/operation/homepage/users/')
 
-    return render(request, 'main/user_change.html', {"form": form})
+    return render(request, 'operation/admin_user_add.html', {"form": form})
 
 
 def user_edit(request, nid):

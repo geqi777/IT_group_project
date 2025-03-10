@@ -21,22 +21,23 @@ def operator_list(request):
     context = {'page_obj': page_obj.queryset,
                'page_string': page_obj.html(),
                }
-    return render(request, 'operation/employee_list.html', context)
+    return render(request, 'operation/admin_operator_list.html', context)
 
 
 def operator_add(request):
     if request.method == 'GET':
         form = Operator_ModelForm()
-        return render(request, 'main/change.html', {"form": form})
-    #form = Operator_EditForm(request.POST)
+        return render(request, 'operation/admin_operator_add.html', {"form": form})
+
     form = Operator_ModelForm(request.POST)
 
     if form.is_valid():
         form.save()
-        return redirect('/operation/employee/list/')
+        messages.success(request, "New admin added successfully.")
+        return redirect('/operation/homepage/admins/')
     else:
         print(form.errors)
-        return render(request, 'main/change.html', {"form": form})
+        return render(request, 'operation/admin_operator_add.html', {"form": form})
 
 
 def operator_edit(request, nid):

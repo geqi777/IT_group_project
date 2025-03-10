@@ -1,11 +1,8 @@
+{% extends "operation/admin_dashboard.html" %}
+{% block dashboard_content %}
 <div class="container mt-4">
-
-    <h2 class="mb-4">Manage Users</h2>
-
-    <div class="d-flex justify-content-between mb-3">
-        <input type="text" id="searchUser" class="form-control me-2" placeholder="Search by Name or Email" onkeyup="searchUsers()">
-        <a href="{% url 'user_add' %}" class="btn btn-dark">Add User</a>
-    </div>
+    <h2>Manage Users</h2>
+    <a href="{% url 'user_add' %}" class="btn btn-primary mb-3">Add User</a>
 
     <table class="table table-hover">
         <thead class="table-dark">
@@ -19,13 +16,13 @@
         </thead>
         <tbody>
             {% for user in page_obj %}
-            <tr class="user-row">
+            <tr>
                 <td>{{ user.id }}</td>
                 <td>{{ user.name }}</td>
                 <td>{{ user.email }}</td>
                 <td>{{ user.phone }}</td>
                 <td>
-                    <a href="{% url 'user_edit' user.id %}" class="btn btn-sm btn-primary">Edit</a>
+                    <a href="{% url 'user_edit' user.id %}" class="btn btn-sm btn-warning">Edit</a>
                     <a href="{% url 'user_delete' user.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
                 </td>
             </tr>
@@ -40,5 +37,5 @@
     <div class="d-flex justify-content-center">
         {{ page_string|safe }}
     </div>
-
 </div>
+{% endblock %}
