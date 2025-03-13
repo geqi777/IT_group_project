@@ -17,6 +17,12 @@
                     <li class="nav-item">
                         <a class="nav-link {% if section == 'admins' %}active{% endif %} text-white" href="{% url 'admin_operator_list' %}">Manage Admins</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if section == 'orders' %}active{% endif %} text-white" href="{% url 'admin_order_list' %}">Manage Orders</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if section == 'promo_codes' %}active{% endif %} text-white" href="{% url 'promo_code_list' %}">Manage Promo Codes</a>
+                    </li>
                 </ul>
             </div>
         </nav>

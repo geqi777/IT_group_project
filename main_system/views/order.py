@@ -838,7 +838,7 @@ def update_order_status(request, order_id):
         else:
             messages.error(request, '无效的订单状态')
 
-    return redirect('/operator/orders/list/')
+    return redirect('/operation/homepage/orders/')
 
 
 def process_return(request, order_id, item_id):
@@ -895,4 +895,4 @@ def process_return(request, order_id, item_id):
         else:
             messages.error(request, '无效的状态')
 
-    return redirect(f'/operator/orders/{order_id}/detail/')
+    return redirect(f'/operation/homepage/orders/{order_id}/detail/')

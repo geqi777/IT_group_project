@@ -58,6 +58,18 @@ urlpatterns = [
     path('operation/homepage/admins/edit/<int:nid>/', operator.operator_edit, name="operator_edit"),
     path('operation/homepage/admins/delete/<int:nid>/', operator.operator_delete, name="operator_delete"),
 
+    #订单管理
+    path('operation/homepage/orders/', order.admin_order_list, name="admin_order_list"),
+    path('operation/homepage/orders/update/<int:order_id>/', order.update_order_status, name="update_order_status"),
+    path('operation/homepage/orders/return/<int:order_id>/<int:item_id>/', order.process_return, name="process_return"),
+
+    # Promo Code 管理
+    path('operation/homepage/promo_codes/list/', promo_code.promo_code_list, name='promo_code_list'),
+    path('operation/homepage/promo_codes/list/add/', promo_code.promo_code_add, name='promo_code_add'),
+    path('operation/homepage/promo_codes/list/<int:code_id>/edit/', promo_code.promo_code_edit, name='promo_code_edit'),
+    path('operation/homepage/promo_codes/list/<int:code_id>/delete/', promo_code.promo_code_delete, name='promo_code_delete'),
+
+
     # User
     path('customer/login/', user_login.user_login, name='customer_login'),
     path('customer/register/', user_login.user_register, name='customer_register'),
@@ -96,11 +108,7 @@ urlpatterns = [
     path('operator/orders/list/', order.admin_order_list),
     path('operator/orders/<int:order_id>/detail/', order.update_order_status, name='update_order_status'),
 
-    # Promo Code
-    path('operator/promo-codes/list', promo_code.promo_code_list),
-    path('operator/promo-codes/list/add/', promo_code.promo_code_add),
-    path('operator/promo-codes/list/<int:code_id>/edit/', promo_code.promo_code_edit),
-    path('operator/promo-codes/list/<int:code_id>/delete/', promo_code.promo_code_delete),
+
 
     # API
     path('api/apply-promo-code/', promo_code.apply_promo_code),

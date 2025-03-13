@@ -1,142 +1,57 @@
-{% extends 'operator_layout.html' %}
-{% load static %}
+{% extends "operation/admin_dashboard.html" %}
+{% block dashboard_content %}
+<div class="container mt-4">
+    <h2>Manage Orders</h2>
 
-{% block content %}
-<div class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>订单管理</h2>
-        <div>
-            <span class="text-muted">管理员：{{ operator.name }}</span>
-        </div>
-    </div>
-    
     {% if order_items %}
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>订单号</th>
-                        <th>用户</th>
-                        <th>商品</th>
-                        <th>单价</th>
-                        <th>数量</th>
-                        <th>小计</th>
-                        <th>订单状态</th>
-                        <th>创建时间</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in order_items %}
-                    <tr>
-                        <td>{{ item.order.order_number }}</td>
-                        <td>{{ item.order.user.name }}</td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <img src="{{ item.product.picture.url }}" alt="{{ item.product.name }}" style="width: 50px; height: 50px; object-fit: cover;" class="me-2">
-                                <div>{{ item.product.name }}</div>
-                            </div>
-                        </td>
-                        <td>£{{ item.price }}</td>
-                        <td>{{ item.quantity }}</td>
-                        <td>£{{ item.subtotal }}</td>
-                        <td>
-                            <span class="badge {% if item.order.order_status == 'pending' %}bg-warning
-                                  {% elif item.order.order_status == 'paid' %}bg-info
-                                  {% elif item.order.order_status == 'shipped' %}bg-primary
-                                  {% elif item.order.order_status == 'delivered' %}bg-success
-                                  {% elif item.order.order_status == 'completed' %}bg-success
-                                  {% elif item.order.order_status == 'cancelled' %}bg-secondary
-                                  {% elif item.order.order_status == 'refunded' %}bg-danger
-                                  {% endif %}">
-                                {{ item.order.get_order_status_display }}
-                            </span>
-                        </td>
-                        <td>{{ item.order.timestamp|date:"Y-m-d H:i" }}</td>
-                        <td>
-                            <div class="btn-group">
-                                <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown">
-                                    更新状态
-                                </button>
-                                <ul class="dropdown-menu">
-                                    {% if item.order.order_status == 'paid' %}
-                                    <li>
-                                        <form action="{% url 'update_order_status' item.order.id %}" method="post" class="d-inline">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="status" value="shipped">
-                                            <button type="submit" class="dropdown-item">标记为已发货</button>
-                                        </form>
-                                    </li>
-                                    {% endif %}
-                                    {% if item.order.order_status == 'shipped' %}
-                                    <li>
-                                        <form action="{% url 'update_order_status' item.order.id %}" method="post" class="d-inline">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="status" value="delivered">
-                                            <button type="submit" class="dropdown-item">标记为已送达</button>
-                                        </form>
-                                    </li>
-                                    {% endif %}
-                                    {% if item.order.order_status == 'delivered' %}
-                                    <li>
-                                        <form action="{% url 'update_order_status' item.order.id %}" method="post" class="d-inline">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="status" value="completed">
-                                            <button type="submit" class="dropdown-item">标记为已完成</button>
-                                        </form>
-                                    </li>
-                                    {% endif %}
-                                </ul>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        
-        <!-- 分页 -->
-        {% if order_items.has_other_pages %}
-        <nav aria-label="Page navigation" class="mt-4">
-            <ul class="pagination justify-content-center">
-                {% if order_items.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ order_items.previous_page_number }}">&laquo;</a>
-                    </li>
-                {% else %}
-                    <li class="page-item disabled">
-                        <span class="page-link">&laquo;</span>
-                    </li>
-                {% endif %}
+    <table class="table table-bordered mt-3">
+        <thead class="thead-dark">
+            <tr>
+                <th>Order Number</th>
+                <th>User</th>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Subtotal</th>
+                <th>Status</th>
+                <th>Created At</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order_items %}
+            <tr>
+                <td>{{ item.order.order_number }}</td>
+                <td>{{ item.order.user.name }}</td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <img src="{{ item.product.picture.url }}" alt="{{ item.product.name }}" width="50">
+                        {{ item.product.name }}
+                    </div>
+                </td>
+                <td>${{ item.price }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>${{ item.subtotal }}</td>
+                <td>
+                    <span class="badge bg-{% if item.order.order_status == 'completed' %}success{% else %}warning{% endif %}">
+                        {{ item.order.get_order_status_display }}
+                    </span>
+                </td>
+                <td>{{ item.order.timestamp|date:"Y-m-d H:i" }}</td>
+                <td>
+                    <a href="{% url 'update_order_status' item.order.id %}" class="btn btn-sm btn-primary">Update</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
-                {% for i in order_items.paginator.page_range %}
-                    {% if order_items.number == i %}
-                        <li class="page-item active">
-                            <span class="page-link">{{ i }}</span>
-                        </li>
-                    {% else %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ i }}">{{ i }}</a>
-                        </li>
-                    {% endif %}
-                {% endfor %}
-
-                {% if order_items.has_next %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ order_items.next_page_number }}">&raquo;</a>
-                    </li>
-                {% else %}
-                    <li class="page-item disabled">
-                        <span class="page-link">&raquo;</span>
-                    </li>
-                {% endif %}
-            </ul>
-        </nav>
-        {% endif %}
+    <!-- 分页 -->
+    <div class="d-flex justify-content-center">
+        {{ order_items.paginator }}
+    </div>
     {% else %}
-        <div class="alert alert-info">
-            暂无订单记录
-        </div>
+    <div class="alert alert-info">No orders found.</div>
     {% endif %}
 </div>
-{% endblock %} 
+{% endblock %}

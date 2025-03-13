@@ -46,7 +46,7 @@ def product_add(request):
     if form.is_valid():
         form.save()
         messages.success(request, "Product added successfully.")
-        return redirect('/operator/product/list/')
+        return redirect('/operation/homepage/products/')
 
     return render(request, 'main/change.html', {"form": form})
 
@@ -64,7 +64,7 @@ def product_edit(request, product_id):
     if form.is_valid():
         form.save()
         messages.success(request, "Product edited successfully.")
-        return redirect('/operator/product/list/')
+        return redirect('/operation/homepage/products/')
 
     return render(request, 'main/change.html', {"form": form})
 
@@ -72,7 +72,7 @@ def product_edit(request, product_id):
 def product_delete(request, product_id):
     """ 删除商品 """
     models.Product.objects.filter(id=product_id).delete()
-    return redirect('/operator/product/list/')
+    return redirect('/operation/homepage/products/')
 
 
 # ==========================

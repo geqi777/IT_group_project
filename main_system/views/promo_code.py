@@ -14,13 +14,12 @@ from main_system.utils.boostrapModelForm import PromoCode_ModelForm, PromoCode_E
 def promo_code_list(request):
     """管理员查看所有优惠码"""
     # 验证管理员身份
-    operator_info = request.session.get('operator_info')
+    operator_info = request.session.get('admin_info')
     if not operator_info:
         return redirect('/operation/login/')
     
-    operator_obj = Operator.objects.filter(id=operator_info['id']).first()
-    if not operator_obj:
-        return redirect('/operation/login/')
+    operator = get_object_or_404(Operator, id=operator_info['employee_id'])
+
 
     promo_codes = PromoCode.objects.all().order_by('-created_time')
     
@@ -29,51 +28,48 @@ def promo_code_list(request):
     page = request.GET.get('page')
     promo_codes = paginator.get_page(page)
     
-    return render(request, 'admin/promo_codes/promo_code_list.html', {
+    return render(request, 'operation/promo_code_list.html', {
         'promo_codes': promo_codes,
-        'operator': operator_obj
+        'operator': operator,
+        'section': 'promo_codes'
     })
 
 
 def promo_code_add(request):
     """添加新优惠码"""
     # 验证管理员身份
-    operator_info = request.session.get('operator_info')
+    operator_info = request.session.get('admin_info')
     if not operator_info:
         return redirect('/operation/login/')
     
-    operator_obj = Operator.objects.filter(id=operator_info['id']).first()
-    if not operator_obj:
-        return redirect('/operation/login/')
+    operator = get_object_or_404(Operator, id=operator_info['employee_id'])
 
     if request.method == 'POST':
         form = PromoCode_ModelForm(data=request.POST)
         if form.is_valid():
             form.save()
             messages.success(request, '优惠码创建成功')
-            return redirect('/admin/promo-codes/')
+            return redirect('/operation/homepage/promo-codes/')
         else:
             messages.error(request, '创建失败，请检查输入')
     else:
         form = PromoCode_ModelForm()
     
-    return render(request, 'admin/promo_codes/promo_code_edit.html', {
+    return render(request, 'operation/promo_code_edit.html', {
         'form': form,
         'title': '添加优惠码',
-        'operator': operator_obj
+        'operator': operator,
     })
 
 
 def promo_code_edit(request, code_id):
     """编辑优惠码"""
     # 验证管理员身份
-    operator_info = request.session.get('operator_info')
+    operator_info = request.session.get('admin_info')
     if not operator_info:
         return redirect('/operation/login/')
     
-    operator_obj = Operator.objects.filter(id=operator_info['id']).first()
-    if not operator_obj:
-        return redirect('/operation/login/')
+    operator = get_object_or_404(Operator, id=operator_info['employee_id'])
 
     promo_code = PromoCode.objects.filter(id=code_id).first()
     
@@ -88,10 +84,10 @@ def promo_code_edit(request, code_id):
     else:
         form = PromoCode_EditForm(instance=promo_code)
     
-    return render(request, 'admin/promo_codes/promo_code_edit.html', {
+    return render(request, 'operation/promo_code_edit.html', {
         'form': form,
         'title': '编辑优惠码',
-        'operator': operator_obj,
+        'operator': operator,
         'promo_code': promo_code
     })
 
@@ -99,7 +95,7 @@ def promo_code_edit(request, code_id):
 def promo_code_delete(request, code_id):
     """删除优惠码"""
     # 验证管理员身份
-    operator_info = request.session.get('operator_info')
+    operator_info = request.session.get('admin_info')
     if not operator_info:
         return JsonResponse({'success': False, 'message': '请先登录'})
     
@@ -113,7 +109,7 @@ def promo_code_delete(request, code_id):
         messages.success(request, '优惠码删除成功')
     except Exception as e:
         messages.error(request, f'删除失败：{str(e)}')
-    return redirect('promo_code_list')
+    return redirect('/operation/homepage/promo-codes/')
 
 
 def apply_promo_code(request):
