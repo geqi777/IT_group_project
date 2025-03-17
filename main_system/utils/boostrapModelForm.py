@@ -168,7 +168,6 @@ class Operator_ModelForm(BoostrapModelForm):
         model = models.Operator
         fields = [
             "name",
-            "date_of_birth",
             "gender",
             "email",
             "phone",
@@ -214,7 +213,6 @@ class Operator_EditForm(BoostrapModelForm):
         model = models.Operator
         fields = [
             "name",
-            "date_of_birth",
             "gender",
             "email",
             "phone",

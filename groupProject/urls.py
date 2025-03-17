@@ -90,7 +90,7 @@ urlpatterns = [
     path('customer/logout/', user_login.user_logout, name='customer_logout'),
 
 
-    path('products/product/collection/', product.product_page),
+    path('products/product/collection/', product.product_page, name='product_page'),
     path('products/product/<int:product_id>/detail/', product.product_detail),
     # /products/product/25/detail/
 

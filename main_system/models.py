@@ -28,7 +28,7 @@ gender_choice = [
 # 管理员
 class Operator(models.Model):
     name = models.CharField(max_length=50)
-    date_of_birth = models.DateField(default=datetime.date.today)
+    # date_of_birth = models.DateField(default=datetime.date.today)
     gender = models.IntegerField(choices=gender_choice, default=5)
     email = models.EmailField()
     phone = models.CharField(max_length=50)
