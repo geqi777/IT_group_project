@@ -1,0 +1,122 @@
+{% extends "operation/admin_dashboard.html" %}
+{% block dashboard_content %}
+<div class="container mt-4">
+    <h2>Manage Reviews</h2>
+
+    <!-- 简洁的筛选表单 -->
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <form method="get" class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <select class="form-select" id="product_id" name="product_id">
+                        <option value="">All Products</option>
+                        {% for product in products %}
+                        <option value="{{ product.id }}" {% if request.GET.product_id == product.id|stringformat:"s" %}selected{% endif %}>
+                            {{ product.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="rating" name="rating">
+                        <option value="">All Ratings</option>
+                        <option value="5" {% if request.GET.rating == "5" %}selected{% endif %}>5 Stars</option>
+                        <option value="4" {% if request.GET.rating == "4" %}selected{% endif %}>4 Stars</option>
+                        <option value="3" {% if request.GET.rating == "3" %}selected{% endif %}>3 Stars</option>
+                        <option value="2" {% if request.GET.rating == "2" %}selected{% endif %}>2 Stars</option>
+                        <option value="1" {% if request.GET.rating == "1" %}selected{% endif %}>1 Star</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Filter</button>
+                </div>
+                <div class="col-md-2">
+                    <a href="{% url 'admin_review_list' %}" class="btn btn-outline-secondary w-100">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <table class="table table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Product</th>
+                <th>User</th>
+                <th>Rating</th>
+                <th>Comment</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for review in reviews %}
+            <tr>
+                <td>
+                    <div class="d-flex align-items-center">
+                        {% if review.product.picture %}
+                        <img src="{{ review.product.picture.url }}" alt="{{ review.product.name }}" style="width: 50px; height: 50px; object-fit: cover;" class="me-2">
+                        {% endif %}
+                        {{ review.product.name }}
+                    </div>
+                </td>
+                <td>{{ review.user.name }}</td>
+                <td>
+                    <div class="text-warning">
+                        {% for i in "12345"|make_list %}
+                            {% if forloop.counter <= review.rating %}
+                                <i class="fas fa-star"></i>
+                            {% else %}
+                                <i class="far fa-star"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </td>
+                <td>{{ review.comment|truncatechars:30 }}</td>
+                <td>{{ review.created_time|date:"Y-m-d H:i" }}</td>
+                <td>
+                    <form method="post" action="{% url 'admin_review_delete' review.id %}" onsubmit="return confirm('Are you sure you want to delete this review?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center">No reviews found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- 分页 -->
+    <div class="d-flex justify-content-center">
+        {% if reviews.has_other_pages %}
+        <nav>
+            <ul class="pagination">
+                {% if reviews.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if request.GET.product_id %}&product_id={{ request.GET.product_id }}{% endif %}{% if request.GET.rating %}&rating={{ request.GET.rating }}{% endif %}">&laquo; First</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ reviews.previous_page_number }}{% if request.GET.product_id %}&product_id={{ request.GET.product_id }}{% endif %}{% if request.GET.rating %}&rating={{ request.GET.rating }}{% endif %}">Previous</a>
+                </li>
+                {% endif %}
+
+                <li class="page-item active">
+                    <span class="page-link">Page {{ reviews.number }} of {{ reviews.paginator.num_pages }}</span>
+                </li>
+
+                {% if reviews.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ reviews.next_page_number }}{% if request.GET.product_id %}&product_id={{ request.GET.product_id }}{% endif %}{% if request.GET.rating %}&rating={{ request.GET.rating }}{% endif %}">Next</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ reviews.paginator.num_pages }}{% if request.GET.product_id %}&product_id={{ request.GET.product_id }}{% endif %}{% if request.GET.rating %}&rating={{ request.GET.rating }}{% endif %}">Last &raquo;</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

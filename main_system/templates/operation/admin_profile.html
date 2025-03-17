@@ -1,0 +1,121 @@
+{% extends 'operation/admin_dashboard.html' %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">个人资料管理</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="/operation/homepage/">管理首页</a></li>
+        <li class="breadcrumb-item active">个人资料</li>
+    </ol>
+
+    <div class="row">
+        <!-- 个人信息卡片 -->
+        <div class="col-xl-6">
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <i class="fas fa-user me-1"></i>
+                    个人信息
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="update_profile">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">姓名</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ user.name }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">邮箱</label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">电话</label>
+                            <input type="text" class="form-control" id="phone" name="phone" value="{{ user.phone|default:'' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="role" class="form-label">角色</label>
+                            <input type="text" class="form-control" id="role" value="{{ user.role }}" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="create_time" class="form-label">创建时间</label>
+                            <input type="text" class="form-control" id="create_time" value="{{ user.create_time|date:'Y-m-d H:i' }}" readonly>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">保存更改</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 修改密码卡片 -->
+        <div class="col-xl-6">
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <i class="fas fa-key me-1"></i>
+                    修改密码
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="change_password">
+                        <div class="mb-3">
+                            <label for="current_password" class="form-label">当前密码</label>
+                            <input type="password" class="form-control" id="current_password" name="current_password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="new_password" class="form-label">新密码</label>
+                            <input type="password" class="form-control" id="new_password" name="new_password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirm_password" class="form-label">确认新密码</label>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">修改密码</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 系统信息卡片 -->
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <i class="fas fa-info-circle me-1"></i>
+                    系统信息
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h6 class="text-muted mb-1">系统版本</h6>
+                            <p>GBG 零售系统 v1.0.0</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6 class="text-muted mb-1">上次登录</h6>
+                            <p>{{ user.last_login|date:'Y-m-d H:i'|default:'未记录' }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6 class="text-muted mb-1">登录IP</h6>
+                            <p>{{ user.last_ip|default:'未记录' }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6 class="text-muted mb-1">在线状态</h6>
+                            <p><span class="badge bg-success">在线</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

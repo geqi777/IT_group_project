@@ -43,6 +43,12 @@
                                 <div class="mt-2 ms-4 text-muted">
                                     {{ user.address }}
                                 </div>
+                                <!-- 快捷支付按钮 -->
+                                <div class="mt-2 ms-4">
+                                    <button type="submit" class="btn btn-success btn-sm" id="quick_continue">
+                                        使用此地址并继续支付 <i class="fas fa-arrow-right"></i>
+                                    </button>
+                                </div>
                                 {% endif %}
                             </div>
                             <div class="form-check">
@@ -213,33 +219,68 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // 地址选择切换
-    const addressChoice = document.getElementsByName('address_choice');
+    const existingAddressRadio = document.getElementById('existing_address');
+    const newAddressRadio = document.getElementById('new_address');
     const newAddressForm = document.getElementById('new_address_form');
-    const newAddressInputs = newAddressForm.querySelectorAll('input:not([type="checkbox"]), select');
+    const quickContinueBtn = document.getElementById('quick_continue');
     
-    function toggleNewAddressForm(showNewAddress) {
-        newAddressForm.style.display = showNewAddress ? 'block' : 'none';
-        newAddressInputs.forEach(input => {
-            input.required = showNewAddress;
+    // 地址选择切换逻辑
+    if(existingAddressRadio && newAddressRadio && newAddressForm) {
+        existingAddressRadio.addEventListener('change', function() {
+            if(this.checked) {
+                newAddressForm.style.display = 'none';
+                // 当选择使用已保存地址时，移除新地址表单的required属性
+                toggleNewAddressFormRequiredFields(false);
+            }
+        });
+        
+        newAddressRadio.addEventListener('change', function() {
+            if(this.checked) {
+                newAddressForm.style.display = 'block';
+                // 当选择使用新地址时，添加新地址表单的required属性
+                toggleNewAddressFormRequiredFields(true);
+            }
         });
     }
     
-    addressChoice.forEach(function(radio) {
-        radio.addEventListener('change', function() {
-            toggleNewAddressForm(this.value === 'new');
+    // 快捷支付按钮点击处理
+    if(quickContinueBtn) {
+        quickContinueBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            // 确保选择已保存地址
+            existingAddressRadio.checked = true;
+            newAddressForm.style.display = 'none';
+            toggleNewAddressFormRequiredFields(false);
+            
+            // 提交表单
+            document.getElementById('shipping-form').submit();
         });
-    });
-
-    // 表单验证
-    const form = document.getElementById('shipping-form');
-    form.addEventListener('submit', function(event) {
-        if (!form.checkValidity()) {
-            event.preventDefault();
-            event.stopPropagation();
-        }
-        form.classList.add('was-validated');
-    });
+    }
+    
+    // 切换新地址表单中字段的required属性
+    function toggleNewAddressFormRequiredFields(required) {
+        const requiredFields = [
+            document.getElementById('shipping_address'),
+            document.getElementById('city'),
+            document.getElementById('postcode'),
+            document.getElementById('country')
+        ];
+        
+        requiredFields.forEach(field => {
+            if(field) {
+                if(required) {
+                    field.setAttribute('required', '');
+                } else {
+                    field.removeAttribute('required');
+                }
+            }
+        });
+    }
+    
+    // 初始状态检查
+    if(existingAddressRadio && existingAddressRadio.checked) {
+        toggleNewAddressFormRequiredFields(false);
+    }
 });
 
 // 优惠码应用

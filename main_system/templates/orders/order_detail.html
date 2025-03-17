@@ -55,6 +55,16 @@
                                             单价：£{{ item.price|floatformat:2 }} × {{ item.quantity }}
                                             <span class="float-end fw-bold">£{{ item.item_subtotal|floatformat:2 }}</span>
                                         </p>
+                                        {% if item.return_status != 'none' %}
+                                        <div class="mt-2">
+                                            <span class="badge bg-{% if item.return_status == 'pending' %}warning{% elif item.return_status == 'approved' %}info{% elif item.return_status == 'rejected' %}danger{% elif item.return_status == 'refunded' %}success{% else %}secondary{% endif %}">
+                                                退货状态：{{ item.get_return_status_display }}
+                                            </span>
+                                            {% if item.return_status == 'approved' %}
+                                            <small class="text-info ms-2">请联系客服获取退货地址</small>
+                                            {% endif %}
+                                        </div>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
@@ -133,10 +143,32 @@
                             </button>
                         </form>
                         {% endif %}
+                        
                         {% if order.order_status == 'pending' and not order.payment_status %}
                         <a href="/customer/order/{{order.id}}/payment/" class="btn btn-primary">
                             <i class="fas fa-credit-card me-2"></i>立即支付
                         </a>
+                        {% endif %}
+                        
+                        {% if order.order_status == 'delivered' %}
+                        <form method="post" action="/customer/order/{{ order.id }}/confirm-receipt/" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success me-2" onclick="return confirm('确认已收到商品吗？')">
+                                <i class="fas fa-check me-2"></i>确认收货
+                            </button>
+                        </form>
+                        {% endif %}
+                        
+                        {% if order.order_status == 'completed' %}
+                            {% comment %} 检查是否有任何商品正在退货中或已退货 {% endcomment %}
+                            {% if not has_returned_items %}
+                            <a href="/customer/order/{{ order.id }}/review/" class="btn btn-outline-primary me-2">
+                                <i class="fas fa-star me-2"></i>评价订单
+                            </a>
+                            <a href="/customer/order/{{ order.id }}/return/" class="btn btn-outline-warning">
+                                <i class="fas fa-undo me-2"></i>申请退货
+                            </a>
+                            {% endif %}
                         {% endif %}
                     </div>
                 </div>
@@ -165,21 +197,33 @@
                             </div>
                         </div>
                         {% endif %}
-                        {% if order.order_status == 'shipped' %}
+                        {% if order.order_status == 'shipped' or order.order_status == 'delivered' or order.order_status == 'completed' %}
                         <div class="timeline-item">
                             <div class="timeline-point bg-primary"></div>
                             <div class="timeline-content">
                                 <h6 class="mb-1">商品已发货</h6>
-                                <small class="text-muted">{{ order.shipped_time|date:"Y-m-d H:i" }}</small>
+                                <small class="text-muted">
+                                {% if order.paid_time %}
+                                    {{ order.paid_time|date:"Y-m-d H:i" }}
+                                {% else %}
+                                    {{ order.timestamp|date:"Y-m-d H:i" }}
+                                {% endif %}
+                                </small>
                             </div>
                         </div>
                         {% endif %}
-                        {% if order.order_status == 'delivered' %}
+                        {% if order.order_status == 'delivered' or order.order_status == 'completed' %}
                         <div class="timeline-item">
                             <div class="timeline-point bg-info"></div>
                             <div class="timeline-content">
                                 <h6 class="mb-1">等待收货</h6>
-                                <small class="text-muted">{{ order.delivered_time|date:"Y-m-d H:i" }}</small>
+                                <small class="text-muted">
+                                {% if order.paid_time %}
+                                    {{ order.paid_time|date:"Y-m-d H:i" }}
+                                {% else %}
+                                    {{ order.timestamp|date:"Y-m-d H:i" }}
+                                {% endif %}
+                                </small>
                             </div>
                         </div>
                         {% endif %}
@@ -197,10 +241,28 @@
                             <div class="timeline-point bg-danger"></div>
                             <div class="timeline-content">
                                 <h6 class="mb-1">订单取消</h6>
-                                <small class="text-muted">{{ order.cancelled_time|date:"Y-m-d H:i" }}</small>
+                                <small class="text-muted">{{ order.cancelled_time|default:order.timestamp|date:"Y-m-d H:i" }}</small>
                             </div>
                         </div>
                         {% endif %}
+                        
+                        <!-- 退货状态 -->
+                        {% for item in order.items.all %}
+                            {% if item.return_status != 'none' %}
+                                <div class="timeline-item">
+                                    <div class="timeline-point bg-{% if item.return_status == 'pending' %}warning{% elif item.return_status == 'approved' %}info{% elif item.return_status == 'rejected' %}danger{% elif item.return_status == 'refunded' %}success{% else %}secondary{% endif %}"></div>
+                                    <div class="timeline-content">
+                                        <h6 class="mb-1">{{ item.product.name }} - 退货{{ item.get_return_status_display }}</h6>
+                                        <small class="text-muted">{{ item.return_time|date:"Y-m-d H:i" }}</small>
+                                        {% if item.return_status == 'refunded' and item.refund_time %}
+                                        <div class="mt-1">
+                                            <small class="text-success">退款完成时间: {{ item.refund_time|date:"Y-m-d H:i" }}</small>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
                     </div>
                 </div>
             </div>

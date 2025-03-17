@@ -1,0 +1,173 @@
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- 页面标题 -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h1 class="fw-bold mb-3">关于 Unicraft</h1>
+            <p class="lead text-muted">用心制作，传递美好</p>
+            <hr class="my-4 w-25 mx-auto">
+        </div>
+    </div>
+
+    <!-- 公司简介 -->
+    <div class="row align-items-center mb-5">
+        <div class="col-lg-6 mb-4 mb-lg-0">
+            <img src="https://via.placeholder.com/600x400?text=Unicraft+Company" alt="公司照片" class="img-fluid rounded shadow-sm">
+        </div>
+        <div class="col-lg-6">
+            <h2 class="mb-3">我们的故事</h2>
+            <p>Unicraft创立于2020年，是一家专注于手工艺品和独特礼品的精品零售商。我们的使命是为客户提供高品质、独特且充满创意的产品，帮助人们表达情感，传递美好。</p>
+            <p>我们的产品均来自全球各地精心挑选的设计师和工匠，确保每一件商品都蕴含独特的创意和精湛的工艺。从精美的家居装饰到独特的个人配饰，从创意礼品到艺术品收藏，Unicraft致力于为您带来独一无二的购物体验。</p>
+            <p>随着时间的推移，我们已经从一个小型网店发展成为拥有线上平台和实体店的综合零售商，但我们始终坚持初心，致力于提供最优质的产品和最贴心的服务。</p>
+        </div>
+    </div>
+
+    <!-- 我们的价值观 -->
+    <div class="row my-5">
+        <div class="col-12 text-center mb-4">
+            <h2>我们的价值观</h2>
+            <hr class="my-4 w-25 mx-auto">
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px;">
+                        <i class="fas fa-heart fa-2x"></i>
+                    </div>
+                    <h3 class="h4 mb-3">品质至上</h3>
+                    <p class="text-muted">我们对每一件商品都精挑细选，确保它们拥有最高的品质和独特的设计。</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px;">
+                        <i class="fas fa-leaf fa-2x"></i>
+                    </div>
+                    <h3 class="h4 mb-3">环保责任</h3>
+                    <p class="text-muted">我们关注环境保护，支持可持续发展的生产方式，选择环保材料制作的产品。</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="rounded-circle bg-info text-white d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px;">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                    <h3 class="h4 mb-3">顾客至上</h3>
+                    <p class="text-muted">我们致力于提供卓越的客户体验，从产品选择到售后服务，每一步都以顾客为中心。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 我们的团队 -->
+    <div class="row my-5">
+        <div class="col-12 text-center mb-4">
+            <h2>我们的团队</h2>
+            <hr class="my-4 w-25 mx-auto">
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <img src="https://via.placeholder.com/300x300?text=CEO" class="card-img-top" alt="CEO">
+                <div class="card-body text-center">
+                    <h5 class="card-title mb-1">张明</h5>
+                    <p class="card-text text-muted small">创始人 & CEO</p>
+                    <p class="card-text">拥有10年零售行业经验，致力于打造最有创意的购物平台。</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <img src="https://via.placeholder.com/300x300?text=Designer" class="card-img-top" alt="首席设计师">
+                <div class="card-body text-center">
+                    <h5 class="card-title mb-1">李华</h5>
+                    <p class="card-text text-muted small">首席设计师</p>
+                    <p class="card-text">毕业于中央美院，拥有丰富的产品设计经验和独特的美学视角。</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <img src="https://via.placeholder.com/300x300?text=Marketing" class="card-img-top" alt="市场总监">
+                <div class="card-body text-center">
+                    <h5 class="card-title mb-1">王芳</h5>
+                    <p class="card-text text-muted small">市场总监</p>
+                    <p class="card-text">拥有丰富的品牌管理和市场营销经验，善于捕捉市场趋势。</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <img src="https://via.placeholder.com/300x300?text=Tech" class="card-img-top" alt="技术总监">
+                <div class="card-body text-center">
+                    <h5 class="card-title mb-1">赵强</h5>
+                    <p class="card-text text-muted small">技术总监</p>
+                    <p class="card-text">前阿里技术专家，负责Unicraft的技术架构和用户体验优化。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 实体店铺地址 -->
+    <div class="row my-5">
+        <div class="col-12 text-center mb-4">
+            <h2>我们的实体店</h2>
+            <hr class="my-4 w-25 mx-auto">
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h4>伦敦旗舰店</h4>
+                    <address class="mb-3">
+                        <p class="mb-1"><i class="fas fa-map-marker-alt me-2"></i> 123 Oxford Street, London, W1D 2LQ</p>
+                        <p class="mb-1"><i class="fas fa-phone me-2"></i> +44 20 1234 5678</p>
+                        <p class="mb-1"><i class="fas fa-envelope me-2"></i> london@unicraft.com</p>
+                        <p><i class="fas fa-clock me-2"></i> 周一至周六: 10:00 - 20:00, 周日: 11:00 - 18:00</p>
+                    </address>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h4>曼彻斯特店</h4>
+                    <address class="mb-3">
+                        <p class="mb-1"><i class="fas fa-map-marker-alt me-2"></i> 456 Market Street, Manchester, M1 1PD</p>
+                        <p class="mb-1"><i class="fas fa-phone me-2"></i> +44 161 987 6543</p>
+                        <p class="mb-1"><i class="fas fa-envelope me-2"></i> manchester@unicraft.com</p>
+                        <p><i class="fas fa-clock me-2"></i> 周一至周六: 10:00 - 19:00, 周日: 11:00 - 17:00</p>
+                    </address>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA部分 -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="bg-light p-5 rounded text-center">
+                <h3>成为Unicraft家族的一员</h3>
+                <p class="lead">订阅我们的新闻邮件，获取最新产品资讯和独家优惠</p>
+                <form class="row g-3 justify-content-center mt-3" action="/subscribe/" method="post">
+                    {% csrf_token %}
+                    <div class="col-md-4">
+                        <input type="text" class="form-control" name="name" placeholder="您的姓名" required>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="email" class="form-control" name="email" placeholder="您的邮箱" required>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">订阅</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

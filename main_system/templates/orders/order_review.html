@@ -19,9 +19,45 @@
                         <p class="text-muted">下单时间：{{ order.timestamp|date:"Y-m-d H:i" }}</p>
                     </div>
 
+                    {% if reviewed_items %}
+                    <div class="mb-4">
+                        <h5>已评价商品</h5>
+                        {% for item in reviewed_items %}
+                        <div class="card mb-3 bg-light">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <img src="{{ item.product.picture.url }}" alt="{{ item.product.name }}" class="me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                                    <div>
+                                        <h6 class="mb-1">{{ item.product.name }}</h6>
+                                        <p class="text-muted mb-0">数量：{{ item.quantity }}</p>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <div class="me-3">
+                                        <span class="text-warning">
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= item.review.rating %}
+                                                <i class="fas fa-star"></i>
+                                                {% else %}
+                                                <i class="far fa-star"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </span>
+                                        <span class="ms-1">{{ item.review.rating }}星</span>
+                                    </div>
+                                    <p class="mb-0">{{ item.review.comment }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    {% if unreviewed_items %}
+                    <h5>待评价商品</h5>
                     <form method="post">
                         {% csrf_token %}
-                        {% for item in order.items.all %}
+                        {% for item in unreviewed_items %}
                         <div class="card mb-3">
                             <div class="card-body">
                                 <div class="d-flex align-items-center mb-3">
@@ -56,6 +92,7 @@
                             <button type="submit" class="btn btn-primary">提交评价</button>
                         </div>
                     </form>
+                    {% endif %}
                 </div>
             </div>
         </div>

@@ -44,26 +44,29 @@
                         {% if transactions %}
                         <div class="list-group">
                             {% for transaction in transactions %}
-                            <div class="list-group-item list-group-item-action">
+                            <a href="/customer/wallet/transactions/" class="list-group-item list-group-item-action">
                                 <div class="d-flex w-100 justify-content-between align-items-center">
                                     <div>
                                         <h6 class="mb-1">{{ transaction.details }}</h6>
+                                        {% if transaction.payment_card %}
+                                        <small class="text-muted">卡号: **** **** **** {{ transaction.payment_card.card_number|slice:"-4:" }}</small>
+                                        {% endif %}
                                         <small class="text-muted">{{ transaction.timestamp|date:"Y-m-d H:i" }}</small>
                                     </div>
                                     <div class="text-end">
                                         {% if transaction.amount %}
-                                            <span class="{% if transaction.transaction_type == 'top up' %}text-success{% else %}text-danger{% endif %} fw-bold">
-                                                {% if transaction.transaction_type == 'top up' %}+{% else %}-{% endif %}£{{ transaction.amount|floatformat:2 }}
+                                            <span class="{% if transaction.transaction_type == 'top_up' or transaction.transaction_type == 'refund' %}text-success{% else %}text-danger{% endif %} fw-bold">
+                                                {% if transaction.transaction_type == 'top_up' or transaction.transaction_type == 'refund' %}+{% else %}-{% endif %}£{{ transaction.amount|floatformat:2 }}
                                             </span>
                                         {% endif %}
                                         {% if transaction.points %}
-                                            <span class="{% if transaction.transaction_type == 'points earned' %}text-success{% else %}text-danger{% endif %} fw-bold">
-                                                {% if transaction.transaction_type == 'points earned' %}+{% else %}-{% endif %}{{ transaction.points }} 积分
+                                            <span class="{% if transaction.transaction_type == 'points_earned' or transaction.transaction_type == 'points_refund' %}text-success{% else %}text-danger{% endif %} fw-bold">
+                                                {% if transaction.transaction_type == 'points_earned' or transaction.transaction_type == 'points_refund' %}+{% else %}-{% endif %}{{ transaction.points }} 积分
                                             </span>
                                         {% endif %}
                                     </div>
                                 </div>
-                            </div>
+                            </a>
                             {% endfor %}
                         </div>
                         {% else %}

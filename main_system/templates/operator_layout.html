@@ -47,12 +47,13 @@
                 <!-- 账号管理 -->
                 <div class="dropdown">
                     <button class="btn btn-outline-dark dropdown-toggle account-btn" type="button" id="accountDropdown" data-bs-toggle="dropdown">
-                        <i class="fas fa-user"></i>
+                        <i class="fas fa-user"></i> {{ request.session.admin_info.name }}
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="accountDropdown">
-                        <li><a class="dropdown-item" href="/profile/">Profile</a></li>
-                        <li><a class="dropdown-item" href="/settings/">Settings</a></li>
-                        <li><a class="dropdown-item" href="/logout/">Log out</a></li>
+                        <li><a class="dropdown-item" href="/operation/profile/"><i class="fas fa-id-card me-2"></i>个人资料</a></li>
+                        <li><a class="dropdown-item" href="/operation/homepage/"><i class="fas fa-tachometer-alt me-2"></i>控制面板</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="/operation/logout/"><i class="fas fa-sign-out-alt me-2"></i>退出登录</a></li>
                     </ul>
                 </div>
             </div>

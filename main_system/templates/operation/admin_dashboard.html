@@ -9,6 +9,9 @@
                 <h4 class="text-white text-center">Admin Panel</h4>
                 <ul class="nav flex-column">
                     <li class="nav-item">
+                        <a class="nav-link text-white active" href="{% url 'admin_dashboard' %}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link {% if section == 'users' %}active{% endif %} text-white" href="{% url 'admin_user_list' %}">Manage Users</a>
                     </li>
                     <li class="nav-item">
@@ -21,6 +24,9 @@
                         <a class="nav-link {% if section == 'orders' %}active{% endif %} text-white" href="{% url 'admin_order_list' %}">Manage Orders</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link {% if section == 'reviews' %}active{% endif %} text-white" href="{% url 'admin_review_list' %}">Manage Reviews</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link {% if section == 'promo_codes' %}active{% endif %} text-white" href="{% url 'promo_code_list' %}">Manage Promo Codes</a>
                     </li>
                 </ul>
@@ -31,12 +37,422 @@
         <main class="col-md-10 ms-sm-auto px-md-4">
             <div class="p-4">
                 {% block dashboard_content %}
-                <h2 class="text-center">Welcome to Admin Dashboard</h2>
-                <p class="text-center">Please select a category from the left sidebar.</p>
+                <h1 class="mb-4">管理员仪表盘</h1>
+                
+                <!-- 统计卡片 -->
+                <div class="row mb-4">
+                    <div class="col-md-2 mb-3">
+                        <div class="card bg-primary text-white h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">用户总数</h5>
+                                <h2 class="display-4">{{ user_count }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <div class="card bg-success text-white h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">产品总数</h5>
+                                <h2 class="display-4">{{ product_count }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <div class="card bg-warning text-dark h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">订单总数</h5>
+                                <h2 class="display-4">{{ order_count }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <div class="card bg-danger text-white h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">待支付</h5>
+                                <h2 class="display-4">{{ pending_count }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <div class="card bg-info text-white h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">待发货</h5>
+                                <h2 class="display-4">{{ to_ship_count }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <div class="card bg-secondary text-white h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">待送达</h5>
+                                <h2 class="display-4">{{ to_deliver_count }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 待处理订单 -->
+                <div class="row">
+                    <!-- 待支付订单 -->
+                    <div class="col-md-4">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">待支付订单</h5>
+                                    <a href="{% url 'admin_order_list' %}?order_status=pending" class="btn btn-sm btn-primary">查看全部</a>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                {% if pending_orders %}
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>订单号</th>
+                                                <th>金额</th>
+                                                <th>状态</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for order in pending_orders %}
+                                            <tr>
+                                                <td><a href="{% url 'admin_order_detail' order.id %}">{{ order.order_number }}</a></td>
+                                                <td>¥{{ order.total_amount }}</td>
+                                                <td>
+                                                    <span class="badge bg-danger">待支付</span>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <p class="text-muted">暂无待支付订单</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 待发货订单 -->
+                    <div class="col-md-4">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">待发货订单</h5>
+                                    <a href="{% url 'admin_order_list' %}?order_status=paid" class="btn btn-sm btn-primary">查看全部</a>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                {% if to_ship_orders %}
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>订单号</th>
+                                                <th>金额</th>
+                                                <th>状态</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for order in to_ship_orders %}
+                                            <tr>
+                                                <td><a href="{% url 'admin_order_detail' order.id %}">{{ order.order_number }}</a></td>
+                                                <td>¥{{ order.total_amount }}</td>
+                                                <td>
+                                                    <span class="badge bg-info">待发货</span>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <p class="text-muted">暂无待发货订单</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 待送达订单 -->
+                    <div class="col-md-4">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">待送达订单</h5>
+                                    <a href="{% url 'admin_order_list' %}?order_status=shipped" class="btn btn-sm btn-primary">查看全部</a>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                {% if to_deliver_orders %}
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>订单号</th>
+                                                <th>金额</th>
+                                                <th>状态</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for order in to_deliver_orders %}
+                                            <tr>
+                                                <td><a href="{% url 'admin_order_detail' order.id %}">{{ order.order_number }}</a></td>
+                                                <td>¥{{ order.total_amount }}</td>
+                                                <td>
+                                                    <span class="badge bg-secondary">待送达</span>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <p class="text-muted">暂无待送达订单</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <!-- 退货记录 -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">退货记录</h5>
+                                    <a href="{% url 'admin_order_list' %}?order_status=refunded" class="btn btn-sm btn-primary">查看全部</a>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                {% if return_orders %}
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>订单号</th>
+                                                <th>退款金额</th>
+                                                <th>退款时间</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for order in return_orders %}
+                                            <tr>
+                                                <td><a href="{% url 'admin_order_detail' order.id %}">{{ order.order_number }}</a></td>
+                                                <td>¥{{ order.total_amount }}</td>
+                                                <td>{{ order.complete_time|date:"Y-m-d H:i" }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="mt-3">
+                                    <span class="badge bg-info">总计: {{ return_count }} 笔退款</span>
+                                </div>
+                                {% else %}
+                                <p class="text-muted">暂无退款记录</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 近期订单 -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">近期订单</h5>
+                                    <a href="{% url 'admin_order_list' %}" class="btn btn-sm btn-primary">查看全部</a>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                {% if recent_orders %}
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>订单号</th>
+                                                <th>金额</th>
+                                                <th>状态</th>
+                                                <th>时间</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for order in recent_orders %}
+                                            <tr>
+                                                <td><a href="{% url 'admin_order_detail' order.id %}">{{ order.order_number }}</a></td>
+                                                <td>¥{{ order.total_amount }}</td>
+                                                <td>
+                                                    {% if order.order_status == 'pending' %}
+                                                    <span class="badge bg-danger">待支付</span>
+                                                    {% elif order.order_status == 'paid' %}
+                                                    <span class="badge bg-info">待发货</span>
+                                                    {% elif order.order_status == 'shipped' %}
+                                                    <span class="badge bg-secondary">待送达</span>
+                                                    {% elif order.order_status == 'delivered' %}
+                                                    <span class="badge bg-primary">已送达</span>
+                                                    {% elif order.order_status == 'completed' %}
+                                                    <span class="badge bg-success">已完成</span>
+                                                    {% elif order.order_status == 'cancelled' %}
+                                                    <span class="badge bg-danger">已取消</span>
+                                                    {% elif order.order_status == 'refunded' %}
+                                                    <span class="badge bg-warning">已退款</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ order.timestamp|date:"Y-m-d H:i" }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <p class="text-muted">暂无订单记录</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <!-- 月度销售统计图表 -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">月度销售统计</h5>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="monthlySalesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 评价统计 -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">商品评价统计</h5>
+                                    <a href="{% url 'admin_review_list' %}" class="btn btn-sm btn-primary">查看全部</a>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <h2 class="me-2">{{ avg_rating|floatformat:1 }}</h2>
+                                    <div class="text-muted">平均评分</div>
+                                </div>
+                                
+                                <!-- 评分分布 -->
+                                <div class="mb-4">
+                                    {% for item in rating_distribution %}
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div style="width: 60px">{{ item.rating }} 星</div>
+                                        <div class="progress flex-grow-1 mx-2" style="height: 10px">
+                                            <div class="progress-bar bg-warning" role="progressbar" 
+                                                 style="width: {% widthratio item.count rating_distribution.0.count|add:1 100 %}%" 
+                                                 aria-valuenow="{{ item.count }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <div style="width: 40px">{{ item.count }}</div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                <!-- 评分最高的商品 -->
+                                <h6 class="mb-3">评分最高的商品</h6>
+                                <ul class="list-group">
+                                    {% for product in top_rated_products|slice:":5" %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>{{ product.name }}</div>
+                                        <div>
+                                            <span class="badge bg-warning text-dark">{{ product.avg_rating|floatformat:1 }}</span>
+                                            <small class="text-muted">({{ product.review_count }} 条评价)</small>
+                                        </div>
+                                    </li>
+                                    {% empty %}
+                                    <li class="list-group-item">暂无评价数据</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 {% endblock %}
             </div>
         </main>
     </div>
 </div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // 加载月度销售图表
+    document.addEventListener('DOMContentLoaded', function() {
+        var ctx = document.getElementById('monthlySalesChart').getContext('2d');
+        var salesData = [
+            {% for item in monthly_sales %}
+                {{ item.sales }},
+            {% endfor %}
+        ];
+        var orderCounts = [
+            {% for item in monthly_sales %}
+                {{ item.orders }},
+            {% endfor %}
+        ];
+        var labels = [
+            {% for month in month_names %}
+                "{{ month }}",
+            {% endfor %}
+        ];
+        
+        var monthlySalesChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '销售额 (¥)',
+                    data: salesData,
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1,
+                    yAxisID: 'y'
+                }, {
+                    label: '订单数',
+                    data: orderCounts,
+                    type: 'line',
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1,
+                    fill: false,
+                    yAxisID: 'y1'
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: '销售额'
+                        }
+                    },
+                    y1: {
+                        beginAtZero: true,
+                        position: 'right',
+                        grid: {
+                            drawOnChartArea: false,
+                        },
+                        title: {
+                            display: true,
+                            text: '订单数'
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
 
 {% endblock %}

@@ -12,12 +12,12 @@ from main_system.models import User, Wallet, PaymentCard, WalletTransaction
 def wallet_view(request):
     """钱包详情页面，显示余额、积分和支付卡列表"""
     # 检查用户是否登录
-    user_info = request.session.get('customer_info')
+    user_info = request.session.get('user_info')
     if not user_info:
         messages.error(request, '请先登录')
         return redirect('/customer/login/')
 
-    user = User.objects.filter(id=user_info['user_id']).first()
+    user = User.objects.filter(id=user_info['id']).first()
     if not user:
         messages.error(request, '用户不存在')
         return redirect('/customer/register/')
@@ -46,12 +46,12 @@ def wallet_view(request):
 def payment_card_list(request):
     """支付卡列表页面"""
     # 检查用户是否登录
-    user_info = request.session.get('customer_info')
+    user_info = request.session.get('user_info')
     if not user_info:
         messages.error(request, '请先登录')
         return redirect('/customer/login/')
 
-    user = User.objects.filter(id=user_info['user_id']).first()
+    user = User.objects.filter(id=user_info['id']).first()
     if not user:
         messages.error(request, '用户不存在')
         return redirect('/customer/register/')
@@ -66,12 +66,12 @@ def payment_card_list(request):
 def payment_card_add(request):
     """添加新支付卡"""
     # 检查用户是否登录
-    user_info = request.session.get('customer_info')
+    user_info = request.session.get('user_info')
     if not user_info:
         messages.error(request, '请先登录')
         return redirect('/customer/login/')
 
-    user = User.objects.filter(id=user_info['user_id']).first()
+    user = User.objects.filter(id=user_info['id']).first()
     if not user:
         messages.error(request, '用户不存在')
         return redirect('/customer/register/')
@@ -111,12 +111,12 @@ def payment_card_add(request):
 def payment_card_edit(request, card_id):
     """编辑支付卡"""
     # 检查用户是否登录
-    user_info = request.session.get('customer_info')
+    user_info = request.session.get('user_info')
     if not user_info:
         messages.error(request, '请先登录')
         return redirect('/customer/login/')
 
-    user = User.objects.filter(id=user_info['user_id']).first()
+    user = User.objects.filter(id=user_info['id']).first()
     if not user:
         messages.error(request, '用户不存在')
         return redirect('/customer/register/')
@@ -148,12 +148,12 @@ def payment_card_edit(request, card_id):
 def payment_card_delete(request, card_id):
     """删除支付卡"""
     # 检查用户是否登录
-    user_info = request.session.get('customer_info')
+    user_info = request.session.get('user_info')
     if not user_info:
         messages.error(request, '请先登录')
         return redirect('/customer/login/')
 
-    user = User.objects.filter(id=user_info['user_id']).first()
+    user = User.objects.filter(id=user_info['id']).first()
     if not user:
         messages.error(request, '用户不存在')
         return redirect('/customer/register/')
@@ -171,12 +171,12 @@ def payment_card_delete(request, card_id):
 def wallet_top_up(request):
     """钱包充值"""
     # 检查用户是否登录
-    user_info = request.session.get('customer_info')
+    user_info = request.session.get('user_info')
     if not user_info:
         messages.error(request, '请先登录')
         return redirect('/customer/login/')
 
-    user = User.objects.filter(id=user_info['user_id']).first()
+    user = User.objects.filter(id=user_info['id']).first()
     if not user:
         messages.error(request, '用户不存在')
         return redirect('/customer/register/')
@@ -226,12 +226,12 @@ def wallet_top_up(request):
 def transaction_history(request):
     """交易记录"""
     # 检查用户是否登录
-    user_info = request.session.get('customer_info')
+    user_info = request.session.get('user_info')
     if not user_info:
         messages.error(request, '请先登录')
         return redirect('/customer/login/')
 
-    user = User.objects.filter(id=user_info['user_id']).first()
+    user = User.objects.filter(id=user_info['id']).first()
     if not user:
         messages.error(request, '用户不存在')
         return redirect('/customer/register/')

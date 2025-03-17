@@ -30,18 +30,27 @@ urlpatterns = [
     path('', home_page.homepage, name='home'),  # 首页
     path('home/', home_page.homepage, name='home'),
     path('subscribe/', home_page.subscribe, name='subscribe'),  # 订阅
-    path('search/', product.search_products),    # 商品搜索
+    path('search/', home_page.search, name='search'),
+    path('about/', home_page.about_us, name='about'),   # 关于我们
+    path('contact/', home_page.contact, name='contact'),  # 联系我们
+    path('story/1/', home_page.story1, name='story1'),
+    path('story/2/', home_page.story2, name='story2'),
+    path('story/3/', home_page.story3, name='story3'),
 
     # admin
     # 后台管理首页（包含用户、商品、管理员的管理）
     path('operation/homepage/', admin_dashboard.admin_dashboard, name="admin_dashboard"),
-
+    path('operation/profile/', admin_login.admin_profile, name='admin_profile'),
+    path('operation/logout/', admin_login.admin_logout, name='admin_logout'),
     # 用户管理
     path('operation/homepage/users/', user.user_list, name="admin_user_list"),
     path('operation/homepage/users/add/', user.user_add, name="user_add"),
     path('operation/homepage/users/edit/<int:nid>/', user.user_edit, name="user_edit"),
     path('operation/homepage/users/delete/<int:nid>/', user.user_delete, name="user_delete"),
     path('operation/login/', admin_login.admin_login, name='admin_login'),
+
+
+
 
     # 商品管理
     path('operation/homepage/products/', product.product_list, name="admin_product_list"),
@@ -55,10 +64,18 @@ urlpatterns = [
     path('operation/homepage/admins/edit/<int:nid>/', operator.operator_edit, name="operator_edit"),
     path('operation/homepage/admins/delete/<int:nid>/', operator.operator_delete, name="operator_delete"),
 
+
+
+
     # 订单管理
     path('operation/homepage/orders/', order.admin_order_list, name="admin_order_list"),
     path('operation/homepage/orders/update/<int:order_id>/', order.update_order_status, name="update_order_status"),
     path('operation/homepage/orders/return/<int:order_id>/<int:item_id>/', order.process_return, name="process_return"),
+    path('operation/homepage/orders/detail/<int:order_id>/', order.admin_order_detail, name="admin_order_detail"),
+
+    # 评价管理
+    path('operation/homepage/reviews/', admin_dashboard.admin_review_list, name="admin_review_list"),
+    path('operation/homepage/reviews/delete/<int:review_id>/', admin_dashboard.admin_review_delete, name="admin_review_delete"),
 
     # Promo Code 管理
     path('operation/homepage/promo_codes/list/', promo_code.promo_code_list, name='promo_code_list'),
@@ -71,12 +88,8 @@ urlpatterns = [
     path('customer/login/', user_login.user_login, name='customer_login'),
     path('customer/register/', user_login.user_register, name='customer_register'),
     path('customer/profile/', user_login.user_profile, name='customer_profile'),
+    path('customer/logout/', user_login.user_logout, name='customer_logout'),
 
-    # operator system
-    path('operator/product/list/', product.product_list),
-    path('operator/product/list/add/', product.product_add),
-    path('operator/product/list/<int:product_id>/delete/', product.product_delete),
-    path('operator/product/list/<int:product_id>/edit/', product.product_edit),
 
     path('products/product/collection/', product.product_page),
     path('products/product/<int:product_id>/detail/', product.product_detail),
@@ -102,8 +115,6 @@ urlpatterns = [
     path('customer/order/<int:order_id>/delete/', order.order_delete),
 
 
-    path('operator/orders/list/', order.admin_order_list),
-    path('operator/orders/<int:order_id>/detail/', order.update_order_status, name='update_order_status'),
 
 
 

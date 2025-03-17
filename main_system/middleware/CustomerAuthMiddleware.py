@@ -14,7 +14,7 @@ class CustomerAuthMiddleware(MiddlewareMixin):
             return None
 
         # 检查用户是否已登录
-        customer_info = request.session.get('customer_info')
+        customer_info = request.session.get('user_info')
         # print("customer auth middleware")
         print(dict(request.session))
         # 如果用户未登录，则重定向到 customer 登录页面

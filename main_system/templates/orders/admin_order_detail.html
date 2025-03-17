@@ -1,0 +1,193 @@
+{% extends "operation/admin_dashboard.html" %}
+{% block dashboard_content %}
+<div class="container mt-4">
+    <h2>Order Details</h2>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">Order #{{ order.order_number }}</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Customer:</strong> {{ order.user.name }}</p>
+                    <p><strong>Email:</strong> {{ order.contact_email|default:order.user.email }}</p>
+                    <p><strong>Shipping Address:</strong> {{ order.shipping_address }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Order Status:</strong> <span class="badge bg-{% if order.order_status == 'completed' %}success{% elif order.order_status == 'cancelled' %}danger{% else %}warning{% endif %}">{{ order.get_order_status_display }}</span></p>
+                    <p><strong>Payment Status:</strong> <span class="badge bg-{% if order.payment_status %}success{% else %}secondary{% endif %}">{{ order.payment_status|yesno:"Paid,Unpaid" }}</span></p>
+                    <p><strong>Payment Method:</strong> {{ order.get_payment_method_display }}</p>
+                    <p><strong>Order Date:</strong> {{ order.timestamp|date:"Y-m-d H:i" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">Order Items</h5>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Product</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Subtotal</th>
+                        <th>Return Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order.items.all %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <img src="{% if item.product.picture %}{{ item.product.picture.url }}{% else %}/static/image/products/default_product.png{% endif %}" alt="{{ item.product.name }}" style="width: 50px; height: 50px; object-fit: cover;" class="me-2">
+                                <div>{{ item.product.name }}</div>
+                            </div>
+                        </td>
+                        <td>${{ item.price }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>${{ item.item_subtotal }}</td>
+                        <td>
+                            {% if item.return_status != 'none' %}
+                            <span class="badge bg-{% if item.return_status == 'pending' %}warning{% elif item.return_status == 'approved' %}info{% elif item.return_status == 'rejected' %}danger{% elif item.return_status == 'refunded' %}success{% else %}secondary{% endif %}">
+                                {{ item.get_return_status_display }}
+                            </span>
+                            {% else %}
+                            <span class="badge bg-secondary">None</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.return_status == 'pending' %}
+                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#returnModal{{ item.id }}">
+                                Process Return
+                            </button>
+                            
+                            <!-- Return Processing Modal -->
+                            <div class="modal fade" id="returnModal{{ item.id }}" tabindex="-1" aria-labelledby="returnModalLabel{{ item.id }}" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="returnModalLabel{{ item.id }}">Process Return Request</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p><strong>Product:</strong> {{ item.product.name }}</p>
+                                            <p><strong>Return Reason:</strong> {{ item.return_reason }}</p>
+                                            <p><strong>Details:</strong> {{ item.return_details }}</p>
+                                            <p><strong>Request Date:</strong> {{ item.return_time|date:"Y-m-d H:i" }}</p>
+                                            
+                                            <form action="{% url 'process_return' order_id=order.id item_id=item.id %}" method="post">
+                                                {% csrf_token %}
+                                                <div class="mb-3">
+                                                    <label for="status" class="form-label">Decision</label>
+                                                    <select class="form-select" name="status" id="status" required>
+                                                        <option value="">Select...</option>
+                                                        <option value="approved">Approve Return</option>
+                                                        <option value="rejected">Reject Return</option>
+                                                        <option value="received">Mark as Received</option>
+                                                        <option value="refunded">Process Refund</option>
+                                                    </select>
+                                                </div>
+                                                <button type="submit" class="btn btn-primary">Submit</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% elif item.return_status == 'approved' or item.return_status == 'received' %}
+                            <form action="{% url 'process_return' order_id=order.id item_id=item.id %}" method="post" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="status" value="{% if item.return_status == 'approved' %}received{% else %}refunded{% endif %}">
+                                <button type="submit" class="btn btn-sm btn-outline-success">
+                                    {% if item.return_status == 'approved' %}Mark Received{% else %}Process Refund{% endif %}
+                                </button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">Order Summary</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="table table-sm">
+                        <tr>
+                            <td><strong>Subtotal:</strong></td>
+                            <td class="text-end">${{ order.subtotal_amount }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Shipping:</strong></td>
+                            <td class="text-end">${{ order.shipping_fee }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>VAT (5%):</strong></td>
+                            <td class="text-end">${{ order.vat }}</td>
+                        </tr>
+                        {% if order.promo_discount %}
+                        <tr class="text-success">
+                            <td><strong>Discount:</strong></td>
+                            <td class="text-end">-${{ order.promo_discount }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr class="table-active">
+                            <td><strong>Total:</strong></td>
+                            <td class="text-end"><strong>${{ order.final_amount }}</strong></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if order.order_status != 'completed' and order.order_status != 'refunded' and order.order_status != 'cancelled' %}
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">更新订单状态</h5>
+        </div>
+        <div class="card-body">
+            <form action="{% url 'update_order_status' order.id %}" method="post" class="row g-3">
+                {% csrf_token %}
+                <div class="col-md-4">
+                    <select class="form-select" name="status" id="status">
+                        {% if order.order_status == 'pending' %}
+                        <option value="paid">标记为已支付</option>
+                        <option value="shipped">标记为已发货</option>
+                        {% endif %}
+                        {% if order.order_status == 'paid' %}
+                        <option value="shipped">标记为已发货</option>
+                        {% endif %}
+                        {% if order.order_status == 'shipped' %}
+                        <option value="delivered">标记为已送达</option>
+                        {% endif %}
+                        {% if order.order_status == 'delivered' %}
+                        <option value="completed">标记为已完成</option>
+                        {% endif %}
+                        <option value="cancelled">取消订单</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary">更新</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="text-end mt-3">
+        <a href="{% url 'admin_order_list' %}" class="btn btn-secondary">Back to Orders</a>
+    </div>
+</div>
+{% endblock %} 

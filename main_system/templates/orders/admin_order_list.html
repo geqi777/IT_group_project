@@ -4,17 +4,16 @@
     <h2>Manage Orders</h2>
 
     {% if order_items %}
-    <table class="table table-bordered mt-3">
-        <thead class="thead-dark">
+    <table class="table table-hover">
+        <thead class="table-dark">
             <tr>
                 <th>Order Number</th>
                 <th>User</th>
                 <th>Product</th>
                 <th>Price</th>
                 <th>Quantity</th>
-                <th>Subtotal</th>
                 <th>Status</th>
-                <th>Created At</th>
+                <th>Date</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -25,22 +24,30 @@
                 <td>{{ item.order.user.name }}</td>
                 <td>
                     <div class="d-flex align-items-center">
-                        <img src="{{ item.product.picture.url }}" alt="{{ item.product.name }}" width="50">
+                        <img src="{{ item.product.picture.url }}" alt="{{ item.product.name }}" width="50" class="me-2">
                         {{ item.product.name }}
                     </div>
                 </td>
                 <td>${{ item.price }}</td>
                 <td>{{ item.quantity }}</td>
-                <td>${{ item.subtotal }}</td>
                 <td>
-                    <span class="badge bg-{% if item.order.order_status == 'completed' %}success{% else %}warning{% endif %}">
+                    <span class="badge bg-{% if item.order.order_status == 'completed' %}success{% elif item.order.order_status == 'cancelled' %}secondary{% elif item.order.order_status == 'refunded' %}danger{% else %}warning{% endif %}">
                         {{ item.order.get_order_status_display }}
                     </span>
+                    {% if item.return_status != 'none' %}
+                    <span class="badge bg-{% if item.return_status == 'pending' %}warning{% elif item.return_status == 'approved' %}info{% elif item.return_status == 'rejected' %}danger{% elif item.return_status == 'refunded' %}success{% else %}secondary{% endif %}">
+                        {{ item.get_return_status_display }}
+                    </span>
+                    {% endif %}
                 </td>
-                <td>{{ item.order.timestamp|date:"Y-m-d H:i" }}</td>
+                <td>{{ item.order.timestamp|date:"Y-m-d" }}</td>
                 <td>
-                    <a href="{% url 'update_order_status' item.order.id %}" class="btn btn-sm btn-primary">Update</a>
+                    <a href="/operation/homepage/orders/detail/{{ item.order.id }}/" class="btn btn-sm btn-primary">View Details</a>
                 </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" class="text-center">No orders found.</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -48,7 +55,33 @@
 
     <!-- 分页 -->
     <div class="d-flex justify-content-center">
-        {{ order_items.paginator }}
+        {% if order_items.has_other_pages %}
+        <nav>
+            <ul class="pagination">
+                {% if order_items.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1">&laquo; First</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ order_items.previous_page_number }}">Previous</a>
+                </li>
+                {% endif %}
+
+                <li class="page-item active">
+                    <span class="page-link">Page {{ order_items.number }} of {{ order_items.paginator.num_pages }}</span>
+                </li>
+
+                {% if order_items.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ order_items.next_page_number }}">Next</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ order_items.paginator.num_pages }}">Last &raquo;</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
     </div>
     {% else %}
     <div class="alert alert-info">No orders found.</div>

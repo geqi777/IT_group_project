@@ -1,0 +1,128 @@
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/home/">首页</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ story.title }}</li>
+        </ol>
+    </nav>
+
+    <div class="row mb-5">
+        <div class="col-md-8">
+            <h1 class="mb-4">{{ story.title }}</h1>
+            <div class="mb-3">
+                <span class="text-muted">
+                    <i class="far fa-calendar-alt me-2"></i>{{ story.date }}
+                </span>
+                <span class="text-muted ms-3">
+                    <i class="far fa-user me-2"></i>{{ story.author }}
+                </span>
+            </div>
+            
+            <div class="mb-4">
+                <img src="{{ story.image }}" alt="{{ story.title }}" class="img-fluid rounded">
+            </div>
+            
+            <div class="story-content">
+                {{ story.content|safe }}
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-dark text-white">
+                    相关产品
+                </div>
+                <div class="card-body">
+                    {% for product in story.related_products %}
+                    <div class="d-flex mb-3">
+                        <img src="{{ product.image }}" alt="{{ product.name }}" class="me-3" style="width: 70px; height: 70px; object-fit: cover;">
+                        <div>
+                            <h6 class="mb-1">{{ product.name }}</h6>
+                            <p class="text-muted mb-1">${{ product.price }}</p>
+                            <a href="{{ product.url }}" class="btn btn-sm btn-outline-dark">查看详情</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    更多故事
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        {% for other_story in other_stories %}
+                        <li class="mb-3">
+                            <a href="{{ other_story.url }}" class="text-decoration-none text-dark">
+                                <div class="d-flex align-items-center">
+                                    <img src="{{ other_story.image }}" alt="{{ other_story.title }}" class="me-2" style="width: 50px; height: 50px; object-fit: cover;">
+                                    <div>
+                                        <h6 class="mb-1">{{ other_story.title }}</h6>
+                                        <small class="text-muted">{{ other_story.date }}</small>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 评论区 -->
+    <div class="row mt-5">
+        <div class="col-md-8">
+            <h3 class="mb-4">评论 ({{ story.comments|length }})</h3>
+            
+            {% if story.comments %}
+            <div class="comments-list">
+                {% for comment in story.comments %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="{{ comment.avatar }}" alt="{{ comment.author }}" class="rounded-circle me-2" style="width: 40px; height: 40px;">
+                            <div>
+                                <h6 class="mb-0">{{ comment.author }}</h6>
+                                <small class="text-muted">{{ comment.date }}</small>
+                            </div>
+                        </div>
+                        <p class="mb-0">{{ comment.content }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted">还没有评论，成为第一个评论的人吧！</p>
+            {% endif %}
+            
+            <!-- 评论表单 -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5 class="mb-3">发表评论</h5>
+                    <form>
+                        <div class="mb-3">
+                            <label for="name" class="form-label">姓名</label>
+                            <input type="text" class="form-control" id="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">邮箱</label>
+                            <input type="email" class="form-control" id="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="comment" class="form-label">评论内容</label>
+                            <textarea class="form-control" id="comment" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-dark">提交评论</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

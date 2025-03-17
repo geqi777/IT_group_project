@@ -55,24 +55,26 @@
                                     <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('确认已收到商品吗？')">确认收货</button>
                                 </form>
                             {% elif order.order_status == 'completed' %}
-                                <!-- 已完成的订单可以评价和退货 -->
-                                {% with has_reviewed=False %}
-                                    {% for item in order.items.all %}
-                                        {% if item.review %}
-                                            {% with has_reviewed=True %}{% endwith %}
+                                <!-- 已完成的订单可以评价和退货，但如果有退货中的商品则不显示 -->
+                                {% if not order.has_returned_items %}
+                                    {% with has_reviewed=False %}
+                                        {% for item in order.items.all %}
+                                            {% if item.review %}
+                                                {% with has_reviewed=True %}{% endwith %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        {% if has_reviewed %}
+                                            <form action="/customer/order/{{ order.id }}/review/delete/" method="post" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('确定要删除评价吗？此操作不可恢复。')">删除评价</button>
+                                            </form>
+                                        {% else %}
+                                            <a href="/customer/order/{{ order.id }}/review/" class="btn btn-sm btn-info">评价订单</a>
                                         {% endif %}
-                                    {% endfor %}
-                                    
-                                    {% if has_reviewed %}
-                                        <form action="/customer/order/{{ order.id }}/review/delete/" method="post" class="d-inline">
-                                            {% csrf_token %}
-                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('确定要删除评价吗？此操作不可恢复。')">删除评价</button>
-                                        </form>
-                                    {% else %}
-                                        <a href="/customer/order/{{ order.id }}/review/" class="btn btn-sm btn-info">评价订单</a>
-                                    {% endif %}
-                                {% endwith %}
-                                <a href="/customer/order/{{ order.id }}/return/" class="btn btn-sm btn-warning">申请退货</a>
+                                    {% endwith %}
+                                    <a href="/customer/order/{{ order.id }}/return/" class="btn btn-sm btn-warning">申请退货</a>
+                                {% endif %}
                             {% endif %}
 
                             {% if order.order_status != 'pending' %}

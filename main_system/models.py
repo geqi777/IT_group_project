@@ -38,6 +38,16 @@ class Operator(models.Model):
     role = models.CharField(max_length=50)
     join_time = models.DateField(default=datetime.date.today)
 
+    def verify_password(self, password):
+        """验证密码是否正确"""
+        from main_system.utils.encrypt import md5
+        return self.password == md5(password)
+    
+    def set_password(self, password):
+        """设置加密后的密码"""
+        from main_system.utils.encrypt import md5
+        self.password = md5(password)
+
     def __str__(self):
         return f"{self.name} - {self.role}"
 
@@ -117,7 +127,9 @@ class WalletTransaction(models.Model):
         ('refund', 'refund'),
         ('points_earned', 'points earned'),
         ('points_used', 'points used'),
+        ('points_refund', 'points refund'),
         ('promo_code_used', 'promo code used'),
+        ('card_payment', 'card payment'),
     ]
 
     wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE, related_name='transactions')

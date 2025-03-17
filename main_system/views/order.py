@@ -18,12 +18,12 @@ import re
 def create_order(request):
     """从购物车创建订单"""
     # 检查用户是否登录
-    user_info = request.session.get('customer_info')
+    user_info = request.session.get('user_info')
     if not user_info:
         messages.error(request, '请先登录')
         return redirect('/customer/login/')
 
-    user = User.objects.filter(id=user_info['user_id']).first()
+    user = User.objects.filter(id=user_info['id']).first()
     cart = Cart.objects.filter(user=user).first()
     if not cart or not cart.items.exists():
         messages.error(request, '购物车为空，无法创建订单')
@@ -77,6 +77,9 @@ def create_order(request):
 
             # 清空购物车
             cart.items.all().delete()
+            
+            # 更新会话中的购物车计数为0
+            request.session['cart_count'] = 0
 
             return redirect(f'/customer/order/{order.id}/shipping/')
 
@@ -88,17 +91,25 @@ def create_order(request):
 def order_list(request):
     """订单列表"""
     # 检查用户是否登录
-    user_info = request.session.get('customer_info')
+    user_info = request.session.get('user_info')
     if not user_info:
         messages.error(request, '请先登录')
         return redirect('/customer/login/')
 
-    user = User.objects.filter(id=user_info['user_id']).first()
+    user = User.objects.filter(id=user_info['id']).first()
     if not user:
         messages.error(request, '用户不存在')
         return redirect('/customer/register/')
 
     orders = Order.objects.filter(user=user).order_by('-timestamp')
+    
+    # 为每个订单检查是否有退货项目
+    for order in orders:
+        order.has_returned_items = False
+        for item in order.items.all():
+            if item.return_status != 'none' and item.return_status != 'rejected':
+                order.has_returned_items = True
+                break
 
     # 分页
     paginator = Paginator(orders, 10)
@@ -111,12 +122,12 @@ def order_list(request):
 def order_detail(request, order_id):
     """订单详情"""
     # 检查用户是否登录
-    user_info = request.session.get('customer_info')
+    user_info = request.session.get('user_info')
     if not user_info:
         messages.error(request, '请先登录')
         return redirect('/customer/login/')
 
-    user = User.objects.filter(id=user_info['user_id']).first()
+    user = User.objects.filter(id=user_info['id']).first()
     if not user:
         messages.error(request, '用户不存在')
         return redirect('/customer/register/')
@@ -126,6 +137,13 @@ def order_detail(request, order_id):
         messages.error(request, '订单不存在')
         return redirect('/customer/order/list/')
 
+    # 检查是否有任何商品正在退货中或已退货
+    has_returned_items = False
+    for item in order.items.all():
+        if item.return_status != 'none' and item.return_status != 'rejected':
+            has_returned_items = True
+            break
+
     # 计算所有需要的值
     context = {
         'order': order,
@@ -133,7 +151,8 @@ def order_detail(request, order_id):
         'items_with_subtotal': [{
             'item': item,
             'subtotal': float(item.price) * item.quantity
-        } for item in order.items.all()]
+        } for item in order.items.all()],
+        'has_returned_items': has_returned_items
     }
 
     if request.method == 'POST':
@@ -207,12 +226,12 @@ def order_detail(request, order_id):
 def history_list(request):
     """用户历史记录"""
     # 检查用户是否登录
-    user_info = request.session.get('customer_info')
+    user_info = request.session.get('user_info')
     if not user_info:
         messages.error(request, '请先登录')
         return redirect('/customer/login/')
 
-    user = User.objects.filter(id=user_info['user_id']).first()
+    user = User.objects.filter(id=user_info['id']).first()
     if not user:
         messages.error(request, '用户不存在')
         return redirect('/customer/register/')
@@ -230,12 +249,12 @@ def history_list(request):
 def shipping(request, order_id):
     """订单配送信息页面"""
     # 检查用户是否登录
-    user_info = request.session.get('customer_info')
+    user_info = request.session.get('user_info')
     if not user_info:
         messages.error(request, '请先登录')
         return redirect('/customer/login/')
 
-    user = User.objects.filter(id=user_info['user_id']).first()
+    user = User.objects.filter(id=user_info['id']).first()
     if not user:
         messages.error(request, '用户不存在')
         return redirect('/customer/register/')
@@ -343,12 +362,12 @@ def shipping(request, order_id):
 def payment(request, order_id):
     """处理订单支付"""
     # 检查用户是否登录
-    user_info = request.session.get('customer_info')
+    user_info = request.session.get('user_info')
     if not user_info:
         messages.error(request, '请先登录')
         return redirect('/customer/login/')
 
-    user = User.objects.filter(id=user_info['user_id']).first()
+    user = User.objects.filter(id=user_info['id']).first()
     if not user:
         messages.error(request, '用户不存在')
         return redirect('/customer/register/')
@@ -453,13 +472,31 @@ def payment(request, order_id):
                     card = get_object_or_404(models.PaymentCard, id=saved_card_id, user=user)
 
                     # 处理已保存卡片支付逻辑
-                    order.payment_method = 'card'
-                    order.payment_card = card
-                    order.payment_status = True
-                    order.paid_time = timezone.now()
-                    order.order_status = 'paid'
-                    order.save()
+                    with transaction.atomic():
+                        order.payment_method = 'card'
+                        order.payment_card = card
+                        order.payment_status = True
+                        order.paid_time = timezone.now()
+                        order.order_status = 'paid'
+                        order.save()
 
+                        # 记录订单历史
+                        HistoryNew.objects.create(
+                            user=user,
+                            order=order,
+                            history_type='order_paid',
+                            amount=order.final_amount,
+                            details=f'信用卡支付订单：{order.order_number}'
+                        )
+                        
+                        # 记录钱包交易 - 添加卡支付记录
+                        WalletTransaction.objects.create(
+                            wallet=wallet,
+                            transaction_type='card_payment',
+                            amount=order.final_amount,
+                            payment_card=order.payment_card,
+                            details=f'信用卡支付订单：{order.order_number}'
+                        )
                 else:
                     # 处理新卡片支付
                     nickname = request.POST.get('nickname')
@@ -490,32 +527,55 @@ def payment(request, order_id):
                         messages.error(request, '无效的CVV码')
                         return redirect(f'/customer/order/{order.id}/payment/')
 
-                    if save_card:
-                        # 保存新卡片
-                        card = models.PaymentCard.objects.create(
+                    with transaction.atomic():
+                        if save_card:
+                            # 保存新卡片
+                            card = models.PaymentCard.objects.create(
+                                user=user,
+                                nickname=nickname or '未命名卡片',
+                                card_number=card_number.replace(' ', ''),
+                                expiry_date=expiry_date,
+                                country=country,
+                                postcode=postcode.upper()
+                            )
+                            order.payment_card = card
+                        else:
+                            # 创建临时卡对象但不保存到数据库
+                            card = models.PaymentCard(
+                                user=user,
+                                nickname='一次性卡片',
+                                card_number=card_number.replace(' ', ''),
+                                expiry_date=expiry_date,
+                                country=country,
+                                postcode=postcode.upper()
+                            )
+                            if save_card:
+                                card.save()
+                            order.payment_card = card if save_card else None
+
+                        order.payment_method = 'card'
+                        order.payment_status = True
+                        order.paid_time = timezone.now()
+                        order.order_status = 'paid'
+                        order.save()
+
+                        # 记录订单历史
+                        HistoryNew.objects.create(
                             user=user,
-                            nickname=nickname or '未命名卡片',
-                            card_number=card_number.replace(' ', ''),
-                            expiry_date=expiry_date,
-                            country=country,
-                            postcode=postcode.upper()
+                            order=order,
+                            history_type='order_paid',
+                            amount=order.final_amount,
+                            details=f'信用卡支付订单：{order.order_number}'
                         )
-                        order.payment_card = card
-
-                    order.payment_method = 'card'
-                    order.payment_status = True
-                    order.paid_time = timezone.now()
-                    order.order_status = 'paid'
-                    order.save()
-
-                # 记录订单历史
-                    HistoryNew.objects.create(
-                        user=user,
-                        order=order,
-                        history_type='order_paid',
-                        amount=order.final_amount,
-                        details=f'信用卡支付订单：{order.order_number}'
-                    )
+                        
+                        # 记录钱包交易 - 添加卡支付记录
+                        WalletTransaction.objects.create(
+                            wallet=wallet,
+                            transaction_type='card_payment',
+                            amount=order.final_amount,
+                            payment_card=card if save_card else None,
+                            details=f'信用卡支付订单：{order.order_number}'
+                        )
 
                 messages.success(request, '支付成功！')
                 return redirect(f'/customer/order/{order.id}/detail/')
@@ -538,12 +598,12 @@ def payment(request, order_id):
 def order_cancel(request, order_id):
     """取消订单（支持未支付和已支付订单）"""
     # 检查用户是否登录
-    user_info = request.session.get('customer_info')
+    user_info = request.session.get('user_info')
     if not user_info:
         messages.error(request, '请先登录')
         return redirect('/customer/login/')
 
-    user = User.objects.filter(id=user_info['user_id']).first()
+    user = User.objects.filter(id=user_info['id']).first()
     if not user:
         messages.error(request, '用户不存在')
         return redirect('/customer/register/')
@@ -622,12 +682,12 @@ def order_cancel(request, order_id):
 def order_confirm_receipt(request, order_id):
     """确认收货"""
      # 检查用户是否登录
-    user_info = request.session.get('customer_info')
+    user_info = request.session.get('user_info')
     if not user_info:
         messages.error(request, '请先登录')
         return redirect('/customer/login/')
 
-    user = User.objects.filter(id=user_info['user_id']).first()
+    user = User.objects.filter(id=user_info['id']).first()
     if not user:
         messages.error(request, '用户不存在')
         return redirect('/customer/register/')
@@ -648,12 +708,12 @@ def order_confirm_receipt(request, order_id):
 def order_review(request, order_id):
     """订单评价"""
     # 检查用户是否登录
-    user_info = request.session.get('customer_info')
+    user_info = request.session.get('user_info')
     if not user_info:
         messages.error(request, '请先登录')
         return redirect('/customer/login/')
 
-    user = User.objects.filter(id=user_info['user_id']).first()
+    user = User.objects.filter(id=user_info['id']).first()
     if not user:
         messages.error(request, '用户不存在')
         return redirect('/customer/register/')
@@ -662,26 +722,7 @@ def order_review(request, order_id):
 
     if order.order_status != 'completed':
         messages.error(request, '只能评价已完成的订单')
-        return redirect('order_list')
-
-    if request.method == 'POST':
-        try:
-            with transaction.atomic():
-                for item in order.items.all():
-                    # 检查是否已经评价过
-                    if hasattr(item, 'review'):
-                        continue
-
-                    rating = request.POST.get(f'rating_{item.id}')
-                    comment = request.POST.get(f'comment_{item.id}')
-
-                    if rating and comment:
-                        item.add_review(int(rating), comment)
-
-                messages.success(request, '评价提交成功')
-                return redirect('/customer/order/')
-        except Exception as e:
-            messages.error(request, f'评价提交失败：{str(e)}')
+        return redirect('/customer/order/')
 
     # 获取已评价和未评价的订单项
     reviewed_items = []
@@ -692,6 +733,26 @@ def order_review(request, order_id):
             reviewed_items.append(item)
         else:
             unreviewed_items.append(item)
+    
+    # 如果没有未评价的商品，提示用户并返回订单列表
+    if not unreviewed_items:
+        messages.info(request, '该订单中的所有商品已评价，无需再次评价')
+        return redirect('/customer/order/')
+
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                for item in unreviewed_items:
+                    rating = request.POST.get(f'rating_{item.id}')
+                    comment = request.POST.get(f'comment_{item.id}')
+
+                    if rating and comment:
+                        item.add_review(int(rating), comment)
+
+                messages.success(request, '评价提交成功')
+                return redirect('/customer/order/')
+        except Exception as e:
+            messages.error(request, f'评价提交失败：{str(e)}')
 
     context = {
         'order': order,
@@ -704,12 +765,12 @@ def order_review(request, order_id):
 def order_return(request, order_id):
     """申请退货"""
     # 检查用户是否登录
-    user_info = request.session.get('customer_info')
+    user_info = request.session.get('user_info')
     if not user_info:
         messages.error(request, '请先登录')
         return redirect('/customer/login/')
 
-    user = User.objects.filter(id=user_info['user_id']).first()
+    user = User.objects.filter(id=user_info['id']).first()
     if not user:
         messages.error(request, '用户不存在')
         return redirect('/customer/register/')
@@ -747,12 +808,12 @@ def order_return(request, order_id):
 def order_delete(request, order_id):
     """删除订单记录"""
     # 检查用户是否登录
-    user_info = request.session.get('customer_info')
+    user_info = request.session.get('user_info')
     if not user_info:
         messages.error(request, '请先登录')
         return redirect('/customer/login/')
 
-    user = User.objects.filter(id=user_info['user_id']).first()
+    user = User.objects.filter(id=user_info['id']).first()
     if not user:
         messages.error(request, '用户不存在')
         return redirect('/customer/register/')
@@ -813,31 +874,65 @@ def update_order_status(request, order_id):
     operator = Operator.objects.filter(id=operator_id['employee_id'], is_operator=True).first()
     if not operator:
         messages.error(request, '权限不足')
-        return redirect('/operation/register/')
+        return redirect('/operation/login/')
 
     if request.method == 'POST':
         order = get_object_or_404(Order, id=order_id)
         new_status = request.POST.get('status')
 
-        if new_status in ['shipped', 'delivered', 'completed']:
+        # 允许的状态更新
+        allowed_statuses = ['paid', 'shipped', 'delivered', 'completed', 'cancelled']
+        
+        if new_status in allowed_statuses:
             with transaction.atomic():
+                # 保存原始状态用于记录
+                old_status = order.order_status
+                
+                # 更新订单状态
                 order.order_status = new_status
+                
+                # 如果是完成订单，设置完成时间并更新积分
                 if new_status == 'completed':
                     order.complete_time = timezone.now()
+                    # 计算并添加积分
+                    points_earned = int(order.final_amount * 10)  # 消费1元获得10积分
+                    order.points_earned = points_earned
+                    
+                    # 更新用户钱包积分 - 确保钱包存在
+                    wallet, created = models.Wallet.objects.get_or_create(
+                        user=order.user,
+                        defaults={'balance': Decimal('0'), 'points': 0}
+                    )
+                    wallet.points += points_earned
+                    wallet.save()
+                
+                # 如果是取消订单
+                if new_status == 'cancelled':
+                    # 如果订单已支付，需要处理退款
+                    if old_status in ['paid', 'shipped', 'delivered']:
+                        # TODO: 实际项目中这里应该有退款处理逻辑
+                        pass
+                
+                # 保存订单
                 order.save()
 
                 # 记录历史
+                status_display = dict(Order.ORDER_STATUS_CHOICES).get(new_status, new_status)
                 HistoryNew.objects.create(
                     user=order.user,
                     order=order,
                     history_type=f'order_{new_status}',
-                    details=f'订单状态更新为：{order.get_order_status_display()}'
+                    details=f'订单状态从【{dict(Order.ORDER_STATUS_CHOICES).get(old_status, old_status)}】更新为【{status_display}】'
                 )
 
-                messages.success(request, '订单状态更新成功')
+                messages.success(request, f'订单状态已更新为: {status_display}')
         else:
             messages.error(request, '无效的订单状态')
 
+        # 重定向回订单详情页
+        return redirect(f'/operation/homepage/orders/detail/{order_id}/')
+    
+    # 如果不是POST请求，重定向到订单列表
     return redirect('/operation/homepage/orders/')
 
 
@@ -853,9 +948,12 @@ def process_return(request, order_id, item_id):
     operator = Operator.objects.filter(id=operator_id['employee_id'], is_operator=True).first()
     if not operator:
         messages.error(request, '权限不足')
-        return redirect('/operation/register/')
+        return redirect('/operation/login/')
 
     item = OrderItem.objects.filter(id=item_id, order_id=order_id).first()
+    if not item:
+        messages.error(request, '订单项不存在')
+        return redirect(f'/operation/homepage/orders/detail/{order_id}/')
 
     if request.method == 'POST':
         status = request.POST.get('status')
@@ -868,15 +966,52 @@ def process_return(request, order_id, item_id):
 
                         # 处理退款
                         if item.order.payment_method == 'wallet':
-                            item.order.user.wallet.balance += refund_amount
-                            item.order.user.wallet.save()
+                            # 确保用户有钱包
+                            wallet, created = models.Wallet.objects.get_or_create(
+                                user=item.order.user,
+                                defaults={'balance': Decimal('0'), 'points': 0}
+                            )
+                            wallet.balance += refund_amount
+                            wallet.save()
 
                             # 记录退款交易
                             WalletTransaction.objects.create(
-                                wallet=item.order.user.wallet,
+                                wallet=wallet,
                                 transaction_type='refund',
                                 amount=refund_amount,
                                 details=f'订单 {item.order.order_number} 商品退货退款'
+                            )
+                        elif item.order.payment_method == 'points':
+                            # 积分退款
+                            points_to_refund = int(refund_amount * 100)  # 1元=100积分的转换
+                            wallet, created = models.Wallet.objects.get_or_create(
+                                user=item.order.user,
+                                defaults={'balance': Decimal('0'), 'points': 0}
+                            )
+                            wallet.points += points_to_refund
+                            wallet.save()
+
+                            # 记录积分退款交易
+                            WalletTransaction.objects.create(
+                                wallet=wallet,
+                                transaction_type='points_refund',
+                                points=points_to_refund,
+                                details=f'订单 {item.order.order_number} 商品退货退还积分'
+                            )
+                        elif item.order.payment_method == 'card':
+                            # 信用卡退款 - 记录在钱包中
+                            wallet, created = models.Wallet.objects.get_or_create(
+                                user=item.order.user,
+                                defaults={'balance': Decimal('0'), 'points': 0}
+                            )
+                            
+                            # 记录信用卡退款交易
+                            WalletTransaction.objects.create(
+                                wallet=wallet,
+                                transaction_type='refund',
+                                amount=refund_amount,
+                                payment_card=item.order.payment_card,
+                                details=f'订单 {item.order.order_number} 商品退货退款到信用卡'
                             )
 
                         # 恢复商品库存
@@ -885,14 +1020,58 @@ def process_return(request, order_id, item_id):
 
                         # 更新退货状态
                         item.process_return(status, refund_amount)
+                        
+                        # 记录订单历史
+                        HistoryNew.objects.create(
+                            user=item.order.user,
+                            order=item.order,
+                            history_type='order_refunded',
+                            amount=refund_amount,
+                            details=f'订单商品退款: {item.product.name} x {item.quantity}'
+                        )
                     else:
                         item.process_return(status)
+                        
+                        # 记录订单历史
+                        action_map = {
+                            'approved': '批准退货申请',
+                            'rejected': '拒绝退货申请',
+                            'received': '确认收到退货'
+                        }
+                        HistoryNew.objects.create(
+                            user=item.order.user,
+                            order=item.order,
+                            history_type='order_refunded' if status == 'refunded' else 'order_cancelled',
+                            details=f'{action_map.get(status, status)}: {item.product.name} x {item.quantity}'
+                        )
 
-                    messages.success(request, '退货状态已更新')
+                    messages.success(request, f'退货状态已更新为: {dict(OrderItem.RETURN_STATUS_CHOICES).get(status, status)}')
 
             except Exception as e:
                 messages.error(request, f'处理失败：{str(e)}')
         else:
             messages.error(request, '无效的状态')
 
-    return redirect(f'/operation/homepage/orders/{order_id}/detail/')
+    return redirect(f'/operation/homepage/orders/detail/{order_id}/')
+
+def admin_order_detail(request, order_id):
+    """管理员查看订单详情"""
+    # 检查管理员是否登录
+    operator_id = request.session.get('admin_info')
+    if not operator_id:
+        messages.error(request, '请先登录')
+        return redirect('/operation/login/')
+
+    # 验证是否是管理员
+    operator = Operator.objects.filter(id=operator_id['employee_id'], is_operator=True).first()
+    if not operator:
+        messages.error(request, '权限不足')
+        return redirect('/operation/login/')
+
+    # 获取订单信息
+    order = get_object_or_404(Order, id=order_id)
+    
+    return render(request, 'orders/admin_order_detail.html', {
+        'order': order,
+        'operator': operator
+    })
