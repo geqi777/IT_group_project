@@ -165,7 +165,7 @@ class PromoCode(models.Model):
 
     def is_valid(self):
         """检查优惠码是否有效"""
-        return self.status == 'active' and self.expiry_date > timezone.now().date()
+        return self.status == 'active' and self.expiry_date > timezone.now()
 
     def __str__(self):
         return f"PromoCode: {self.code} (£{self.discount})"
@@ -493,6 +493,7 @@ class HistoryNew(models.Model):
         ('points_earned', '获得积分'),
         ('points_used', '使用积分'),
         ('promo_code_used', '使用优惠码'),  # 新增：优惠码使用记录
+        ('promo_code_returned', '返还优惠码'),  # 新增：优惠码返还记录
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='history')

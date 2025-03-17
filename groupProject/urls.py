@@ -19,6 +19,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 # 正确的 URL 配置
 from django.urls import path
+from django.shortcuts import redirect
 from main_system.views import product
 from main_system.views import admin_login, user_login
 from main_system.views import home_page
@@ -64,8 +65,13 @@ urlpatterns = [
     path('operation/homepage/admins/edit/<int:nid>/', operator.operator_edit, name="operator_edit"),
     path('operation/homepage/admins/delete/<int:nid>/', operator.operator_delete, name="operator_delete"),
 
-
-
+    # 优惠码管理
+    path('operation/homepage/promo-codes/', promo_code.promo_code_list, name='promo_code_list'),
+    path('operation/homepage/promo_codes/', lambda request: redirect('/operation/homepage/promo-codes/')),
+    path('operation/homepage/promo_codes/list/', lambda request: redirect('/operation/homepage/promo-codes/')),
+    path('operation/homepage/promo_codes/list/add/', promo_code.promo_code_add, name='promo_code_add'),
+    path('operation/homepage/promo_codes/list/<int:code_id>/edit/', promo_code.promo_code_edit, name='promo_code_edit'),
+    path('operation/homepage/promo_codes/list/<int:code_id>/delete/', promo_code.promo_code_delete, name='promo_code_delete'),
 
     # 订单管理
     path('operation/homepage/orders/', order.admin_order_list, name="admin_order_list"),
@@ -76,13 +82,6 @@ urlpatterns = [
     # 评价管理
     path('operation/homepage/reviews/', admin_dashboard.admin_review_list, name="admin_review_list"),
     path('operation/homepage/reviews/delete/<int:review_id>/', admin_dashboard.admin_review_delete, name="admin_review_delete"),
-
-    # Promo Code 管理
-    path('operation/homepage/promo_codes/list/', promo_code.promo_code_list, name='promo_code_list'),
-    path('operation/homepage/promo_codes/list/add/', promo_code.promo_code_add, name='promo_code_add'),
-    path('operation/homepage/promo_codes/list/<int:code_id>/edit/', promo_code.promo_code_edit, name='promo_code_edit'),
-    path('operation/homepage/promo_codes/list/<int:code_id>/delete/', promo_code.promo_code_delete, name='promo_code_delete'),
-
 
     # User
     path('customer/login/', user_login.user_login, name='customer_login'),

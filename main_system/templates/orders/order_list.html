@@ -31,7 +31,29 @@
                                   {% elif order.order_status == 'cancelled' %}bg-secondary
                                   {% elif order.order_status == 'refunded' %}bg-danger
                                   {% endif %}">
-                                {{ order.get_order_status_display }}
+                                {% if order.order_status == 'refunded' %}
+                                    <i class="fas fa-undo-alt me-1"></i>已退款
+                                {% elif order.has_refunded_items %}
+                                    <i class="fas fa-undo-alt me-1"></i>部分退款
+                                {% elif order.order_status == 'completed' and order.has_returned_items %}
+                                    <i class="fas fa-sync-alt me-1"></i>退货处理中
+                                {% elif order.order_status == 'completed' %}
+                                    {% with all_reviewed=True %}
+                                        {% for item in order.items.all %}
+                                            {% if not item.review %}
+                                                {% with all_reviewed=False %}{% endwith %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        {% if all_reviewed %}
+                                            <i class="fas fa-check-circle me-1"></i>订单完成
+                                        {% else %}
+                                            <i class="fas fa-star-half-alt me-1"></i>待评价
+                                        {% endif %}
+                                    {% endwith %}
+                                {% else %}
+                                    {{ order.get_order_status_display }}
+                                {% endif %}
                             </span>
                         </td>
                         <td>{{ order.get_payment_method_display }}</td>
@@ -55,25 +77,17 @@
                                     <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('确认已收到商品吗？')">确认收货</button>
                                 </form>
                             {% elif order.order_status == 'completed' %}
-                                <!-- 已完成的订单可以评价和退货，但如果有退货中的商品则不显示 -->
-                                {% if not order.has_returned_items %}
-                                    {% with has_reviewed=False %}
-                                        {% for item in order.items.all %}
-                                            {% if item.review %}
-                                                {% with has_reviewed=True %}{% endwith %}
-                                            {% endif %}
-                                        {% endfor %}
-                                        
-                                        {% if has_reviewed %}
-                                            <form action="/customer/order/{{ order.id }}/review/delete/" method="post" class="d-inline">
-                                                {% csrf_token %}
-                                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('确定要删除评价吗？此操作不可恢复。')">删除评价</button>
-                                            </form>
-                                        {% else %}
+                                <!-- 已完成的订单可以评价和退货，但如果已经退款则不显示 -->
+                                {% if not order.has_refunded_items %}
+                                    <!-- 如果订单没有正在处理的退货，允许评价 -->
+                                    {% if not order.has_returned_items %}
+                                        <!-- 检查是否有未评价的商品 -->
+                                        {% if not order.all_reviewed %}
                                             <a href="/customer/order/{{ order.id }}/review/" class="btn btn-sm btn-info">评价订单</a>
                                         {% endif %}
-                                    {% endwith %}
-                                    <a href="/customer/order/{{ order.id }}/return/" class="btn btn-sm btn-warning">申请退货</a>
+                                        <!-- 未申请退货的情况下，才显示退货按钮 -->
+                                        <a href="/customer/order/{{ order.id }}/return/" class="btn btn-sm btn-warning">申请退货</a>
+                                    {% endif %}
                                 {% endif %}
                             {% endif %}
 

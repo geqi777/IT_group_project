@@ -17,7 +17,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for promo in page_obj %}
+            {% for promo in promo_codes %}
             <tr>
                 <td>{{ promo.id }}</td>
                 <td>{{ promo.code }}</td>
@@ -25,8 +25,8 @@
                 <td>£{{ promo.min_order_value }}</td>
                 <td>{{ promo.expiry_date|date:"Y-m-d" }}</td>
                 <td>
-                    <span class="badge bg-{% if promo.is_active %}success{% else %}danger{% endif %}">
-                        {% if promo.is_active %}Active{% else %}Inactive{% endif %}
+                    <span class="badge bg-{% if promo.status == 'active' %}success{% else %}danger{% endif %}">
+                        {{ promo.get_status_display }}
                     </span>
                 </td>
                 <td>
@@ -43,8 +43,55 @@
         </tbody>
     </table>
 
-    <div class="d-flex justify-content-center">
-        {{ page_string|safe }}
-    </div>
+    <!-- 分页导航 -->
+    {% if promo_codes.has_other_pages %}
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if promo_codes.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1">&laquo; 首页</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ promo_codes.previous_page_number }}">上一页</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">&laquo; 首页</span>
+            </li>
+            <li class="page-item disabled">
+                <span class="page-link">上一页</span>
+            </li>
+            {% endif %}
+
+            {% for i in promo_codes.paginator.page_range %}
+                {% if promo_codes.number == i %}
+                <li class="page-item active">
+                    <span class="page-link">{{ i }}</span>
+                </li>
+                {% elif i > promo_codes.number|add:'-3' and i < promo_codes.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if promo_codes.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ promo_codes.next_page_number }}">下一页</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ promo_codes.paginator.num_pages }}">末页 &raquo;</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">下一页</span>
+            </li>
+            <li class="page-item disabled">
+                <span class="page-link">末页 &raquo;</span>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
 </div>
 {% endblock %}

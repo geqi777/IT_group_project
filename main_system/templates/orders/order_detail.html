@@ -134,42 +134,56 @@
                     </div>
 
                     <!-- 操作按钮 -->
-                    <div class="mt-4 text-end">
-                        {% if order.order_status == 'pending' or order.order_status == 'paid' or order.order_status == 'shipped' %}
-                        <form method="post" action="/customer/order/{{ order.id }}/cancel/" class="d-inline">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-danger me-2" onclick="return confirm('确定要取消订单吗？')">
-                                <i class="fas fa-times me-2"></i>取消订单
-                            </button>
-                        </form>
-                        {% endif %}
-                        
-                        {% if order.order_status == 'pending' and not order.payment_status %}
-                        <a href="/customer/order/{{order.id}}/payment/" class="btn btn-primary">
-                            <i class="fas fa-credit-card me-2"></i>立即支付
-                        </a>
-                        {% endif %}
-                        
-                        {% if order.order_status == 'delivered' %}
-                        <form method="post" action="/customer/order/{{ order.id }}/confirm-receipt/" class="d-inline">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-success me-2" onclick="return confirm('确认已收到商品吗？')">
-                                <i class="fas fa-check me-2"></i>确认收货
-                            </button>
-                        </form>
-                        {% endif %}
-                        
-                        {% if order.order_status == 'completed' %}
-                            {% comment %} 检查是否有任何商品正在退货中或已退货 {% endcomment %}
-                            {% if not has_returned_items %}
-                            <a href="/customer/order/{{ order.id }}/review/" class="btn btn-outline-primary me-2">
-                                <i class="fas fa-star me-2"></i>评价订单
-                            </a>
-                            <a href="/customer/order/{{ order.id }}/return/" class="btn btn-outline-warning">
-                                <i class="fas fa-undo me-2"></i>申请退货
-                            </a>
-                            {% endif %}
-                        {% endif %}
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-between">
+                            <a href="/customer/order/" class="btn btn-secondary">返回订单列表</a>
+                            
+                            <div>
+                                {% if order.order_status == 'pending' %}
+                                    <!-- 未支付订单可以支付或取消 -->
+                                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#paymentModal">
+                                        立即支付
+                                    </button>
+                                    <form action="/customer/order/{{ order.id }}/cancel/" method="post" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger" onclick="return confirm('确定要取消此订单吗？')">取消订单</button>
+                                    </form>
+                                {% elif order.order_status == 'paid' or order.order_status == 'shipped' %}
+                                    <!-- 已支付或已发货订单可以取消 -->
+                                    <form action="/customer/order/{{ order.id }}/cancel/" method="post" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger" onclick="return confirm('确定要取消此订单吗？这将退回您的支付金额。')">取消订单</button>
+                                    </form>
+                                {% elif order.order_status == 'delivered' %}
+                                    <!-- 已送达订单可以确认收货 -->
+                                    <form action="/customer/order/{{ order.id }}/confirm-receipt/" method="post" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-success" onclick="return confirm('确认已收到商品吗？')">确认收货</button>
+                                    </form>
+                                {% elif order.order_status == 'completed' %}
+                                    <!-- 已完成订单可以评价和退货，除非已退款或正在处理退货 -->
+                                    {% if not order.has_refunded_items %}
+                                        {% if not order.has_returned_items %}
+                                            {% if not order.all_reviewed %}
+                                                <a href="/customer/order/{{ order.id }}/review/" class="btn btn-info">评价订单</a>
+                                            {% endif %}
+                                            <a href="/customer/order/{{ order.id }}/return/" class="btn btn-warning">申请退货</a>
+                                        {% endif %}
+                                    {% endif %}
+                                    <!-- 已完成订单可以删除记录 -->
+                                    <form action="/customer/order/{{ order.id }}/delete/" method="post" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('确定要删除此订单记录吗？此操作不可恢复。')">删除记录</button>
+                                    </form>
+                                {% elif order.order_status == 'cancelled' or order.order_status == 'refunded' %}
+                                    <!-- 已取消或已退款订单可以删除记录 -->
+                                    <form action="/customer/order/{{ order.id }}/delete/" method="post" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('确定要删除此订单记录吗？此操作不可恢复。')">删除记录</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

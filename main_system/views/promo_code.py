@@ -49,7 +49,7 @@ def promo_code_add(request):
         if form.is_valid():
             form.save()
             messages.success(request, '优惠码创建成功')
-            return redirect('/operation/homepage/promo-codes/')
+            return redirect('promo_code_list')
         else:
             messages.error(request, '创建失败，请检查输入')
     else:
@@ -78,7 +78,7 @@ def promo_code_edit(request, code_id):
         if form.is_valid():
             form.save()
             messages.success(request, '优惠码更新成功')
-            return redirect('/admin/promo-codes/')
+            return redirect('promo_code_list')
         else:
             messages.error(request, '更新失败，请检查输入')
     else:
@@ -109,7 +109,7 @@ def promo_code_delete(request, code_id):
         messages.success(request, '优惠码删除成功')
     except Exception as e:
         messages.error(request, f'删除失败：{str(e)}')
-    return redirect('/operation/homepage/promo-codes/')
+    return redirect('promo_code_list')
 
 
 def apply_promo_code(request):

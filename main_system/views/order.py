@@ -103,13 +103,22 @@ def order_list(request):
 
     orders = Order.objects.filter(user=user).order_by('-timestamp')
     
-    # 为每个订单检查是否有退货项目
+    # 为每个订单检查是否有退货项目和是否所有商品都已评价
     for order in orders:
         order.has_returned_items = False
+        order.all_reviewed = True
+        order.has_refunded_items = False
+        
         for item in order.items.all():
-            if item.return_status != 'none' and item.return_status != 'rejected':
+            # 检查退货状态
+            if item.return_status == 'refunded':
+                order.has_refunded_items = True
+            elif item.return_status != 'none' and item.return_status != 'rejected':
                 order.has_returned_items = True
-                break
+            
+            # 检查评价状态
+            if not hasattr(item, 'review') or not item.review:
+                order.all_reviewed = False
 
     # 分页
     paginator = Paginator(orders, 10)
@@ -658,6 +667,22 @@ def order_cancel(request, order_id):
                     item.product.stock += item.quantity
                     item.product.save()
 
+                # 如果是已完成订单，需要扣除之前获得的积分
+                if order.points_earned > 0 and order.order_status == 'completed':
+                    # 确保积分不会变成负数
+                    points_to_deduct = min(user.wallet.points, order.points_earned)
+                    if points_to_deduct > 0:
+                        user.wallet.points -= points_to_deduct
+                        user.wallet.save()
+                        
+                        # 记录扣除积分交易
+                        WalletTransaction.objects.create(
+                            wallet=user.wallet,
+                            transaction_type='points_used',
+                            points=points_to_deduct,
+                            details=f'订单 {order.order_number} 取消扣除之前获得的积分'
+                        )
+
                 # 更新订单状态
                 order.order_status = 'refunded'
                 order.save()
@@ -847,9 +872,26 @@ def admin_order_list(request):
         messages.error(request, '权限不足')
         return redirect('/operation/login/')
 
-    # 获取所有订单项
-    order_items = OrderItem.objects.select_related('order', 'order__user', 'product').all().order_by(
-        '-order__timestamp')
+    # 获取过滤参数
+    order_status = request.GET.get('order_status')
+    return_status = request.GET.get('return_status')
+
+    # 基本查询
+    order_items_query = OrderItem.objects.select_related('order', 'order__user', 'product').all()
+    
+    # 应用订单状态过滤
+    if order_status:
+        order_items_query = order_items_query.filter(order__order_status=order_status)
+    
+    # 应用退货状态过滤
+    if return_status:
+        order_items_query = order_items_query.filter(return_status=return_status)
+    
+    # 排序
+    order_items = order_items_query.order_by('-order__timestamp')
+    
+    # 计算退货记录数量
+    total_returns = OrderItem.objects.filter(return_status__in=['pending', 'approved', 'shipped', 'received', 'refunded']).count()
 
     # 分页
     paginator = Paginator(order_items, 20)
@@ -858,7 +900,10 @@ def admin_order_list(request):
 
     return render(request, 'orders/admin_order_list.html', {
         'order_items': order_items,
-        'operator': operator  # 传递管理员信息到模板
+        'operator': operator,
+        'order_status': order_status,
+        'return_status': return_status,
+        'total_returns': total_returns,
     })
 
 
@@ -910,10 +955,104 @@ def update_order_status(request, order_id):
                 if new_status == 'cancelled':
                     # 如果订单已支付，需要处理退款
                     if old_status in ['paid', 'shipped', 'delivered']:
-                        # TODO: 实际项目中这里应该有退款处理逻辑
-                        pass
-                
-                # 保存订单
+                        with transaction.atomic():
+                            # 根据支付方式退款
+                            if order.payment_method == 'wallet':
+                                # 退款到钱包
+                                wallet, created = models.Wallet.objects.get_or_create(
+                                    user=order.user,
+                                    defaults={'balance': Decimal('0'), 'points': 0}
+                                )
+                                wallet.balance += order.final_amount
+                                wallet.save()
+
+                                # 记录钱包退款交易
+                                WalletTransaction.objects.create(
+                                    wallet=wallet,
+                                    transaction_type='refund',
+                                    amount=order.final_amount,
+                                    details=f'订单 {order.order_number} 取消退款'
+                                )
+                            elif order.payment_method == 'points':
+                                # 退还积分
+                                wallet, created = models.Wallet.objects.get_or_create(
+                                    user=order.user,
+                                    defaults={'balance': Decimal('0'), 'points': 0}
+                                )
+                                wallet.points += order.points_used
+                                wallet.save()
+
+                                # 记录积分退还交易
+                                WalletTransaction.objects.create(
+                                    wallet=wallet,
+                                    transaction_type='points_refund',
+                                    points=order.points_used,
+                                    details=f'订单 {order.order_number} 取消退还积分'
+                                )
+                            elif order.payment_method == 'card':
+                                # 信用卡退款处理
+                                wallet, created = models.Wallet.objects.get_or_create(
+                                    user=order.user,
+                                    defaults={'balance': Decimal('0'), 'points': 0}
+                                )
+                                
+                                # 记录信用卡退款交易
+                                WalletTransaction.objects.create(
+                                    wallet=wallet,
+                                    transaction_type='refund',
+                                    amount=order.final_amount,
+                                    payment_card=order.payment_card,
+                                    details=f'订单 {order.order_number} 取消退款到信用卡'
+                                )
+                            
+                            # 优惠券处理：如果订单使用了优惠券并且这是订单中唯一的商品或全部退款
+                            if order.promo_code:
+                                # 删除优惠券使用记录，允许用户再次使用
+                                HistoryNew.objects.filter(
+                                    user=order.user,
+                                    promo_code=order.promo_code,
+                                    history_type='promo_code_used',
+                                    order=order
+                                ).delete()
+                                
+                                # 记录优惠券返还操作
+                                HistoryNew.objects.create(
+                                    user=order.user,
+                                    order=order,
+                                    history_type='promo_code_returned',
+                                    promo_code=order.promo_code,
+                                    details=f'订单 {order.order_number} 取消，返还优惠券 {order.promo_code.code}'
+                                )
+                            
+                            # 恢复所有商品库存
+                            for item in order.items.all():
+                                item.product.stock += item.quantity
+                                item.product.save()
+
+                            # 扣除之前获得的积分（如果有）
+                            if order.points_earned > 0 and old_status == 'completed':
+                                wallet, created = models.Wallet.objects.get_or_create(
+                                    user=order.user,
+                                    defaults={'balance': Decimal('0'), 'points': 0}
+                                )
+                                # 确保积分不会变成负数
+                                points_to_deduct = min(wallet.points, order.points_earned)
+                                if points_to_deduct > 0:
+                                    wallet.points -= points_to_deduct
+                                    wallet.save()
+                                    
+                                    # 记录扣除积分交易
+                                    WalletTransaction.objects.create(
+                                        wallet=wallet,
+                                        transaction_type='points_used',
+                                        points=points_to_deduct,
+                                        details=f'订单 {order.order_number} 取消扣除之前获得的积分'
+                                    )
+
+                            # 更新订单状态为退款
+                            order.order_status = 'refunded'
+
+                # 最后统一保存订单状态
                 order.save()
 
                 # 记录历史
@@ -1029,6 +1168,71 @@ def process_return(request, order_id, item_id):
                             amount=refund_amount,
                             details=f'订单商品退款: {item.product.name} x {item.quantity}'
                         )
+
+                        # 检查是否所有订单项目都已退款或未退货，如是则更新整个订单状态为已退款
+                        all_items_refunded = True
+                        for order_item in item.order.items.all():
+                            if order_item.return_status not in ['refunded', 'none', 'rejected']:
+                                all_items_refunded = False
+                                break
+                        
+                        if all_items_refunded:
+                            # 更新订单状态为已退款
+                            item.order.order_status = 'refunded'
+                            
+                            # 如果订单之前有获得积分，需要扣除这些积分
+                            if item.order.points_earned > 0:
+                                wallet, created = models.Wallet.objects.get_or_create(
+                                    user=item.order.user,
+                                    defaults={'balance': Decimal('0'), 'points': 0}
+                                )
+                                
+                                # 确保积分不会变成负数
+                                points_to_deduct = min(wallet.points, item.order.points_earned)
+                                if points_to_deduct > 0:
+                                    wallet.points -= points_to_deduct
+                                    wallet.save()
+                                    
+                                    # 记录扣除积分交易
+                                    WalletTransaction.objects.create(
+                                        wallet=wallet,
+                                        transaction_type='points_used',
+                                        points=points_to_deduct,
+                                        details=f'订单 {item.order.order_number} 退款扣除之前获得的积分'
+                                    )
+                            
+                            item.order.save()
+
+                        # 优惠券处理：如果订单使用了优惠券并且这是订单中唯一的商品或全部退款
+                        if item.order.promo_code and (item.order.items.count() == 1 or all(i.return_status == 'refunded' for i in item.order.items.all())):
+                            # 删除优惠券使用记录，允许用户再次使用
+                            HistoryNew.objects.filter(
+                                user=item.order.user,
+                                promo_code=item.order.promo_code,
+                                history_type='promo_code_used',
+                                order=item.order
+                            ).delete()
+                            
+                            # 记录优惠券返还操作
+                            HistoryNew.objects.create(
+                                user=item.order.user,
+                                order=item.order,
+                                history_type='promo_code_returned',
+                                promo_code=item.order.promo_code,
+                                details=f'订单 {item.order.order_number} 商品退货，返还优惠券 {item.order.promo_code.code}'
+                            )
+                        # 如果订单有多个商品，并且使用了优惠券，需要按比例返还优惠金额
+                        elif item.order.promo_code and item.order.promo_discount > 0:
+                            # 计算当前商品占订单总价的比例
+                            total_subtotal = sum(i.item_subtotal for i in item.order.items.all())
+                            item_percentage = item.item_subtotal / total_subtotal if total_subtotal > 0 else 0
+                            
+                            # 计算应该退还的优惠金额
+                            refund_discount = item.order.promo_discount * item_percentage
+                            
+                            # 将退款金额加上对应的优惠比例
+                            refund_amount += refund_discount
+
                     else:
                         item.process_return(status)
                         

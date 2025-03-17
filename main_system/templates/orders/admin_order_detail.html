@@ -15,7 +15,7 @@
                     <p><strong>Shipping Address:</strong> {{ order.shipping_address }}</p>
                 </div>
                 <div class="col-md-6">
-                    <p><strong>Order Status:</strong> <span class="badge bg-{% if order.order_status == 'completed' %}success{% elif order.order_status == 'cancelled' %}danger{% else %}warning{% endif %}">{{ order.get_order_status_display }}</span></p>
+                    <p><strong>Order Status:</strong> <span class="badge bg-{% if order.order_status == 'completed' %}success{% elif order.order_status == 'cancelled' or order.order_status == 'refunded' %}danger{% elif order.order_status == 'paid' %}info{% elif order.order_status == 'shipped' %}primary{% elif order.order_status == 'delivered' %}success{% else %}warning{% endif %}">{{ order.get_order_status_display }}</span></p>
                     <p><strong>Payment Status:</strong> <span class="badge bg-{% if order.payment_status %}success{% else %}secondary{% endif %}">{{ order.payment_status|yesno:"Paid,Unpaid" }}</span></p>
                     <p><strong>Payment Method:</strong> {{ order.get_payment_method_display }}</p>
                     <p><strong>Order Date:</strong> {{ order.timestamp|date:"Y-m-d H:i" }}</p>

@@ -76,6 +76,14 @@ def admin_dashboard(request):
     return_orders = Order.objects.filter(order_status='refunded').order_by('-timestamp')[:5]
     return_count = Order.objects.filter(order_status='refunded').count()
     
+    # 统计退货申请中的记录 - 只计算"待审核"状态的
+    pending_returns_count = OrderItem.objects.filter(return_status='pending').count()
+    
+    # 统计所有状态的退货记录总数（除了"none"和"rejected"）
+    return_items_count = OrderItem.objects.filter(
+        return_status__in=['pending', 'approved', 'shipped', 'received', 'refunded']
+    ).count()
+    
     # 商品评价统计
     top_rated_products = Product.objects.annotate(
         avg_rating=Avg('reviews__rating'),
@@ -112,6 +120,8 @@ def admin_dashboard(request):
         'month_names': month_names,
         'return_orders': return_orders,
         'return_count': return_count,
+        'return_items_count': return_items_count,
+        'pending_returns_count': pending_returns_count,
         'top_rated_products': top_rated_products,
         'avg_rating': avg_rating,
         'rating_distribution': rating_distribution,
