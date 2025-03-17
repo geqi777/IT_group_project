@@ -1,10 +1,7 @@
 from main_system import models
 from main_system.utils.pagination import PageNumberPagination
-from main_system.utils.boostrapModelForm import Operator_ModelForm, Operator_EditForm, ResetPasswordForm, \
-    User_EditForm
+from main_system.utils.boostrapModelForm import Operator_ModelForm, Operator_EditForm, ResetPasswordForm
 from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
-import string, random
-from django.utils import timezone
 from django.contrib import messages
 
 def operator_list(request):
@@ -91,24 +88,3 @@ def reset_password(request, nid):
 
     return render(request, 'main/change.html', {"form": form})
 
-
-def operator_profile(request):
-
-    operator_info = request.session.get('info')
-    operator_detail = models.Operator.objects.get(pk=operator_info['operator_id'])
-
-    print(operator_detail)
-
-    e_profile_info = {
-        'id': operator_detail.id,
-        'name': operator_detail.name,
-        'date_of_birth': operator_detail.date_of_birth,
-        'email': operator_detail.email,
-        'phone': operator_detail.phone,
-        'address': operator_detail.address,
-        'is_operator': operator_detail.is_employee,
-        'account': operator_detail.account,
-        'role': operator_detail.role,
-    }
-
-    return render(request, 'operation/employee_profile.html', {'e_profile': e_profile_info})

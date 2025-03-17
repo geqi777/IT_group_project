@@ -1,20 +1,6 @@
 from django.utils.safestring import mark_safe
 import copy
-"""
-在views.py 写入
-    data = models.Department.objects.all()
-    page_obj = PageNumberPagination(request, data)
-    context = {'page_obj': page_obj.queryset,
-               'page_string': page_obj.html()
-               }
-    return render(request, 'operation/department_list.html', context)
 
-在 html写入
-<ul class="pagination">
-  {{ page_string }}
-  </ul>
-
-"""
 class PageNumberPagination(object):
     def __init__(self, request, queryset, page_size=10, plus=5, page_param='page'):
         """
