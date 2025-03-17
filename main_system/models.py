@@ -36,7 +36,7 @@ class Operator(models.Model):
     password = models.CharField(max_length=50)
     is_operator = models.BooleanField(default=False)
     role = models.CharField(max_length=50)
-    join_time = models.DateField(default=datetime.date.today)
+
 
     def verify_password(self, password):
         """验证密码是否正确"""

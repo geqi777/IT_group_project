@@ -177,7 +177,6 @@ class Operator_ModelForm(BoostrapModelForm):
             "confirm_password",
             "is_operator",
             "role",
-            "join_time",
         ]
         widgets = {
             'password': forms.PasswordInput(attrs={'class': 'form-control'}),
@@ -222,7 +221,6 @@ class Operator_EditForm(BoostrapModelForm):
             "account",
             "is_operator",
             "role",
-            "join_time",
         ]
 
     def __init__(self, *args, **kwargs):
