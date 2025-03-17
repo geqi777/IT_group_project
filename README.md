@@ -1,93 +1,159 @@
-# E-Vehicle Share System
+# 电子商务平台
 
+## 项目概述
 
+这是一个功能完整的电子商务平台，支持用户购物、支付、订单管理、退货处理以及积分系统等功能。该项目基于Django框架构建，提供了丰富的功能模块，适合中小型电商业务使用。
 
-## Getting started
+## 主要功能
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+### 用户端
+- **账户管理**：注册、登录、个人资料管理
+- **商品浏览**：分类查看、搜索、筛选
+- **购物车**：添加商品、调整数量、移除商品
+- **订单处理**：提交订单、支付、查看订单状态
+- **钱包系统**：余额充值、积分管理
+- **退货系统**：申请退货、查看退货状态
+- **评价系统**：对已购商品进行评价、查看评价
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+### 管理员端
+- **商品管理**：添加、编辑、删除商品
+- **订单管理**：查看订单、更新订单状态
+- **用户管理**：查看用户信息、管理用户账户
+- **退货管理**：处理退货申请、确认退款
+- **促销管理**：创建和管理促销码
+- **统计分析**：销售数据统计、订单分析、评价分析
 
-## Add your files
+## 技术栈
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+- **后端**：Django 4.2
+- **前端**：HTML, CSS, JavaScript, Bootstrap 5
+- **数据库**：MySQL/PostgreSQL
+- **支付集成**：模拟支付系统
+- **部署**：支持PythonAnywhere, Render, AWS, Google Cloud等
 
-```
-cd existing_repo
-git remote add origin https://stgit.dcs.gla.ac.uk/programming-and-systems-development-m/2024/lb01-03/e-vehicle-share-system.git
-git branch -M main
-git push -uf origin main
-```
+## 安装指南
 
-## Integrate with your tools
+### 前提条件
+- Python 3.9+
+- pip (Python包管理器)
+- 虚拟环境工具 (推荐: venv或virtualenv)
+- MySQL或PostgreSQL数据库
 
-- [ ] [Set up project integrations](https://stgit.dcs.gla.ac.uk/programming-and-systems-development-m/2024/lb01-03/e-vehicle-share-system/-/settings/integrations)
+### 本地开发环境设置
 
-## Collaborate with your team
+1. **克隆仓库**
+   ```bash
+   git clone https://github.com/your-username/IT_group_project.git
+   cd IT_group_project
+   ```
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+2. **创建并激活虚拟环境**
+   ```bash
+   python -m venv venv
+   # Windows
+   venv\Scripts\activate
+   # Linux/Mac
+   source venv/bin/activate
+   ```
 
-## Test and Deploy
+3. **安装依赖**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-Use the built-in continuous integration in GitLab.
+4. **配置环境变量**
+   创建`.env`文件并添加以下配置:
+   ```
+   DEBUG=True
+   SECRET_KEY=your_secret_key
+   DATABASE_URL=mysql://user:password@localhost:3306/dbname
+   ```
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+5. **数据库迁移**
+   ```bash
+   python manage.py migrate
+   ```
 
-***
+6. **创建超级用户**
+   ```bash
+   python manage.py createsuperuser
+   ```
 
-# Editing this README
+7. **启动开发服务器**
+   ```bash
+   python manage.py runserver
+   ```
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+## 部署指南
 
-## Suggestions for a good README
+### 部署到PythonAnywhere
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+1. **注册PythonAnywhere账号**
+   访问[PythonAnywhere](https://www.pythonanywhere.com/)并注册
 
-## Name
-Choose a self-explaining name for your project.
+2. **上传代码**
+   使用Git或上传ZIP文件
+   ```bash
+   git clone https://github.com/your-username/IT_group_project.git
+   ```
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+3. **创建虚拟环境并安装依赖**
+   ```bash
+   mkvirtualenv --python=python3.9 shop_env
+   workon shop_env
+   cd IT_group_project
+   pip install -r requirements.txt
+   ```
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+4. **配置Web应用**
+   - 在PythonAnywhere仪表板中添加新的Web应用
+   - 选择"Manual configuration"和Python 3.9
+   - 设置虚拟环境路径
+   - 配置WSGI文件
+   - 设置静态文件路径
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+5. **配置数据库**
+   - 创建MySQL数据库
+   - 更新settings.py中的数据库配置
+   - 运行迁移
+   ```bash
+   python manage.py migrate
+   ```
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+6. **收集静态文件**
+   ```bash
+   python manage.py collectstatic
+   ```
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+7. **重启Web应用**
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+详细部署指南请参考文档：[部署指南](docs/deployment.md)
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+## 项目截图
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+![首页](docs/images/homepage.png)
+![商品列表](docs/images/products.png)
+![购物车](docs/images/cart.png)
+![管理后台](docs/images/admin.png)
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+## 贡献指南
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+我们欢迎社区贡献，请遵循以下步骤：
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+1. Fork项目
+2. 创建特性分支 (`git checkout -b feature/amazing-feature`)
+3. 提交更改 (`git commit -m 'Add some amazing feature'`)
+4. 推送到分支 (`git push origin feature/amazing-feature`)
+5. 创建Pull Request
 
-## License
-For open source projects, say how it is licensed.
+## 许可证
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+本项目采用MIT许可证 - 详见[LICENSE](LICENSE)文件
+
+## 联系方式
+
+项目维护者 - [your-email@example.com](mailto:your-email@example.com)
+
+---
+
+© 2023 电子商务平台团队
