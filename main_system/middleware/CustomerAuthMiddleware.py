@@ -4,23 +4,22 @@ from django.shortcuts import redirect
 
 class CustomerAuthMiddleware(MiddlewareMixin):
     def process_request(self, request):
-        # 检查当前请求是否属于 customer 相关的路径
+        # Check if the current request is related to customer paths
         if not request.path_info.startswith('/customer/'):
-            return None  # 如果不是 customer 相关的请求，直接跳过处理
+            return None  # If it's not a customer-related request, skip processing
 
-        # 允许访问的页面，比如 customer 登录页面
+        # Allowed pages, such as the customer login page
         allowed_paths = ['/customer/login/', '/customer/register/']
         if request.path_info in allowed_paths:
             return None
 
-        # 检查用户是否已登录
+        # Check if the user is logged in
         customer_info = request.session.get('user_info')
         # print("customer auth middleware")
         print(dict(request.session))
-        # 如果用户未登录，则重定向到 customer 登录页面
+        # If the user is not logged in, redirect to the customer login page
         if not customer_info:
             return redirect('/customer/login/')
 
-        # 已登录，继续处理请求
+        # If logged in, continue processing the request
         return None
-
