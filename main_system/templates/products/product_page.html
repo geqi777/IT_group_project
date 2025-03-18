@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="container-fluid p-0">
-    <!-- 顶部横幅 -->
+    <!-- Top Banner -->
     <section class="hero-banner text-center position-relative mb-5">
         <div class="overlay"></div>
         <div class="container position-relative content-container py-5">
@@ -13,15 +13,15 @@
     </section>
 
     <div class="container">
-        <!-- 筛选 & 排序 -->
+        <!-- Filters & Sorting -->
         <div class="row mt-4">
-            <!-- 侧边筛选栏 -->
+            <!-- Sidebar Filters -->
             <div class="col-md-3">
                 <div class="card shadow-sm">
                     <div class="card-body">
                         <h5 class="card-title">Filters</h5>
                         <form method="GET" action="">
-                            <!-- 商品类型筛选 -->
+                            <!-- Category Filter -->
                             <div class="mb-4">
                                 <h6 class="mb-3">Category</h6>
                                 {% for category in categories %}
@@ -36,7 +36,7 @@
                                 {% endfor %}
                             </div>
 
-                            <!-- 价格筛选 -->
+                            <!-- Price Filter -->
                             <div class="mb-4">
                                 <h6 class="mb-3">Price (£)</h6>
                                 <div class="price-filters">
@@ -80,7 +80,7 @@
                 </div>
             </div>
 
-            <!-- 商品列表 -->
+            <!-- Product List -->
             <div class="col-md-9">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2>Products</h2>
@@ -100,7 +100,7 @@
                     </div>
                 </div>
 
-                <!-- 商品展示 -->
+                <!-- Product Display -->
                 <div class="row">
                     {% for product in products %}
                     <div class="col-lg-4 col-md-6 mb-4">
@@ -132,7 +132,7 @@
                     {% endfor %}
                 </div>
 
-                <!-- 分页 -->
+                <!-- Pagination -->
                 {% if products.has_other_pages %}
                 <nav aria-label="Page navigation" class="mt-4">
                     <ul class="pagination justify-content-center">
@@ -222,7 +222,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // 处理自定义价格范围的显示/隐藏
+    // Handle custom price range display/hide
     const customRadio = document.getElementById('custom');
     const customPriceRange = document.querySelector('.custom-price-range');
     
@@ -230,12 +230,12 @@ document.addEventListener('DOMContentLoaded', function() {
         customPriceRange.style.display = customRadio.checked ? 'block' : 'none';
     }
     
-    // 为所有价格范围单选按钮添加事件监听
+    // Add event listeners to all price range radio buttons
     document.querySelectorAll('input[name="price_range"]').forEach(radio => {
         radio.addEventListener('change', toggleCustomPriceRange);
     });
     
-    // 初始化显示状态
+    // Initialize display state
     toggleCustomPriceRange();
 });
 </script>

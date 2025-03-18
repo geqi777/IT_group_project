@@ -5,17 +5,17 @@
 <div class="container py-5">
     <div class="row mb-4">
         <div class="col-12">
-            <h1 class="h2">搜索结果</h1>
-            <p class="text-muted">关键词: "{{ search_query }}"</p>
+            <h1 class="h2">Search Results</h1>
+            <p class="text-muted">Keyword: "{{ search_query }}"</p>
         </div>
     </div>
 
-    <!-- 搜索表单 -->
+    <!-- Search Form -->
     <div class="row mb-4">
         <div class="col-md-6 mx-auto">
             <form action="{% url 'search' %}" method="get" class="d-flex">
-                <input type="text" name="q" class="form-control me-2" placeholder="搜索产品..." value="{{ search_query }}">
-                <button type="submit" class="btn btn-dark">搜索</button>
+                <input type="text" name="q" class="form-control me-2" placeholder="Search products..." value="{{ search_query }}">
+                <button type="submit" class="btn btn-dark">Search</button>
             </form>
         </div>
     </div>
@@ -34,13 +34,13 @@
                     <p class="card-text text-muted">{{ product.description|truncatechars:100 }}</p>
                     <div class="d-flex justify-content-between align-items-center">
                         <span class="h5 mb-0">${{ product.price }}</span>
-                        <a href="/products/product/{{ product.id }}/detail/" class="btn btn-sm btn-outline-dark">查看详情</a>
+                        <a href="/products/product/{{ product.id }}/detail/" class="btn btn-sm btn-outline-dark">View Details</a>
                     </div>
                 </div>
                 <div class="card-footer bg-white border-top-0">
                     <form action="/customer/cart/{{ product.id }}/add/" method="POST">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-dark w-100">加入购物车</button>
+                        <button type="submit" class="btn btn-dark w-100">Add to Cart</button>
                     </form>
                 </div>
             </div>
@@ -49,17 +49,17 @@
     </div>
     {% else %}
     <div class="text-center py-5">
-        <img src="{% static 'image/no-results.png' %}" alt="没有结果" class="img-fluid mb-3" style="max-width: 200px;">
-        <h3 class="h4 mb-3">没有找到匹配的产品</h3>
-        <p class="text-muted">尝试使用不同的关键词或浏览我们的产品分类</p>
-        <a href="/products/product/collection/" class="btn btn-dark mt-2">浏览所有产品</a>
+        <img src="{% static 'image/no-results.png' %}" alt="No Results" class="img-fluid mb-3" style="max-width: 200px;">
+        <h3 class="h4 mb-3">No matching products found</h3>
+        <p class="text-muted">Try using different keywords or browse our product categories</p>
+        <a href="/products/product/collection/" class="btn btn-dark mt-2">Browse All Products</a>
     </div>
     {% endif %}
 
-    <!-- 推荐分类 -->
+    <!-- Recommended Categories -->
     <div class="row mt-5">
         <div class="col-12">
-            <h3 class="h4 mb-3">浏览分类</h3>
+            <h3 class="h4 mb-3">Browse Categories</h3>
         </div>
         {% for category in categories %}
         <div class="col-md-3 col-6 mb-4">

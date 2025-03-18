@@ -7,7 +7,7 @@
 <section class="text-center position-relative mb-5" 
     style="position: relative; padding: 100px 0; background: url('{% static "image/background.jpg" %}') no-repeat center; background-size: cover;">
     
-    <!-- 半透明遮罩层 -->
+    <!-- Semi-transparent overlay -->
     <div class="overlay"></div>
 
     <div class="container position-relative content-container">
@@ -68,7 +68,7 @@
     <!-- Client Comment Section -->
     <section class="mb-5">
         <h2 class="text-center mb-3">What Our Clients Say</h2>
-        <p class="text-center mb-4">听听我们的客户怎么评价Unicraft的产品和服务</p>
+        <p class="text-center mb-4">Listen to what our customers say about Unicraft's products and services</p>
 
         <div class="position-relative d-flex justify-content-center">
             <button class="review-scroll-btn left-btn" onclick="scrollReviews(-1)">&#8249;</button>
@@ -105,10 +105,10 @@
         <div class="row">
             <div class="col-md-4 mb-3">
                 <div class="card border h-100">
-                    <img src="https://via.placeholder.com/400x300?text=传统手工编织" class="card-img-top" alt="传统手工编织的艺术">
+                    <img src="https://via.placeholder.com/400x300?text=Traditional+Hand+Weaving" class="card-img-top" alt="The Art of Traditional Hand Weaving">
                     <div class="card-body">
-                        <h5 class="card-title">传统手工编织的艺术</h5>
-                        <p class="card-text">在快速发展的现代社会中，传统手工编织艺术正在逐渐消失。然而，在Unicraft，我们致力于保护和传承这些珍贵的传统技艺。</p>
+                        <h5 class="card-title">The Art of Traditional Hand Weaving</h5>
+                        <p class="card-text">In the fast-paced modern society, the art of traditional hand weaving is gradually disappearing. However, at Unicraft, we are committed to preserving and passing on these precious traditional skills.</p>
                     </div>
                     <div class="card-footer bg-white border-0 pb-3">
                         <a href="/story/1/" class="btn btn-dark">Learn More</a>
@@ -117,10 +117,10 @@
             </div>
             <div class="col-md-4 mb-3">
                 <div class="card border h-100">
-                    <img src="https://via.placeholder.com/400x300?text=现代陶艺" class="card-img-top" alt="现代陶艺的演变">
+                    <img src="https://via.placeholder.com/400x300?text=Modern+Ceramics" class="card-img-top" alt="The Evolution of Modern Ceramics">
                     <div class="card-body">
-                        <h5 class="card-title">现代陶艺的演变</h5>
-                        <p class="card-text">陶艺是一门古老而不断创新的艺术形式。从实用器皿到艺术表达，陶艺在当代社会中不断演变，融合传统技艺与现代美学。</p>
+                        <h5 class="card-title">The Evolution of Modern Ceramics</h5>
+                        <p class="card-text">Ceramics is an ancient and ever-evolving art form. From practical utensils to artistic expressions, ceramics continue to evolve in contemporary society, blending traditional techniques with modern aesthetics.</p>
                     </div>
                     <div class="card-footer bg-white border-0 pb-3">
                         <a href="/story/2/" class="btn btn-dark">Learn More</a>
@@ -129,10 +129,10 @@
             </div>
             <div class="col-md-4 mb-3">
                 <div class="card border h-100">
-                    <img src="https://via.placeholder.com/400x300?text=传统木雕" class="card-img-top" alt="传统木雕与现代家居">
+                    <img src="https://via.placeholder.com/400x300?text=Traditional+Wood+Carving" class="card-img-top" alt="Traditional Wood Carving and Modern Home Decor">
                     <div class="card-body">
-                        <h5 class="card-title">传统木雕与现代家居</h5>
-                        <p class="card-text">传统木雕工艺是中国非物质文化遗产的重要组成部分，如今它正以新的面貌融入现代家居设计，为当代生活注入深厚的文化底蕴。</p>
+                        <h5 class="card-title">Traditional Wood Carving and Modern Home Decor</h5>
+                        <p class="card-text">Traditional wood carving is an important part of China's intangible cultural heritage. Today, it is being integrated into modern home decor with a new look, injecting profound cultural heritage into contemporary life.</p>
                     </div>
                     <div class="card-footer bg-white border-0 pb-3">
                         <a href="/story/3/" class="btn btn-dark">Learn More</a>
@@ -144,17 +144,17 @@
 
 </div>
 
-<!-- 滑动 JS -->
+<!-- Scroll JS -->
 <script>
     function scrollCategories(direction) {
         let container = document.getElementById("Slider");
-        let scrollAmount = 450 * direction;  // 每次滚动 450px
+        let scrollAmount = 450 * direction;  // Scroll 450px each time
         container.scrollBy({ left: scrollAmount, behavior: "smooth" });
     }
     
     function scrollReviews(direction) {
         let container = document.getElementById("reviewSlider");
-        let scrollAmount = 450 * direction;  // 每次滚动 450px
+        let scrollAmount = 450 * direction;  // Scroll 450px each time
         container.scrollBy({ left: scrollAmount, behavior: "smooth" });
     }
 </script>
@@ -241,6 +241,12 @@
     
     .review-item:hover {
         transform: translateY(-5px);
+    }
+
+    .review-slider {
+        scroll-behavior: smooth;
+        white-space: nowrap;
+        width: 80%;
     }
 </style>
 
