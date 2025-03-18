@@ -5,19 +5,19 @@ from datetime import datetime
 import os
 
 
-# 你的文件路径（请先上传文件）
-file_paths = ["crackers.csv", "Gift sets.csv", "milk.csv"]
-
-# 读取所有 Excel 文件
-dfs = [pd.read_csv(file) for file in file_paths]
-
-# 按行合并
-merged_df = pd.concat(dfs, ignore_index=True)
-
-# 保存合并后的 Excel 文件
-merged_df.to_csv("merged.csv", index=False)
-
-print("合并完成，已保存为 merged.xlsx")
+# # 你的文件路径（请先上传文件）
+# file_paths = ["crackers.csv", "Gift sets.csv", "milk.csv"]
+#
+# # 读取所有 Excel 文件
+# dfs = [pd.read_csv(file) for file in file_paths]
+#
+# # 按行合并
+# merged_df = pd.concat(dfs, ignore_index=True)
+#
+# # 保存合并后的 Excel 文件
+# merged_df.to_csv("merged.csv", index=False)
+#
+# print("合并完成，已保存为 merged.xlsx")
 
 # **连接到 SQLite 数据库**
 db_path = r"new_unicraft_system.sqlite3"

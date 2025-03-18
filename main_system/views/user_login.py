@@ -15,10 +15,12 @@ password = Admin123456
 """
 
 class LoginForm(BoostrapForm):
-    account = forms.CharField(label='account', widget=forms.TextInput(attrs={'class': 'form-control'}), required=True)
-    password = forms.CharField(label='password', widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+    account = forms.CharField(label='account',
+                              widget=forms.TextInput(attrs={'class': 'form-control'}),
+                              required=True)
+    password = forms.CharField(label='password',
+                               widget=forms.PasswordInput(attrs={'class': 'form-control'}),
                                required=True)
-
     def clean_password(self):
         pwd = self.cleaned_data.get('password')
         return md5(pwd)
