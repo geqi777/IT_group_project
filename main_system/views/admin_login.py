@@ -28,28 +28,28 @@ def admin_login(request):
         return render(request, 'login/admin_login.html', {'form': form})
 
     form = LoginForm(data=request.POST)
-    # print("获取到form")
+    # print("Form obtained")
     print("admin", md5("Admin123456"))
     if form.is_valid():
         account = form.cleaned_data['account']
         password = form.cleaned_data['password']
 
-        # 查找员工对象
+        # Find employee object
         employee_obj = models.Operator.objects.filter(account=account).first()
         # print(employee_obj.account, md5(employee_obj.password))
-        # 验证员工对象是否存在以及密码是否正确
+        # Verify if employee object exists and if the password is correct
         if not employee_obj or password != employee_obj.password:
             print('Account or password is incorrect')
             form.add_error('password', 'Account or password is incorrect')
             return render(request, 'login/admin_login.html', {'form': form})
 
-        # 清除可能存在的旧会话数据
+        # Clear any existing session data
         keys_to_clear = ['admin_info', 'info', 'user_info', 'customer_info']
         for key in keys_to_clear:
             if key in request.session:
                 del request.session[key]
 
-        # 设置 session 信息
+        # Set session information
         request.session['admin_info'] = {
             'employee_id': employee_obj.id,
             'employee_account': employee_obj.account,
@@ -71,62 +71,62 @@ def logout(request):
     return redirect('/')
 
 def admin_profile(request):
-    """管理员个人资料页面"""
-    # 检查管理员是否登录
+    """Admin profile page"""
+    # Check if admin is logged in
     user_info = request.session.get('admin_info')
     if not user_info:
         return redirect('/operation/login/')
     
-    # 获取管理员信息
+    # Get admin information
     user_id = user_info.get('employee_id')
     user = models.Operator.objects.get(id=user_id)
     
-    # 处理表单提交
+    # Handle form submission
     if request.method == 'POST':
         action = request.POST.get('action')
         
-        # 更新个人信息
+        # Update profile information
         if action == 'update_profile':
             name = request.POST.get('name')
             email = request.POST.get('email')
             phone = request.POST.get('phone')
             
-            # 验证邮箱唯一性
+            # Verify email uniqueness
             if models.Operator.objects.filter(email=email).exclude(id=user_id).exists():
-                messages.error(request, '该邮箱已被使用')
+                messages.error(request, 'This email is already in use')
             else:
                 user.name = name
                 user.email = email
                 user.phone = phone
                 user.save()
                 
-                # 更新会话中的用户信息
+                # Update user information in session
                 user_info['name'] = name
                 user_info['email'] = email
                 request.session['admin_info'] = user_info
                 
-                messages.success(request, '个人信息更新成功')
+                messages.success(request, 'Profile updated successfully')
                 return redirect('/operation/profile/')
         
-        # 修改密码
+        # Change password
         elif action == 'change_password':
             current_password = request.POST.get('current_password')
             new_password = request.POST.get('new_password')
             confirm_password = request.POST.get('confirm_password')
             
-            # 验证当前密码
+            # Verify current password
             if not user.verify_password(current_password):
-                messages.error(request, '当前密码不正确')
-            # 验证两次输入的新密码是否一致
+                messages.error(request, 'Current password is incorrect')
+            # Verify if the new passwords match
             elif new_password != confirm_password:
-                messages.error(request, '两次输入的新密码不一致')
-            # 验证新密码长度
+                messages.error(request, 'The new passwords do not match')
+            # Verify new password length
             elif len(new_password) < 6:
-                messages.error(request, '密码长度不能少于6个字符')
+                messages.error(request, 'Password must be at least 6 characters long')
             else:
                 user.set_password(new_password)
                 user.save()
-                messages.success(request, '密码修改成功')
+                messages.success(request, 'Password changed successfully')
                 return redirect('/operation/profile/')
     
     context = {
@@ -136,9 +136,8 @@ def admin_profile(request):
     return render(request, 'operation/admin_profile.html', context)
 
 def admin_logout(request):
-    """管理员退出登录"""
-    # 完全清除会话数据
+    """Admin logout"""
+    # Completely clear session data
     request.session.flush()
     
     return redirect('/operation/login/')
-

@@ -13,40 +13,40 @@ from decimal import Decimal
 from datetime import timedelta
 
 def admin_dashboard(request):
-    """管理员首页"""
-    # 检查管理员是否登录
+    """Admin Dashboard"""
+    # Check if the admin is logged in
     operator_id = request.session.get('admin_info')
     if not operator_id:
-        messages.error(request, '请先登录')
+        messages.error(request, 'Please log in first')
         return redirect('/operation/login/')
 
-    # 生成示例数据（如果没有数据）
+    # Generate sample data (if no data exists)
     order_count = Order.objects.count()
     if order_count == 0:
         generate_sample_data(request)
 
-    # 统计数据
+    # Statistics
     user_count = User.objects.count()
     product_count = Product.objects.count()
     order_count = Order.objects.count()
     admin_count = Operator.objects.filter(is_operator=True).count()
 
-    # 待支付订单（状态为"pending"的订单）
+    # Pending orders (orders with status "pending")
     pending_orders = Order.objects.filter(order_status='pending').order_by('-timestamp')[:10]
     pending_count = Order.objects.filter(order_status='pending').count()
     
-    # 待发货订单（状态为"paid"的订单）
+    # Orders to be shipped (orders with status "paid")
     to_ship_orders = Order.objects.filter(order_status='paid').order_by('-timestamp')[:10]
     to_ship_count = Order.objects.filter(order_status='paid').count()
     
-    # 待送达订单（状态为"shipped"的订单）
+    # Orders to be delivered (orders with status "shipped")
     to_deliver_orders = Order.objects.filter(order_status='shipped').order_by('-timestamp')[:10]
     to_deliver_count = Order.objects.filter(order_status='shipped').count()
     
-    # 近期订单（最近10个订单）
+    # Recent orders (last 10 orders)
     recent_orders = Order.objects.order_by('-timestamp')[:10]
     
-    # 月度销售记录（最近6个月）
+    # Monthly sales records (last 6 months)
     sales_data = []
     month_names = []
     now = timezone.now()
@@ -56,7 +56,7 @@ def admin_dashboard(request):
         month_end = (month_start.replace(month=month_start.month % 12 + 1, day=1) if month_start.month < 12 
                      else month_start.replace(year=month_start.year + 1, month=1, day=1)) - datetime.timedelta(days=1)
         
-        # 计算该月销售额和订单数
+        # Calculate sales and order count for the month
         month_orders = Order.objects.filter(
             Q(order_status='delivered') | Q(order_status='completed'),
             timestamp__gte=month_start, 
@@ -70,21 +70,21 @@ def admin_dashboard(request):
             'sales': month_sales,
             'orders': month_order_count
         })
-        month_names.append(month_start.strftime('%Y年%m月'))
+        month_names.append(month_start.strftime('%Y-%m'))
     
-    # 退货记录
+    # Return records
     return_orders = Order.objects.filter(order_status='refunded').order_by('-timestamp')[:5]
     return_count = Order.objects.filter(order_status='refunded').count()
     
-    # 统计退货申请中的记录 - 只计算"待审核"状态的
+    # Count of return requests pending review - only count those with status "pending"
     pending_returns_count = OrderItem.objects.filter(return_status='pending').count()
     
-    # 统计所有状态的退货记录总数（除了"none"和"rejected"）
+    # Total count of return records in all statuses (excluding "none" and "rejected")
     return_items_count = OrderItem.objects.filter(
         return_status__in=['pending', 'approved', 'shipped', 'received', 'refunded']
     ).count()
     
-    # 商品评价统计
+    # Product review statistics
     top_rated_products = Product.objects.annotate(
         avg_rating=Avg('reviews__rating'),
         review_count=Count('reviews')
@@ -92,7 +92,7 @@ def admin_dashboard(request):
     
     avg_rating = Review.objects.aggregate(avg=Avg('rating'))['avg'] or 0
     
-    # 评分分布
+    # Rating distribution
     rating_distribution = []
     for i in range(1, 6):
         count = Review.objects.filter(rating=i).count()
@@ -101,7 +101,7 @@ def admin_dashboard(request):
             'count': count
         })
         
-    # 为了保持向后兼容，保留之前的变量名
+    # To maintain backward compatibility, keep the previous variable name
     pending_and_paid_orders = list(pending_orders) + list(to_ship_orders)
     
     context = {
@@ -125,30 +125,30 @@ def admin_dashboard(request):
         'top_rated_products': top_rated_products,
         'avg_rating': avg_rating,
         'rating_distribution': rating_distribution,
-        # 旧变量名，为了兼容性保留
+        # Old variable name, kept for compatibility
         'pending_and_paid_orders': pending_and_paid_orders
     }
 
     return render(request, 'operation/admin_dashboard.html', context)
 
 def admin_review_list(request):
-    """管理员查看和管理用户评价"""
-    # 检查管理员是否登录
+    """Admin view and manage user reviews"""
+    # Check if the admin is logged in
     operator_id = request.session.get('admin_info')
     if not operator_id:
-        messages.error(request, '请先登录')
+        messages.error(request, 'Please log in first')
         return redirect('/operation/login/')
 
-    # 验证是否是管理员
+    # Verify if the user is an admin
     operator = Operator.objects.filter(id=operator_id['employee_id'], is_operator=True).first()
     if not operator:
-        messages.error(request, '权限不足')
+        messages.error(request, 'Insufficient permissions')
         return redirect('/operation/login/')
 
-    # 获取所有评价
+    # Get all reviews
     reviews = Review.objects.select_related('user', 'product').all().order_by('-created_time')
 
-    # 过滤功能
+    # Filter functionality
     product_id = request.GET.get('product_id')
     rating = request.GET.get('rating')
     
@@ -158,12 +158,12 @@ def admin_review_list(request):
     if rating:
         reviews = reviews.filter(rating=rating)
 
-    # 分页
+    # Pagination
     paginator = Paginator(reviews, 20)
     page = request.GET.get('page')
     reviews = paginator.get_page(page)
 
-    # 获取所有产品用于过滤
+    # Get all products for filtering
     products = Product.objects.all()
 
     return render(request, 'operation/admin_review_list.html', {
@@ -173,26 +173,26 @@ def admin_review_list(request):
     })
 
 def admin_review_delete(request, review_id):
-    """管理员删除评价"""
-    # 检查管理员是否登录
+    """Admin delete review"""
+    # Check if the admin is logged in
     operator_id = request.session.get('admin_info')
     if not operator_id:
-        messages.error(request, '请先登录')
+        messages.error(request, 'Please log in first')
         return redirect('/operation/login/')
 
-    # 验证是否是管理员
+    # Verify if the user is an admin
     operator = Operator.objects.filter(id=operator_id['employee_id'], is_operator=True).first()
     if not operator:
-        messages.error(request, '权限不足')
+        messages.error(request, 'Insufficient permissions')
         return redirect('/operation/login/')
 
-    # 获取评价
+    # Get the review
     review = get_object_or_404(Review, id=review_id)
 
-    # 删除评价
+    # Delete the review
     if request.method == 'POST':
         review.delete()
-        messages.success(request, '评价已删除')
+        messages.success(request, 'Review deleted')
         return redirect('/operation/homepage/reviews/')
 
     return render(request, 'operation/admin_review_delete.html', {
@@ -201,37 +201,37 @@ def admin_review_delete(request, review_id):
     })
 
 def generate_sample_data(request):
-    """生成示例数据"""
+    """Generate sample data"""
     try:
-        # 检查是否已有数据
+        # Check if data already exists
         if User.objects.count() > 5 and Product.objects.count() > 10:
             return
         
-        # 创建用户（如果没有足够用户）
+        # Create users (if not enough users)
         if User.objects.count() < 5:
             for i in range(5):
                 User.objects.create(
-                    name=f'测试用户{i+1}',
+                    name=f'Test User {i+1}',
                     email=f'user{i+1}@example.com',
-                    address=f'测试地址{i+1}',
+                    address=f'Test Address {i+1}',
                     contact=f'1234567890{i}',
                     username=f'user{i+1}',
                     password='password'
                 )
 
         
-        # 创建订单
+        # Create orders
         users = list(User.objects.all())
         products = list(Product.objects.all())
         
-        # 创建不同状态的订单
+        # Create orders with different statuses
         for status in ['pending', 'paid', 'shipped', 'delivered', 'completed', 'refunded']:
-            # 每种状态创建5个订单
+            # Create 5 orders for each status
             for i in range(5):
-                # 随机选择用户
+                # Randomly select a user
                 user = random.choice(users)
                 
-                # 创建订单
+                # Create order
                 order_date = timezone.now() - timedelta(days=random.randint(0, 180))
                 order = Order.objects.create(
                     user=user,
@@ -242,7 +242,7 @@ def generate_sample_data(request):
                     timestamp=order_date
                 )
                 
-                # 添加订单商品
+                # Add order items
                 subtotal = 0
                 for _ in range(random.randint(1, 3)):
                     product = random.choice(products)
@@ -260,7 +260,7 @@ def generate_sample_data(request):
                     
                     subtotal += item_total
                 
-                # 更新订单金额
+                # Update order amount
                 shipping_fee = Decimal('0') if subtotal >= 30 else Decimal('5')
                 vat = (subtotal * Decimal('0.05')).quantize(Decimal('0.01'))
                 total = subtotal + shipping_fee + vat
@@ -271,17 +271,17 @@ def generate_sample_data(request):
                 order.total_amount = total
                 order.final_amount = total
                 
-                # 设置完成时间（对于已完成订单）
+                # Set completion time (for completed orders)
                 if status in ['delivered', 'completed', 'refunded']:
                     order.complete_time = order_date + timedelta(days=random.randint(1, 7))
                 
-                # 设置支付状态
+                # Set payment status
                 if status != 'pending':
                     order.payment_status = True
                     order.paid_time = order_date + timedelta(hours=random.randint(1, 24))
                 
                 order.save()
         
-        messages.success(request, '示例数据已生成')
+        messages.success(request, 'Sample data generated')
     except Exception as e:
-        messages.error(request, f'生成示例数据时出错：{str(e)}')
+        messages.error(request, f'Error generating sample data: {str(e)}')

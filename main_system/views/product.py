@@ -14,21 +14,21 @@ from django.core.paginator import Paginator
 
 
 # ==========================
-# 管理员端功能
+# Admin Functions
 # ==========================
 # 1-1
 def product_list(request):
-    """ 查看并管理商品列表 """
+    """ View and manage product list """
     data = models.Product.objects.all()
 
-    # 从请求中获取 page_size，默认为 20
+    # Get page_size from request, default is 20
     page_size = request.GET.get('page_size', 20)
-    if isinstance(page_size, str) and page_size.isdecimal():  # 确保 page_size 是数字
+    if isinstance(page_size, str) and page_size.isdecimal():  # Ensure page_size is a number
         page_size = int(page_size)
     else:
-        page_size = 20  # 设置默认值
+        page_size = 20  # Set default value
 
-    # 创建分页对象并传递 page_size
+    # Create pagination object and pass page_size
     page_obj = PageNumberPagination(request, data, page_size=page_size)
     context = {'page_obj': page_obj.queryset,
                'page_string': page_obj.html(),
@@ -37,7 +37,7 @@ def product_list(request):
 
 
 def product_add(request):
-    """ 添加新商品 """
+    """ Add new product """
     if request.method == 'GET':
         form = Product_ModelForm()
         return render(request, 'main/change.html', {"form": form})
@@ -52,9 +52,9 @@ def product_add(request):
 
 
 def product_edit(request, product_id):
-    """ 编辑商品 """
+    """ Edit product """
 
-    row = models.Product.objects.filter(id=product_id).first()  # 获取需要编辑的产品对象
+    row = models.Product.objects.filter(id=product_id).first()  # Get the product object to be edited
 
     if request.method == 'GET':
         form = Product_EditForm(instance=row)
@@ -70,18 +70,18 @@ def product_edit(request, product_id):
 
 
 def product_delete(request, product_id):
-    """ 删除商品 """
+    """ Delete product """
     models.Product.objects.filter(id=product_id).delete()
     return redirect('/operation/homepage/products/')
 
 
 # ==========================
-# 用户端功能
+# User Functions
 # ==========================
 
 def product_page(request):
-    """ 商品浏览页 + 筛选 + 排序 """
-    # 获取筛选参数
+    """ Product browsing page + filtering + sorting """
+    # Get filter parameters
     query = request.GET.get('q', '')
     categories = request.GET.getlist('category', [])
     sort_by = request.GET.get('sort', 'newest')
@@ -89,18 +89,18 @@ def product_page(request):
     price_min = request.GET.get('price_min')
     price_max = request.GET.get('price_max')
 
-    # 基础查询：只显示激活状态的商品
+    # Basic query: only show active products
     products = Product.objects.filter(status='active')
 
-    # 应用搜索过滤
+    # Apply search filter
     if query:
         products = products.filter(Q(name__icontains=query) | Q(description__icontains=query))
 
-    # 应用类别过滤
+    # Apply category filter
     if categories:
         products = products.filter(category__in=categories)
 
-    # 应用价格过滤
+    # Apply price filter
     if price_range != 'any':
         if price_range == 'custom' and price_min and price_max:
             products = products.filter(price__gte=float(price_min), price__lte=float(price_max))
@@ -111,31 +111,31 @@ def product_page(request):
             if price_max:
                 products = products.filter(price__lte=float(price_max))
 
-    # 应用排序
+    # Apply sorting
     if sort_by == 'price_low':
         products = products.order_by('price')
     elif sort_by == 'price_high':
         products = products.order_by('-price')
     elif sort_by == 'newest':
         products = products.order_by('-created_time')
-    elif sort_by == 'relevance' and query:  # 只在有搜索查询时应用相关性排序
+    elif sort_by == 'relevance' and query:  # Apply relevance sorting only if there is a search query
         products = products.annotate(
             relevance=Case(
-                When(name__icontains=query, then=2),  # 名称匹配权重更高
-                When(description__icontains=query, then=1),  # 描述匹配权重较低
+                When(name__icontains=query, then=2),  # Higher weight for name match
+                When(description__icontains=query, then=1),  # Lower weight for description match
                 default=0,
                 output_field=IntegerField(),
             )
         ).order_by('-relevance', '-created_time')
-    else:  # 默认按最新排序
+    else:  # Default to sorting by newest
         products = products.order_by('-created_time')
 
-    # 分页
+    # Pagination
     page_number = request.GET.get('page', 1)
-    paginator = Paginator(products, 9)  # 每页显示9个商品
+    paginator = Paginator(products, 9)  # Show 9 products per page
     page_obj = paginator.get_page(page_number)
 
-    # 准备分类选项
+    # Prepare category options
     all_categories = [{'key': key, 'name': name} for key, name in Product.CATEGORY_CHOICES]
 
     context = {
@@ -150,33 +150,33 @@ def product_page(request):
 
 
 def product_detail(request, product_id):
-    """用户查看商品详情（包含库存信息）"""
+    """User view product details (including stock information)"""
     product = models.Product.objects.filter(id=product_id, status='active').first()
     quantity_range = range(1, product.stock + 1) if product.stock > 0 else []
     return render(request, 'products/product_detail.html', {'product': product, 'quantity_range': quantity_range})
 
 
 def search_products(request):
-    """搜索商品"""
+    """Search products"""
     query = request.GET.get('q', '')
     if query:
-        # 从名称和类别中搜索
+        # Search from name and category
         products = Product.objects.filter(
-            Q(name__icontains=query) |  # 名称包含关键词
-            Q(category__icontains=query)  # 类别包含关键词
-        ).filter(status='active').distinct()  # 只显示激活状态的商品
+            Q(name__icontains=query) |  # Name contains keyword
+            Q(category__icontains=query)  # Category contains keyword
+        ).filter(status='active').distinct()  # Only show active products
     else:
         products = Product.objects.filter(status='active')
 
-    # 分页
-    paginator = Paginator(products, 12)  # 每页12个商品
+    # Pagination
+    paginator = Paginator(products, 12)  # Show 12 products per page
     page = request.GET.get('page')
     products = paginator.get_page(page)
 
     return render(request, 'products/product_page.html', {
         'products': products,
         'search_query': query,
-        'categories': [{'key': key, 'name': name} for key, name in Product.CATEGORY_CHOICES]  # 添加分类选项
+        'categories': [{'key': key, 'name': name} for key, name in Product.CATEGORY_CHOICES]  # Add category options
     })
 
 

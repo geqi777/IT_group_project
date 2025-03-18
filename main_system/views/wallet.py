@@ -10,19 +10,19 @@ from main_system import models
 from main_system.models import User, Wallet, PaymentCard, WalletTransaction
 
 def wallet_view(request):
-    """钱包详情页面，显示余额、积分和支付卡列表"""
-    # 检查用户是否登录
+    """Wallet details page, showing balance, points, and payment card list"""
+    # Check if user is logged in
     user_info = request.session.get('user_info')
     if not user_info:
-        messages.error(request, '请先登录')
+        messages.error(request, 'Please log in first')
         return redirect('/customer/login/')
 
     user = User.objects.filter(id=user_info['id']).first()
     if not user:
-        messages.error(request, '用户不存在')
+        messages.error(request, 'User does not exist')
         return redirect('/customer/register/')
 
-    # 获取或创建钱包
+    # Get or create wallet
     wallet, created = Wallet.objects.get_or_create(
         user=user,
         defaults={
@@ -31,10 +31,10 @@ def wallet_view(request):
         }
     )
 
-    # 获取支付卡列表
+    # Get payment card list
     payment_cards = PaymentCard.objects.filter(user=user)
 
-    # 获取最近的交易记录
+    # Get recent transactions
     transactions = WalletTransaction.objects.filter(wallet=wallet).order_by('-timestamp')[:5]
 
     return render(request, 'wallet/wallet_view.html', {
@@ -44,19 +44,19 @@ def wallet_view(request):
     })
 
 def payment_card_list(request):
-    """支付卡列表页面"""
-    # 检查用户是否登录
+    """Payment card list page"""
+    # Check if user is logged in
     user_info = request.session.get('user_info')
     if not user_info:
-        messages.error(request, '请先登录')
+        messages.error(request, 'Please log in first')
         return redirect('/customer/login/')
 
     user = User.objects.filter(id=user_info['id']).first()
     if not user:
-        messages.error(request, '用户不存在')
+        messages.error(request, 'User does not exist')
         return redirect('/customer/register/')
 
-    # 获取支付卡列表
+    # Get payment card list
     payment_cards = PaymentCard.objects.filter(user=user)
 
     return render(request, 'wallet/payment_card.html', {
@@ -64,124 +64,124 @@ def payment_card_list(request):
     })
 
 def payment_card_add(request):
-    """添加新支付卡"""
-    # 检查用户是否登录
+    """Add new payment card"""
+    # Check if user is logged in
     user_info = request.session.get('user_info')
     if not user_info:
-        messages.error(request, '请先登录')
+        messages.error(request, 'Please log in first')
         return redirect('/customer/login/')
 
     user = User.objects.filter(id=user_info['id']).first()
     if not user:
-        messages.error(request, '用户不存在')
+        messages.error(request, 'User does not exist')
         return redirect('/customer/register/')
 
     if request.method == 'POST':
         try:
-            # 获取表单数据
-            card_number = request.POST.get('card_number').replace(' ', '')  # 移除空格
+            # Get form data
+            card_number = request.POST.get('card_number').replace(' ', '')  # Remove spaces
             
-            # 检查卡号是否已存在
+            # Check if card number already exists
             if PaymentCard.objects.filter(card_number=card_number).exists():
-                messages.error(request, '该卡号已被使用')
+                messages.error(request, 'This card number is already in use')
                 return redirect('/customer/wallet/cards/add/')
                 
-            # 创建新支付卡
+            # Create new payment card
             card = PaymentCard.objects.create(
                 user=user,
-                nickname=request.POST.get('nickname') or '未命名卡片',
+                nickname=request.POST.get('nickname') or 'Unnamed Card',
                 card_number=card_number,
                 expiry_date=request.POST.get('expiry_date'),
                 cvv=request.POST.get('cvv'),
                 country=request.POST.get('country'),
                 postcode=request.POST.get('postcode').upper()
             )
-            messages.success(request, '支付卡添加成功')
+            messages.success(request, 'Payment card added successfully')
             return redirect('/customer/wallet/cards/')
             
         except IntegrityError:
-            messages.error(request, '该卡号已被使用')
+            messages.error(request, 'This card number is already in use')
             return redirect('/customer/wallet/cards/add/')
         except Exception as e:
-            messages.error(request, f'添加失败：{str(e)}')
+            messages.error(request, f'Failed to add: {str(e)}')
             return redirect('/customer/wallet/cards/add/')
 
     return render(request, 'wallet/card_add.html')
 
 def payment_card_edit(request, card_id):
-    """编辑支付卡"""
-    # 检查用户是否登录
+    """Edit payment card"""
+    # Check if user is logged in
     user_info = request.session.get('user_info')
     if not user_info:
-        messages.error(request, '请先登录')
+        messages.error(request, 'Please log in first')
         return redirect('/customer/login/')
 
     user = User.objects.filter(id=user_info['id']).first()
     if not user:
-        messages.error(request, '用户不存在')
+        messages.error(request, 'User does not exist')
         return redirect('/customer/register/')
 
     try:
-        # 获取支付卡，使用get()而不是filter()
+        # Get payment card, use get() instead of filter()
         card = PaymentCard.objects.get(id=card_id, user=user)
 
         if request.method == 'POST':
             try:
-                # 更新支付卡信息
+                # Update payment card information
                 card.nickname = request.POST.get('nickname')
                 card.expiry_date = request.POST.get('expiry_date')
                 card.country = request.POST.get('country')
                 card.postcode = request.POST.get('postcode')
                 card.save()
 
-                messages.success(request, '支付卡更新成功')
+                messages.success(request, 'Payment card updated successfully')
                 return redirect('/customer/wallet/cards/')
             except Exception as e:
-                messages.error(request, f'更新失败：{str(e)}')
+                messages.error(request, f'Failed to update: {str(e)}')
 
         return render(request, 'wallet/card_edit.html', {'card': card})
         
     except PaymentCard.DoesNotExist:
-        messages.error(request, '支付卡不存在或已被删除')
+        messages.error(request, 'Payment card does not exist or has been deleted')
         return redirect('/customer/wallet/cards/')
 
 def payment_card_delete(request, card_id):
-    """删除支付卡"""
-    # 检查用户是否登录
+    """Delete payment card"""
+    # Check if user is logged in
     user_info = request.session.get('user_info')
     if not user_info:
-        messages.error(request, '请先登录')
+        messages.error(request, 'Please log in first')
         return redirect('/customer/login/')
 
     user = User.objects.filter(id=user_info['id']).first()
     if not user:
-        messages.error(request, '用户不存在')
+        messages.error(request, 'User does not exist')
         return redirect('/customer/register/')
 
-    # 获取并软删除支付卡
+    # Get and delete payment card
     try:
         card = PaymentCard.objects.get(id=card_id, user=user)
-        card.delete()  # 直接删除记录
-        messages.success(request, '支付卡已删除')
+        card.delete()  # Directly delete the record
+        messages.success(request, 'Payment card deleted successfully')
     except PaymentCard.DoesNotExist:
-        messages.error(request, '支付卡不存在')
+        messages.error(request, 'Payment card does not exist')
     
     return redirect('/customer/wallet/cards/')
 
 def wallet_top_up(request):
-    """钱包充值"""
-    # 检查用户是否登录
+    """Wallet top-up"""
+    # Check if user is logged in
     user_info = request.session.get('user_info')
     if not user_info:
-        messages.error(request, '请先登录')
+        messages.error(request, 'Please log in first')
         return redirect('/customer/login/')
 
     user = User.objects.filter(id=user_info['id']).first()
     if not user:
-        messages.error(request, '用户不存在')
+        messages.error(request, 'User does not exist')
         return redirect('/customer/register/')
 
-    # 获取钱包
+    # Get wallet
     wallet = get_object_or_404(Wallet, user=user)
     
     if request.method == 'POST':
@@ -190,33 +190,33 @@ def wallet_top_up(request):
             payment_card_id = request.POST.get('payment_card_id')
 
             if amount <= 0:
-                messages.error(request, '充值金额必须大于0')
+                messages.error(request, 'Top-up amount must be greater than 0')
                 return redirect('/customer/wallet/top-up/')
 
-            # 验证支付卡
+            # Validate payment card
             card = get_object_or_404(PaymentCard, id=payment_card_id, user=user)
 
             with transaction.atomic():
-                # 更新钱包余额
+                # Update wallet balance
                 wallet.balance += amount
                 wallet.save()
 
-                # 记录交易
+                # Record transaction
                 WalletTransaction.objects.create(
                     wallet=wallet,
                     transaction_type='top up',
                     amount=amount,
                     payment_card=card,
-                    details=f'通过卡片 {card.card_number[-4:]} 充值'
+                    details=f'Top-up via card {card.card_number[-4:]}'
                 )
 
-                messages.success(request, f'成功充值 £{amount}')
+                messages.success(request, f'Successfully topped up £{amount}')
                 return redirect('/customer/wallet/')
 
         except Exception as e:
-            messages.error(request, f'充值失败：{str(e)}')
+            messages.error(request, f'Failed to top up: {str(e)}')
 
-    # 获取用户的支付卡列表
+    # Get user's payment card list
     payment_cards = PaymentCard.objects.filter(user=user)
     return render(request, 'wallet/top_up.html', {
         'wallet': wallet,
@@ -224,25 +224,25 @@ def wallet_top_up(request):
     })
 
 def transaction_history(request):
-    """交易记录"""
-    # 检查用户是否登录
+    """Transaction history"""
+    # Check if user is logged in
     user_info = request.session.get('user_info')
     if not user_info:
-        messages.error(request, '请先登录')
+        messages.error(request, 'Please log in first')
         return redirect('/customer/login/')
 
     user = User.objects.filter(id=user_info['id']).first()
     if not user:
-        messages.error(request, '用户不存在')
+        messages.error(request, 'User does not exist')
         return redirect('/customer/register/')
 
-    # 获取钱包
+    # Get wallet
     wallet = get_object_or_404(Wallet, user=user)
 
-    # 获取所有交易记录
+    # Get all transaction records
     transactions = WalletTransaction.objects.filter(wallet=wallet).order_by('-timestamp')
 
-    # 分页
+    # Pagination
     paginator = Paginator(transactions, 10)
     page = request.GET.get('page')
     transactions = paginator.get_page(page)

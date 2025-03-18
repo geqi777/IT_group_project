@@ -24,38 +24,38 @@ class LoginForm(BoostrapForm):
         return md5(pwd)
 
 def user_profile(request):
-    """用户个人资料页面"""
-    # 检查用户是否登录
+    """User profile page"""
+    # Check if user is logged in
     user_info = request.session.get('user_info')
     if not user_info:
         return redirect('/customer/login/')
     
-    # 获取用户信息
+    # Get user information
     user_id = user_info.get('id')
     user = models.User.objects.get(id=user_id)
     
-    # 获取用户钱包信息
+    # Get user wallet information
     wallet = models.Wallet.objects.filter(user_id=user_id).first()
     if not wallet:
         wallet = models.Wallet.objects.create(user_id=user_id, balance=0, points=0)
     
-    # 获取最近5个订单
+    # Get the last 5 orders
     recent_orders = Order.objects.filter(user_id=user_id).order_by('-timestamp')[:5]
     
-    # 处理表单提交
+    # Handle form submission
     if request.method == 'POST':
         action = request.POST.get('action')
         
-        # 更新个人信息
+        # Update profile information
         if action == 'update_profile':
             name = request.POST.get('name')
             email = request.POST.get('email')
             phone = request.POST.get('phone')
             address = request.POST.get('address')
             
-            # 验证邮箱唯一性
+            # Validate email uniqueness
             if models.User.objects.filter(email=email).exclude(id=user_id).exists():
-                messages.error(request, '该邮箱已被使用')
+                messages.error(request, 'This email is already in use')
             else:
                 user.name = name
                 user.email = email
@@ -63,33 +63,33 @@ def user_profile(request):
                 user.address = address
                 user.save()
                 
-                # 更新会话中的用户信息
+                # Update user information in session
                 user_info['name'] = name
                 user_info['email'] = email
                 request.session['user_info'] = user_info
                 
-                messages.success(request, '个人信息更新成功')
+                messages.success(request, 'Profile updated successfully')
                 return redirect('/customer/profile/')
         
-        # 修改密码
+        # Change password
         elif action == 'change_password':
             current_password = request.POST.get('current_password')
             new_password = request.POST.get('new_password')
             confirm_password = request.POST.get('confirm_password')
             
-            # 验证当前密码
+            # Validate current password
             if not user.verify_password(current_password):
-                messages.error(request, '当前密码不正确')
-            # 验证两次输入的新密码是否一致
+                messages.error(request, 'Current password is incorrect')
+            # Validate if the new passwords match
             elif new_password != confirm_password:
-                messages.error(request, '两次输入的新密码不一致')
-            # 验证新密码长度
+                messages.error(request, 'The new passwords do not match')
+            # Validate new password length
             elif len(new_password) < 6:
-                messages.error(request, '密码长度不能少于6个字符')
+                messages.error(request, 'Password must be at least 6 characters long')
             else:
                 user.set_password(new_password)
                 user.save()
-                messages.success(request, '密码修改成功')
+                messages.success(request, 'Password changed successfully')
                 return redirect('/customer/profile/')
     
     context = {
@@ -109,20 +109,20 @@ def user_login(request):
         account = form.cleaned_data['account']
         password = form.cleaned_data['password']
 
-        # 查找用户对象
+        # Find user object
         user_obj = models.User.objects.filter(account=account).first()
-        # 验证用户对象是否存在以及密码是否正确
+        # Validate if user object exists and password is correct
         if not user_obj or password != user_obj.password:
             form.add_error('password', 'Account or password is incorrect')
             return render(request, 'login/user_login.html', {'form': form})
 
-        # 清除可能存在的旧会话数据
+        # Clear any existing session data
         keys_to_clear = ['admin_info', 'info', 'user_info', 'customer_info']
         for key in keys_to_clear:
             if key in request.session:
                 del request.session[key]
 
-        # 设置 session 信息
+        # Set session information
         request.session['user_info'] = {
             'id': user_obj.id,
             'account': user_obj.account,
@@ -130,15 +130,15 @@ def user_login(request):
             'email': user_obj.email
         }
         
-        # 设置session过期时间为7天
+        # Set session expiry to 7 days
         request.session.set_expiry(7 * 24 * 60 * 60)
         
-        # 确保session被保存
+        # Ensure session is saved
         request.session.modified = True
 
-        print('用户登录成功:', request.session['user_info'])
+        print('User logged in successfully:', request.session['user_info'])
         
-        # 获取来源页面，如果没有则默认跳转到首页
+        # Get the referring page, default to homepage if not available
         next_url = request.GET.get('next')
         if next_url:
             return redirect(next_url)
@@ -148,25 +148,25 @@ def user_login(request):
 
 def user_register(request):
     if request.method == 'GET':
-        print('访问了')
+        print('Accessed')
         form = User_RegisterForm()
         return render(request, 'login/user_register.html', {'form': form})
 
     form = User_RegisterForm(request.POST)
     if form.is_valid():
-        print("有数据")
-        # 保存表单但不提交到数据库
+        print("Data present")
+        # Save form but do not commit to database
         customer = form.save(commit=False)
-        # 保存到数据库
+        # Save to database
         customer.save()
         return redirect('/customer/login/')
     else:
         return render(request, 'login/user_register.html', {'form': form})
 
 def user_logout(request):
-    """用户退出登录"""
-    # 完全清除会话数据
+    """User logout"""
+    # Completely clear session data
     request.session.flush()
     
-    messages.success(request, '已成功退出登录')
+    messages.success(request, 'Logged out successfully')
     return redirect('/customer/login/')

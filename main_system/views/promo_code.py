@@ -12,8 +12,8 @@ from main_system.utils.boostrapModelForm import PromoCode_ModelForm, PromoCode_E
 
 
 def promo_code_list(request):
-    """管理员查看所有优惠码"""
-    # 验证管理员身份
+    """Admin view all promo codes"""
+    # Verify admin identity
     operator_info = request.session.get('admin_info')
     if not operator_info:
         return redirect('/operation/login/')
@@ -23,7 +23,7 @@ def promo_code_list(request):
 
     promo_codes = PromoCode.objects.all().order_by('-created_time')
     
-    # 分页
+    # Pagination
     paginator = Paginator(promo_codes, 10)
     page = request.GET.get('page')
     promo_codes = paginator.get_page(page)
@@ -36,8 +36,8 @@ def promo_code_list(request):
 
 
 def promo_code_add(request):
-    """添加新优惠码"""
-    # 验证管理员身份
+    """Add new promo code"""
+    # Verify admin identity
     operator_info = request.session.get('admin_info')
     if not operator_info:
         return redirect('/operation/login/')
@@ -48,23 +48,23 @@ def promo_code_add(request):
         form = PromoCode_ModelForm(data=request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, '优惠码创建成功')
+            messages.success(request, 'Promo code created successfully')
             return redirect('promo_code_list')
         else:
-            messages.error(request, '创建失败，请检查输入')
+            messages.error(request, 'Creation failed, please check your input')
     else:
         form = PromoCode_ModelForm()
     
     return render(request, 'operation/promo_code_edit.html', {
         'form': form,
-        'title': '添加优惠码',
+        'title': 'Add Promo Code',
         'operator': operator,
     })
 
 
 def promo_code_edit(request, code_id):
-    """编辑优惠码"""
-    # 验证管理员身份
+    """Edit promo code"""
+    # Verify admin identity
     operator_info = request.session.get('admin_info')
     if not operator_info:
         return redirect('/operation/login/')
@@ -77,45 +77,45 @@ def promo_code_edit(request, code_id):
         form = PromoCode_EditForm(data=request.POST, instance=promo_code)
         if form.is_valid():
             form.save()
-            messages.success(request, '优惠码更新成功')
+            messages.success(request, 'Promo code updated successfully')
             return redirect('promo_code_list')
         else:
-            messages.error(request, '更新失败，请检查输入')
+            messages.error(request, 'Update failed, please check your input')
     else:
         form = PromoCode_EditForm(instance=promo_code)
     
     return render(request, 'operation/promo_code_edit.html', {
         'form': form,
-        'title': '编辑优惠码',
+        'title': 'Edit Promo Code',
         'operator': operator,
         'promo_code': promo_code
     })
 
 
 def promo_code_delete(request, code_id):
-    """删除优惠码"""
-    # 验证管理员身份
+    """Delete promo code"""
+    # Verify admin identity
     operator_info = request.session.get('admin_info')
     if not operator_info:
-        return JsonResponse({'success': False, 'message': '请先登录'})
+        return JsonResponse({'success': False, 'message': 'Please log in first'})
     
     operator_obj = Operator.objects.filter(id=operator_info['id']).first()
     if not operator_obj:
-        return JsonResponse({'success': False, 'message': '无效的管理员账户'})
+        return JsonResponse({'success': False, 'message': 'Invalid admin account'})
 
     try:
         promo_code = PromoCode.objects.filter(id=code_id).first()
         promo_code.delete()
-        messages.success(request, '优惠码删除成功')
+        messages.success(request, 'Promo code deleted successfully')
     except Exception as e:
-        messages.error(request, f'删除失败：{str(e)}')
+        messages.error(request, f'Deletion failed: {str(e)}')
     return redirect('promo_code_list')
 
 
 def apply_promo_code(request):
-    """应用优惠码到订单"""
+    """Apply promo code to order"""
     if request.method != 'POST':
-        return JsonResponse({'success': False, 'message': '无效的请求方法'})
+        return JsonResponse({'success': False, 'message': 'Invalid request method'})
 
     data = json.loads(request.body)
     order_id = data.get('order_id')
@@ -125,33 +125,33 @@ def apply_promo_code(request):
         order = Order.objects.get(id=order_id)
         promo_code_obj = PromoCode.objects.get(code=promo_code)
 
-        # 检查优惠码是否有效
+        # Check if promo code is valid
         if not promo_code_obj.is_valid():
-            return JsonResponse({'success': False, 'message': '优惠码已过期或无效'})
+            return JsonResponse({'success': False, 'message': 'Promo code expired or invalid'})
 
-        # 检查订单金额是否满足最低要求
+        # Check if order amount meets minimum requirement
         if order.subtotal_amount < promo_code_obj.min_order_value:
             return JsonResponse({
                 'success': False,
-                'message': f'订单金额需满£{promo_code_obj.min_order_value}才能使用此优惠码'
+                'message': f'Order amount must be at least £{promo_code_obj.min_order_value} to use this promo code'
             })
 
-        # 检查用户是否已使用过此优惠码
+        # Check if user has already used this promo code
         if HistoryNew.objects.filter(
                 user=order.user,
                 promo_code=promo_code_obj,
                 history_type='promo_code_used'
         ).exists():
-            return JsonResponse({'success': False, 'message': '您已使用过此优惠码'})
+            return JsonResponse({'success': False, 'message': 'You have already used this promo code'})
 
         with transaction.atomic():
-            # 更新订单金额
+            # Update order amount
             order.promo_code = promo_code_obj
             order.promo_discount = promo_code_obj.discount
             order.final_amount = order.total_amount - promo_code_obj.discount
             order.save()
 
-            # 记录历史
+            # Record history
             HistoryNew.objects.create(
                 user=order.user,
                 order=order,
@@ -160,19 +160,19 @@ def apply_promo_code(request):
                 amount=promo_code_obj.discount,
                 original_amount=order.total_amount,
                 final_amount=order.final_amount,
-                details=f'使用优惠码：{promo_code_obj.code}'
+                details=f'Used promo code: {promo_code_obj.code}'
             )
 
         return JsonResponse({
             'success': True,
-            'message': '优惠码应用成功',
+            'message': 'Promo code applied successfully',
             'discount': float(promo_code_obj.discount),
             'final_amount': float(order.final_amount)
         })
 
     except PromoCode.DoesNotExist:
-        return JsonResponse({'success': False, 'message': '优惠码不存在'})
+        return JsonResponse({'success': False, 'message': 'Promo code does not exist'})
     except Order.DoesNotExist:
-        return JsonResponse({'success': False, 'message': '订单不存在'})
+        return JsonResponse({'success': False, 'message': 'Order does not exist'})
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)})

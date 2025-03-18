@@ -6,14 +6,14 @@ from django.contrib import messages
 
 def operator_list(request):
     data = models.Operator.objects.all()
-    # 从请求中获取 page_size，默认为 10
+    # Get page_size from request, default is 20
     page_size = request.GET.get('page_size', 20)
-    if isinstance(page_size, str) and page_size.isdecimal():  # 确保 page 是字符串
+    if isinstance(page_size, str) and page_size.isdecimal():  # Ensure page is a string
         page_size = int(page_size)
     else:
-        page_size = 20  # 设置默认值为 10
+        page_size = 20  # Set default value to 20
 
-    # 创建分页对象并传递 page_size
+    # Create pagination object and pass page_size
     page_obj = PageNumberPagination(request, data, page_size=page_size)
     context = {'page_obj': page_obj.queryset,
                'page_string': page_obj.html(),
@@ -38,14 +38,14 @@ def operator_add(request):
 
 
 def operator_edit(request, nid):
-    row = models.Operator.objects.filter(id=nid).first()  # 获取需要编辑的员工对象
+    row = models.Operator.objects.filter(id=nid).first()  # Get the employee object to be edited
 
     if request.method == 'GET':
-        # 当 GET 请求时，使用 instance 参数加载现有数据
+        # When GET request, use instance parameter to load existing data
         form = Operator_EditForm(instance=row)
         return render(request, 'main/change.html', {"form": form})
 
-    # 如果是 POST 请求，则验证和保存提交的数据
+    # If it's a POST request, validate and save the submitted data
     form = Operator_EditForm(request.POST, instance=row)
     if form.is_valid():
         form.save()
@@ -70,21 +70,20 @@ def operator_delete(request, nid):
 
 
 def reset_password(request, nid):
-    row = models.Operator.objects.filter(id=nid).first()  # 获取需要编辑的员工对象
+    row = models.Operator.objects.filter(id=nid).first()  # Get the employee object to be edited
     if not row:
         messages.error(request, "The operator does not exist.")
         return redirect('/operation/employee/list/')
 
     if request.method == 'GET':
-        # 当 GET 请求时，使用 instance 参数加载现有数据
+        # When GET request, use instance parameter to load existing data
         form = ResetPasswordForm()
         return render(request, 'main/change.html', {"form": form})
 
-    # 如果是 POST 请求，则验证和保存提交的数据
+    # If it's a POST request, validate and save the submitted data
     form = ResetPasswordForm(request.POST, instance=row)
     if form.is_valid():
         form.save()
         return redirect('/operation/employee/list/')
 
     return render(request, 'main/change.html', {"form": form})
-

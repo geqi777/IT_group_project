@@ -11,113 +11,113 @@ from main_system.views.order import create_order
 
 
 # ==========================
-# 购物车
+# Shopping Cart
 # ==========================
 def cart_view(request):
-    """购物车页面"""
-    # 检查用户是否登录
+    """Shopping Cart Page"""
+    # Check if user is logged in
     user_info = request.session.get('user_info')
     if not user_info:
-        messages.error(request, '请先登录')
+        messages.error(request, 'Please log in first')
         return redirect('/customer/login/')
     
     try:
-        # 获取用户信息
+        # Get user information
         user = User.objects.filter(id=user_info['id']).first()
         if not user:
-            messages.error(request, '用户不存在')
+            messages.error(request, 'User does not exist')
             return redirect('/customer/register/')
         
-        # 获取或创建购物车
+        # Get or create shopping cart
         cart = Cart.objects.filter(user=user).first()
         if not cart:
             cart = Cart.objects.create(user=user)
         
-        # 更新会话中的购物车计数
+        # Update cart count in session
         request.session['cart_count'] = cart.items.count()
         
         return render(request, 'cart/cart_view.html', {
             'cart': cart,
-            'user_info': user_info  # 传递用户信息到模板
+            'user_info': user_info  # Pass user information to template
         })
     except Exception as e:
-        messages.error(request, f'发生错误: {str(e)}')
+        messages.error(request, f'An error occurred: {str(e)}')
         return redirect('/')
 
 
 def cart_add(request, product_id):
-    """添加商品到购物车"""
-    # 检查用户是否登录
+    """Add product to shopping cart"""
+    # Check if user is logged in
     user_info = request.session.get('user_info')
     if not user_info:
-        messages.error(request, '请先登录')
+        messages.error(request, 'Please log in first')
         return redirect('/customer/login/')
     
     if request.method == 'POST':
         quantity = int(request.POST.get('quantity', 1))
         
-        # 获取商品
+        # Get product
         product = get_object_or_404(Product, id=product_id, status='active')
         
-        # 检查库存
+        # Check stock
         if quantity > product.stock:
             quantity = product.stock
-            messages.warning(request, f'商品库存不足，已将数量调整为最大可用库存：{product.stock}')
+            messages.warning(request, f'Insufficient stock, quantity adjusted to maximum available stock: {product.stock}')
         
-        # 获取或创建购物车
+        # Get or create shopping cart
         user = User.objects.filter(id=user_info['id']).first()
         if not user:
-            messages.error(request, '用户不存在')
+            messages.error(request, 'User does not exist')
             return redirect('/customer/register/')
             
         cart = Cart.objects.filter(user=user).first()
         if not cart:
             cart = Cart.objects.create(user=user)
         
-        # 检查商品是否已在购物车中
+        # Check if product is already in the cart
         cart_item = CartItem.objects.filter(cart=cart, product=product).first()
         if cart_item:
-            # 更新数量，确保不超过库存
+            # Update quantity, ensure it does not exceed stock
             new_quantity = cart_item.quantity + quantity
             if new_quantity > product.stock:
                 new_quantity = product.stock
-                messages.warning(request, f'商品库存不足，已将数量调整为最大可用库存：{product.stock}')
+                messages.warning(request, f'Insufficient stock, quantity adjusted to maximum available stock: {product.stock}')
             cart_item.quantity = new_quantity
             cart_item.save()
-            messages.success(request, '商品数量已更新')
+            messages.success(request, 'Product quantity updated')
         else:
-            # 创建新的购物车项
+            # Create new cart item
             CartItem.objects.create(
                 cart=cart,
                 product=product,
                 quantity=quantity
             )
-            messages.success(request, '商品已添加到购物车')
+            messages.success(request, 'Product added to cart')
         
-        # 更新会话中的购物车计数
+        # Update cart count in session
         cart_count = cart.items.count()
         request.session['cart_count'] = cart_count
         
-        # 如果是AJAX请求，返回JSON响应
+        # If AJAX request, return JSON response
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({
                 'status': 'success',
-                'message': '商品已添加到购物车',
+                'message': 'Product added to cart',
                 'cart_count': cart_count
             })
         
-        # 返回到之前的页面
+        # Return to previous page
         return redirect(request.META.get('HTTP_REFERER', '/products/product/collection/'))
     
     return redirect('/products/product/collection/')
 
 
 def cart_edit(request, cart_item_id):
-    """编辑购物车商品数量"""
-    # 检查用户是否登录
+    """Edit product quantity in shopping cart"""
+    # Check if user is logged in
     user_info = request.session.get('user_info')
     if not user_info:
-        messages.error(request, '请先登录')
+        messages.error(request, 'Please log in first')
         return redirect('/customer/login/')
     
     if request.method == 'POST':
@@ -125,39 +125,39 @@ def cart_edit(request, cart_item_id):
         
         user = User.objects.filter(id=user_info['id']).first()
         if not user:
-            messages.error(request, '用户不存在')
+            messages.error(request, 'User does not exist')
             return redirect('/customer/register/')
         
-        # 获取购物车项
+        # Get cart item
         cart_item = get_object_or_404(CartItem, id=cart_item_id, cart__user=user)
         
-        # 检查库存
+        # Check stock
         if quantity > cart_item.product.stock:
             quantity = cart_item.product.stock
-            messages.warning(request, f'商品库存不足，已将数量调整为最大可用库存：{cart_item.product.stock}')
+            messages.warning(request, f'Insufficient stock, quantity adjusted to maximum available stock: {cart_item.product.stock}')
         
         if quantity > 0:
-            # 更新数量
+            # Update quantity
             cart_item.quantity = quantity
             cart_item.save()
-            messages.success(request, '商品数量已更新')
+            messages.success(request, 'Product quantity updated')
         else:
-            # 删除商品
+            # Delete product
             cart_item.delete()
-            messages.success(request, '商品已从购物车中移除')
+            messages.success(request, 'Product removed from cart')
             
-        # 获取更新后的购物车数据
+        # Get updated cart data
         cart = Cart.objects.get(user=user)
         
-        # 更新会话中的购物车计数
+        # Update cart count in session
         cart_count = cart.items.count()
         request.session['cart_count'] = cart_count
         
-        # 如果是AJAX请求，返回JSON响应
+        # If AJAX request, return JSON response
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({
                 'status': 'success',
-                'message': '购物车已更新',
+                'message': 'Cart updated',
                 'cart_count': cart_count,
                 'cart_total': float(cart.get_total_amount())
             })
@@ -166,35 +166,35 @@ def cart_edit(request, cart_item_id):
 
 
 def cart_delete(request, cart_item_id):
-    """从购物车删除商品"""
-    # 检查用户是否登录
+    """Remove product from shopping cart"""
+    # Check if user is logged in
     user_info = request.session.get('user_info')
     if not user_info:
-        messages.error(request, '请先登录')
+        messages.error(request, 'Please log in first')
         return redirect('/customer/login/')
     
     user = User.objects.filter(id=user_info['id']).first()
     if not user:
-        messages.error(request, '用户不存在')
+        messages.error(request, 'User does not exist')
         return redirect('/customer/register/')
     
-    # 获取购物车项
+    # Get cart item
     cart_item = get_object_or_404(CartItem, id=cart_item_id, cart__user=user)
     cart_item.delete()
-    messages.success(request, '商品已从购物车中移除')
+    messages.success(request, 'Product removed from cart')
     
-    # 获取更新后的购物车数据
+    # Get updated cart data
     cart = Cart.objects.get(user=user)
     
-    # 更新会话中的购物车计数
+    # Update cart count in session
     cart_count = cart.items.count()
     request.session['cart_count'] = cart_count
     
-    # 如果是AJAX请求，返回JSON响应
+    # If AJAX request, return JSON response
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse({
             'status': 'success',
-            'message': '商品已从购物车中移除',
+            'message': 'Product removed from cart',
             'cart_count': cart_count,
             'cart_total': float(cart.get_total_amount())
         })
@@ -203,22 +203,22 @@ def cart_delete(request, cart_item_id):
 
 
 def checkout(request):
-    """从购物车创建订单并跳转到配送信息页面"""
-    # 检查用户是否登录
+    """Create order from shopping cart and redirect to shipping information page"""
+    # Check if user is logged in
     user_info = request.session.get('user_info')
     if not user_info:
-        messages.error(request, '请先登录')
+        messages.error(request, 'Please log in first')
         return redirect('/customer/login/')
 
     user = User.objects.filter(id=user_info['id']).first()
     if not user:
-        messages.error(request, '用户不存在')
+        messages.error(request, 'User does not exist')
         return redirect('/customer/register/')
 
     cart = Cart.objects.filter(user=user).first()
     if not cart or not cart.items.exists():
-        messages.error(request, '购物车为空')
+        messages.error(request, 'Shopping cart is empty')
         return redirect('/customer/cart/')
 
-    # 调用create_order创建订单
+    # Call create_order to create order
     return create_order(request)

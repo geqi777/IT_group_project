@@ -7,8 +7,8 @@ from django.utils import timezone
 from django.contrib import messages
 
 def user_list(request):
-    """ 获取用户列表，支持分页 """
-    data = models.User.objects.all().order_by("-create_time")  # 按创建时间倒序排列
+    """ Get user list with pagination support """
+    data = models.User.objects.all().order_by("-create_time")  # Order by creation time descending
     page_size = request.GET.get('page_size', 20)
 
     if isinstance(page_size, str) and page_size.isdecimal():
@@ -25,7 +25,7 @@ def user_list(request):
 
 
 def user_add(request):
-    """ 添加新用户 """
+    """ Add new user """
     if request.method == 'GET':
         form = User_ModelForm()
         return render(request, 'operation/admin_user_add.html', {"form": form})
@@ -40,7 +40,7 @@ def user_add(request):
 
 
 def user_edit(request, nid):
-    """ 编辑用户信息 """
+    """ Edit user information """
     row = models.User.objects.filter(id=nid).first()
 
     if not row:
@@ -61,14 +61,14 @@ def user_edit(request, nid):
 
 
 def user_delete(request, nid):
-    """ 删除用户，确保不能删除管理员账号 """
+    """ Delete user, ensure admin account cannot be deleted """
     user = models.User.objects.filter(id=nid).first()
 
     if not user:
         messages.error(request, "User not found.")
         return redirect('/user/list/')
 
-    if user.account == "admin":  # 防止误删管理员账户
+    if user.account == "admin":  # Prevent accidental deletion of admin account
         messages.error(request, "Cannot delete administrator account!")
         return redirect('/user/list/')
 
@@ -78,7 +78,7 @@ def user_delete(request, nid):
 
 
 def reset_password(request, nid):
-    """ 重置用户密码 """
+    """ Reset user password """
     row = models.User.objects.filter(id=nid).first()
 
     if not row:
@@ -99,7 +99,7 @@ def reset_password(request, nid):
 
 
 def user_profile(request):
-    """ 显示用户个人信息 """
+    """ Display user profile information """
     user_info = request.session.get('info')
 
     user_detail = models.User.objects.get(pk=user_info['user_id'])
