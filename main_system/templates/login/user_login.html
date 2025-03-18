@@ -6,7 +6,7 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
 
-    /* 全局初始化 */
+    /* Global Initialization */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -23,10 +23,10 @@
       background-color: #ffffff;
     }
 
-    /* 固定大小的中央面板 */
+    /* Fixed Size Central Panel */
     .container {
-      width: 800px;   /* 固定宽度 */
-      height: 450px;  /* 固定高度 */
+      width: 800px;   /* Fixed Width */
+      height: 450px;  /* Fixed Height */
       background-color: #fff;
       display: flex;
       box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
@@ -34,7 +34,7 @@
       overflow: hidden;
     }
 
-    /* 左侧：登录表单 */
+    /* Left Side: Login Form */
     .left-panel {
       width: 50%;
       padding: 40px;
@@ -44,7 +44,7 @@
       background-color: #fff;
     }
 
-    /* 品牌名称 */
+    /* Brand Name */
     .brand {
       position: absolute;
       top: 20px;
@@ -88,14 +88,14 @@
       outline: none;
     }
 
-    /* 错误信息 */
+    /* Error Message */
     .error-message {
       color: #e74c3c;
       font-size: 0.85rem;
       margin-bottom: 16px;
     }
 
-    /* 记住我 & 忘记密码 */
+    /* Remember Me & Forgot Password */
     .remember-forgot {
       display: flex;
       justify-content: space-between;
@@ -135,10 +135,10 @@
       text-decoration: none;
     }
 
-    /* 右侧：图片面板 */
+    /* Right Side: Image Panel */
     .right-panel {
       width: 50%;
-      background: center/cover no-repeat;  /* 替换为你的图片路径 */
+      background: center/cover no-repeat;  /* Replace with your image path */
       display: flex;
       align-items: center;
       justify-content: center;
@@ -153,11 +153,11 @@
 </head>
 <body>
 
-  <div class="brand">Unicraft</div> <!-- 品牌名称 -->
+  <div class="brand">Unicraft</div> <!-- Brand Name -->
 
   <div class="container">
     
-    <!-- 左侧：登录表单 -->
+    <!-- Left Side: Login Form -->
     <div class="left-panel">
       <h1>Welcome to Unicraft</h1>
       <p class="subtitle">Please enter your details</p>
@@ -191,9 +191,9 @@
       </form>
     </div>
 
-    <!-- 右侧：图片 -->
+    <!-- Right Side: Image -->
     <div class="right-panel">
-      <!-- 你可以直接使用图片标签 -->
+      <!-- You can directly use the image tag -->
       <img src="/media/login_image/customer_login.jpg" >
 {#        /media/login_image/customer_login.jpg#}
     </div>
