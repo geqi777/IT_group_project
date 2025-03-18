@@ -54,7 +54,7 @@ class User_RegisterForm(BoostrapModelForm):
         super().__init__(*args, **kwargs)
         for name, field in self.fields.items():
             if name == 'is_verified':
-                field.widget.attrs['class'] = 'form-check-input'  # 特别为复选框添加样式
+                field.widget.attrs['class'] = 'form-check-input'  # Add style specifically for checkbox
 
     def clean_password(self):
         data = self.cleaned_data.get('password')
@@ -63,11 +63,11 @@ class User_RegisterForm(BoostrapModelForm):
         if exists:
             raise ValidationError('This password is the same as your previous password.')
 
-        # 验证密码长度
+        # Validate password length
         if len(data) < 8:
             raise ValidationError('Password must be at least 8 characters long.')
 
-        # 验证是否包含至少一个大写字母和一个小写字母
+        # Validate if it contains at least one uppercase and one lowercase letter
         if not re.search(r'[A-Z]', data):
             raise ValidationError('Password must contain at least one uppercase letter.')
         if not re.search(r'[a-z]', data):
@@ -118,8 +118,8 @@ class Product_ModelForm(BoostrapModelForm):
             stock = cleaned_data.get("stock")
             status = cleaned_data.get("status")
 
-            # 自动设置状态逻辑
-            if stock == 0 or status == "Locked":  # 手动锁定或库存为 0
+            # Auto set status logic
+            if stock == 0 or status == "Locked":  # Manually locked or stock is 0
                 cleaned_data["status"] = "Locked"
             else:
                 cleaned_data["status"] = "Active"
@@ -151,8 +151,8 @@ class Product_EditForm(BoostrapModelForm):
             stock = cleaned_data.get("stock")
             status = cleaned_data.get("status")
 
-            # 自动设置状态逻辑
-            if stock == 0 or status == "Locked":  # 手动锁定或库存为 0
+            # Auto set status logic
+            if stock == 0 or status == "Locked":  # Manually locked or stock is 0
                 cleaned_data["status"] = "Locked"
             else:
                 cleaned_data["status"] = "Active"
@@ -160,7 +160,7 @@ class Product_EditForm(BoostrapModelForm):
             return cleaned_data
 
 
-# 管理员
+# Admin
 class Operator_ModelForm(BoostrapModelForm):
     confirm_password = forms.CharField(label='Confirm Password', widget=forms.PasswordInput())
 
@@ -188,11 +188,11 @@ class Operator_ModelForm(BoostrapModelForm):
         if exists:
             raise ValidationError('This password is the same as your previous password.')
 
-        # 验证密码长度
+        # Validate password length
         if len(data) < 8:
             raise ValidationError('Password must be at least 8 characters long.')
 
-        # 验证是否包含至少一个大写字母和一个小写字母
+        # Validate if it contains at least one uppercase and one lowercase letter
         if not re.search(r'[A-Z]', data):
             raise ValidationError('Password must contain at least one uppercase letter.')
         if not re.search(r'[a-z]', data):
@@ -225,10 +225,10 @@ class Operator_EditForm(BoostrapModelForm):
         super().__init__(*args, **kwargs)
         for name, field in self.fields.items():
             if name == 'is_operator':
-                field.widget.attrs['class'] = 'form-check-input'  # 特别为复选框添加样式
+                field.widget.attrs['class'] = 'form-check-input'  # Add style specifically for checkbox
 
 
-# 设置密码
+# Reset Password
 class ResetPasswordForm(BoostrapModelForm):
     confirm_password = forms.CharField(label='Confirm Password', widget=forms.PasswordInput)
 
@@ -246,11 +246,11 @@ class ResetPasswordForm(BoostrapModelForm):
     def clean_password(self):
         data = self.cleaned_data.get('password')
 
-        # 验证密码长度
+        # Validate password length
         if len(data) < 8:
             raise ValidationError('Password must be at least 8 characters long.')
 
-        # 验证是否包含至少一个大写字母和一个小写字母
+        # Validate if it contains at least one uppercase and one lowercase letter
         if not re.search(r'[A-Z]', data):
             raise ValidationError('Password must contain at least one uppercase letter.')
         if not re.search(r'[a-z]', data):
@@ -267,7 +267,7 @@ class ResetPasswordForm(BoostrapModelForm):
         return confirm
 
 
-# 用户
+# User
 class User_ModelForm(BoostrapModelForm):
     confirm_password = forms.CharField(label='Confirm Password', widget=forms.PasswordInput())
 
@@ -296,11 +296,11 @@ class User_ModelForm(BoostrapModelForm):
         if exists:
             raise ValidationError('This password is the same as your previous password.')
 
-        # 验证密码长度
+        # Validate password length
         if len(data) < 8:
             raise ValidationError('Password must be at least 8 characters long.')
 
-        # 验证是否包含至少一个大写字母和一个小写字母
+        # Validate if it contains at least one uppercase and one lowercase letter
         if not re.search(r'[A-Z]', data):
             raise ValidationError('Password must contain at least one uppercase letter.')
         if not re.search(r'[a-z]', data):
@@ -329,7 +329,7 @@ class User_EditForm(BoostrapModelForm):
         ]
 
 
-# 钱包
+# Wallet
 class Wallet_ModelForm(BoostrapModelForm):
     class Meta:
         model = models.Wallet
@@ -366,18 +366,18 @@ class WalletTransaction_ModelForm(BoostrapModelForm):
             "promo_code": forms.Select(attrs={'class': 'form-control', 'disabled': 'disabled'})
         }
         labels = {
-            'wallet': '钱包',
-            'transaction_type': '交易类型',
-            'amount': '交易金额',
-            'original_amount': '原始金额',
-            'final_amount': '最终金额',
-            # 'timestamp': '交易时间',
-            'order': '关联订单',
-            'promo_code': '优惠码'
+            'wallet': 'Wallet',
+            'transaction_type': 'Transaction Type',
+            'amount': 'Transaction Amount',
+            'original_amount': 'Original Amount',
+            'final_amount': 'Final Amount',
+            # 'timestamp': 'Transaction Time',
+            'order': 'Related Order',
+            'promo_code': 'Promo Code'
         }
 
 
-# 订单
+# Order
 class Order_ModelForm(BoostrapModelForm):
     class Meta:
         model = models.Order
@@ -392,7 +392,7 @@ class OrderItem_ModelForm(BoostrapModelForm):
         fields = ['quantity']
 
 
-# 优惠码
+# Promo Code
 class PromoCode_ModelForm(BoostrapModelForm):
     class Meta:
         model = models.PromoCode
@@ -406,28 +406,28 @@ class PromoCode_ModelForm(BoostrapModelForm):
             'status': forms.Select(choices=[('active', 'active'), ('inactive', 'inactive'), ('expired', 'expired')], attrs={'class': 'form-select'})
         }
         labels = {
-            'code': '优惠码',
-            'discount': '折扣金额',
-            'min_order_value': '最低订单金额',
-            'expiry_date': '过期日期',
-            'description': '描述',
-            'status': '状态'
+            'code': 'Promo Code',
+            'discount': 'Discount Amount',
+            'min_order_value': 'Minimum Order Value',
+            'expiry_date': 'Expiry Date',
+            'description': 'Description',
+            'status': 'Status'
         }
 
     def clean_expiry_date(self):
         expiry_date = self.cleaned_data.get('expiry_date')
         if expiry_date and expiry_date < timezone.now():
-            raise ValidationError('过期日期不能早于当前时间')
+            raise ValidationError('Expiry date cannot be earlier than the current time')
         return expiry_date
 
 
 class PromoCode_EditForm(BoostrapModelForm):
-    """优惠码编辑表单"""
+    """Promo Code Edit Form"""
     class Meta:
         model = models.PromoCode
         fields = ['code', 'discount', 'min_order_value', 'expiry_date', 'description', 'status']
         widgets = {
-            'code': forms.TextInput(attrs={'readonly': 'readonly'}),  # 编辑时code只读
+            'code': forms.TextInput(attrs={'readonly': 'readonly'}),  # Code is read-only when editing
             'discount': forms.NumberInput(attrs={'min': '0.01', 'step': '0.01'}),
             'min_order_value': forms.NumberInput(attrs={'min': '0.01', 'step': '0.01'}),
             'expiry_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
@@ -435,17 +435,17 @@ class PromoCode_EditForm(BoostrapModelForm):
             'status': forms.Select(choices=[('active', 'active'), ('inactive', 'inactive'), ('expired', 'expired')], attrs={'class': 'form-select'})
         }
         labels = {
-            'code': '优惠码',
-            'discount': '折扣金额',
-            'min_order_value': '最低订单金额',
-            'expiry_date': '过期日期',
-            'description': '描述',
-            'status': '状态'
+            'code': 'Promo Code',
+            'discount': 'Discount Amount',
+            'min_order_value': 'Minimum Order Value',
+            'expiry_date': 'Expiry Date',
+            'description': 'Description',
+            'status': 'Status'
         }
 
     def clean_expiry_date(self):
         expiry_date = self.cleaned_data.get('expiry_date')
         if expiry_date and expiry_date < timezone.now():
-            raise ValidationError('过期日期不能早于当前时间')
+            raise ValidationError('Expiry date cannot be earlier than the current time')
         return expiry_date 
 

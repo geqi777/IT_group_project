@@ -3,19 +3,19 @@
 
 {% block content %}
 <div class="container py-5">
-    <h2 class="mb-4">支付历史</h2>
+    <h2 class="mb-4">Payment History</h2>
     
     {% if payments %}
         <div class="table-responsive">
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th>交易类型</th>
-                        <th>金额</th>
-                        <th>支付方式</th>
-                        <th>状态</th>
-                        <th>时间</th>
-                        <th>操作</th>
+                        <th>Transaction Type</th>
+                        <th>Amount</th>
+                        <th>Payment Method</th>
+                        <th>Status</th>
+                        <th>Time</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -37,7 +37,7 @@
                         <td>{{ payment.timestamp|date:"Y-m-d H:i" }}</td>
                         <td>
                             {% if payment.order %}
-                                <a href="{% url 'order_detail' payment.order.id %}" class="btn btn-sm btn-primary">查看订单</a>
+                                <a href="{% url 'order_detail' payment.order.id %}" class="btn btn-sm btn-primary">View Order</a>
                             {% endif %}
                         </td>
                     </tr>
@@ -46,7 +46,7 @@
             </table>
         </div>
         
-        <!-- 分页 -->
+        <!-- Pagination -->
         {% if payments.has_other_pages %}
         <nav aria-label="Page navigation" class="mt-4">
             <ul class="pagination justify-content-center">
@@ -86,27 +86,27 @@
         {% endif %}
     {% else %}
         <div class="alert alert-info">
-            暂无支付记录
+            No payment records available
         </div>
     {% endif %}
 
-    <!-- 钱包余额和积分信息 -->
+    <!-- Wallet Balance and Points Information -->
     <div class="row mt-4">
         <div class="col-md-6">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">钱包余额</h5>
+                    <h5 class="card-title">Wallet Balance</h5>
                     <p class="card-text display-6">£{{ request.user.wallet.balance }}</p>
-                    <button class="btn btn-primary" disabled>充值（即将上线）</button>
+                    <button class="btn btn-primary" disabled>Top-up (Coming Soon)</button>
                 </div>
             </div>
         </div>
         <div class="col-md-6">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">我的积分</h5>
+                    <h5 class="card-title">My Points</h5>
                     <p class="card-text display-6">{{ request.user.wallet.points }}</p>
-                    <button class="btn btn-primary" disabled>兑换（即将上线）</button>
+                    <button class="btn btn-primary" disabled>Redeem (Coming Soon)</button>
                 </div>
             </div>
         </div>

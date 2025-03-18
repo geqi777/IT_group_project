@@ -8,21 +8,21 @@
             <div class="card shadow-sm">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h4 class="mb-0">申请退货</h4>
+                        <h4 class="mb-0">Return Request</h4>
                         <a href="/customer/order/" class="btn btn-outline-secondary">
-                            <i class="fas fa-arrow-left me-2"></i>返回订单列表
+                            <i class="fas fa-arrow-left me-2"></i>Back to Order List
                         </a>
                     </div>
 
                     <div class="mb-4">
-                        <h6>订单号：{{ order.order_number }}</h6>
-                        <p class="text-muted">下单时间：{{ order.timestamp|date:"Y-m-d H:i" }}</p>
+                        <h6>Order Number: {{ order.order_number }}</h6>
+                        <p class="text-muted">Order Time: {{ order.timestamp|date:"Y-m-d H:i" }}</p>
                     </div>
 
                     <form method="post">
                         {% csrf_token %}
                         <div class="mb-4">
-                            <h6 class="mb-3">选择要退货的商品</h6>
+                            <h6 class="mb-3">Select Items to Return</h6>
                             {% for item in order.items.all %}
                             <div class="card mb-3">
                                 <div class="card-body">
@@ -34,9 +34,9 @@
                                                 <div>
                                                     <h6 class="mb-1">{{ item.product.name }}</h6>
                                                     <p class="text-muted mb-0">
-                                                        数量：{{ item.quantity }} | 
-                                                        单价：£{{ item.price }} |
-                                                        小计：£{{ item.item_subtotal }}
+                                                        Quantity: {{ item.quantity }} | 
+                                                        Unit Price: £{{ item.price }} |
+                                                        Subtotal: £{{ item.item_subtotal }}
                                                     </p>
                                                 </div>
                                             </div>
@@ -48,34 +48,34 @@
                         </div>
 
                         <div class="mb-4">
-                            <label class="form-label">退货原因</label>
+                            <label class="form-label">Return Reason</label>
                             <select class="form-select" name="return_reason" required>
-                                <option value="">请选择退货原因...</option>
-                                <option value="quality_issue">商品质量问题</option>
-                                <option value="wrong_item">收到错误商品</option>
-                                <option value="damaged">商品损坏</option>
-                                <option value="not_as_described">商品与描述不符</option>
-                                <option value="other">其他原因</option>
+                                <option value="">Please select a return reason...</option>
+                                <option value="quality_issue">Quality Issue</option>
+                                <option value="wrong_item">Received Wrong Item</option>
+                                <option value="damaged">Item Damaged</option>
+                                <option value="not_as_described">Not as Described</option>
+                                <option value="other">Other Reasons</option>
                             </select>
                         </div>
 
                         <div class="mb-4">
-                            <label class="form-label">详细说明</label>
-                            <textarea class="form-control" name="return_details" rows="4" required placeholder="请详细描述退货原因..."></textarea>
+                            <label class="form-label">Detailed Explanation</label>
+                            <textarea class="form-control" name="return_details" rows="4" required placeholder="Please describe the reason for return in detail..."></textarea>
                         </div>
 
                         <div class="alert alert-info">
-                            <h6 class="alert-heading">退货说明：</h6>
+                            <h6 class="alert-heading">Return Instructions:</h6>
                             <ol class="mb-0">
-                                <li>请确保商品及包装完整，不影响二次销售</li>
-                                <li>退货申请审核通过后，我们将提供退货地址</li>
-                                <li>收到退货商品并确认无误后，将按原支付方式退款</li>
-                                <li>退款金额将在3-5个工作日内到账</li>
+                                <li>Please ensure the product and packaging are intact and do not affect secondary sales.</li>
+                                <li>After the return request is approved, we will provide the return address.</li>
+                                <li>Once the returned product is received and verified, a refund will be issued via the original payment method.</li>
+                                <li>The refund amount will be credited within 3-5 business days.</li>
                             </ol>
                         </div>
 
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">提交退货申请</button>
+                            <button type="submit" class="btn btn-primary">Submit Return Request</button>
                         </div>
                     </form>
                 </div>

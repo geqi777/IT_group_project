@@ -22,7 +22,7 @@
         .right-nav {
             display: flex;
             align-items: center;
-            gap: 10px; /* 调整间距 */
+            gap: 10px; /* Adjust spacing */
         }
         .search-bar {
             width: 300px;
@@ -31,36 +31,36 @@
 </head>
 <body>
 
-    <!-- 顶部导航栏 -->
+    <!-- Top Navigation Bar -->
     <nav class="navbar navbar-expand-lg navbar-light">
         <div class="container">
-             <!-- 网站 Logo -->
+             <!-- Website Logo -->
             <a class="navbar-brand" href="/">Unicraft</a>
 
             <div class="right-nav" id="navbarNav">
-                <!-- 搜索框 -->
+                <!-- Search Box -->
                 <form class="d-flex">
                     <input class="form-control me-2 search-bar" type="search" placeholder="Search" aria-label="Search">
                     <button class="btn btn-outline-dark" type="submit"><i class="fas fa-search"></i></button>
                 </form>
 
-                <!-- 账号管理 -->
+                <!-- Account Management -->
                 <div class="dropdown">
                     <button class="btn btn-outline-dark dropdown-toggle account-btn" type="button" id="accountDropdown" data-bs-toggle="dropdown">
                         <i class="fas fa-user"></i> {{ request.session.admin_info.name }}
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="accountDropdown">
-                        <li><a class="dropdown-item" href="/operation/profile/"><i class="fas fa-id-card me-2"></i>个人资料</a></li>
-                        <li><a class="dropdown-item" href="/operation/homepage/"><i class="fas fa-tachometer-alt me-2"></i>控制面板</a></li>
+                        <li><a class="dropdown-item" href="/operation/profile/"><i class="fas fa-id-card me-2"></i>Profile</a></li>
+                        <li><a class="dropdown-item" href="/operation/homepage/"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="/operation/logout/"><i class="fas fa-sign-out-alt me-2"></i>退出登录</a></li>
+                        <li><a class="dropdown-item" href="/operation/logout/"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
                     </ul>
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- 页面内容 -->
+    <!-- Page Content -->
     <div class="container my-4">
         {% block content %}{% endblock %}
     </div>

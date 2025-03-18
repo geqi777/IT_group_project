@@ -8,20 +8,20 @@
             <div class="card shadow-sm">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h4 class="mb-0">订单评价</h4>
+                        <h4 class="mb-0">Order Review</h4>
                         <a href="/customer/order/" class="btn btn-outline-secondary">
-                            <i class="fas fa-arrow-left me-2"></i>返回订单列表
+                            <i class="fas fa-arrow-left me-2"></i>Back to Order List
                         </a>
                     </div>
 
                     <div class="mb-4">
-                        <h6>订单号：{{ order.order_number }}</h6>
-                        <p class="text-muted">下单时间：{{ order.timestamp|date:"Y-m-d H:i" }}</p>
+                        <h6>Order Number: {{ order.order_number }}</h6>
+                        <p class="text-muted">Order Time: {{ order.timestamp|date:"Y-m-d H:i" }}</p>
                     </div>
 
                     {% if reviewed_items %}
                     <div class="mb-4">
-                        <h5>已评价商品</h5>
+                        <h5>Reviewed Items</h5>
                         {% for item in reviewed_items %}
                         <div class="card mb-3 bg-light">
                             <div class="card-body">
@@ -29,7 +29,7 @@
                                     <img src="{{ item.product.picture.url }}" alt="{{ item.product.name }}" class="me-3" style="width: 60px; height: 60px; object-fit: cover;">
                                     <div>
                                         <h6 class="mb-1">{{ item.product.name }}</h6>
-                                        <p class="text-muted mb-0">数量：{{ item.quantity }}</p>
+                                        <p class="text-muted mb-0">Quantity: {{ item.quantity }}</p>
                                     </div>
                                 </div>
                                 <div class="d-flex align-items-center">
@@ -43,7 +43,7 @@
                                                 {% endif %}
                                             {% endfor %}
                                         </span>
-                                        <span class="ms-1">{{ item.review.rating }}星</span>
+                                        <span class="ms-1">{{ item.review.rating }} Stars</span>
                                     </div>
                                     <p class="mb-0">{{ item.review.comment }}</p>
                                 </div>
@@ -54,7 +54,7 @@
                     {% endif %}
 
                     {% if unreviewed_items %}
-                    <h5>待评价商品</h5>
+                    <h5>Items to be Reviewed</h5>
                     <form method="post">
                         {% csrf_token %}
                         {% for item in unreviewed_items %}
@@ -64,32 +64,32 @@
                                     <img src="{{ item.product.picture.url }}" alt="{{ item.product.name }}" class="me-3" style="width: 60px; height: 60px; object-fit: cover;">
                                     <div>
                                         <h6 class="mb-1">{{ item.product.name }}</h6>
-                                        <p class="text-muted mb-0">数量：{{ item.quantity }}</p>
+                                        <p class="text-muted mb-0">Quantity: {{ item.quantity }}</p>
                                     </div>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label">评分</label>
+                                    <label class="form-label">Rating</label>
                                     <div class="rating">
                                         {% for i in "12345" %}
                                         <div class="form-check form-check-inline">
                                             <input class="form-check-input" type="radio" name="rating_{{ item.id }}" value="{{ i }}" required>
-                                            <label class="form-check-label">{{ i }}星</label>
+                                            <label class="form-check-label">{{ i }} Stars</label>
                                         </div>
                                         {% endfor %}
                                     </div>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label">评价内容</label>
-                                    <textarea class="form-control" name="comment_{{ item.id }}" rows="3" required placeholder="请分享您的使用体验..."></textarea>
+                                    <label class="form-label">Review Content</label>
+                                    <textarea class="form-control" name="comment_{{ item.id }}" rows="3" required placeholder="Please share your experience..."></textarea>
                                 </div>
                             </div>
                         </div>
                         {% endfor %}
 
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">提交评价</button>
+                            <button type="submit" class="btn btn-primary">Submit Review</button>
                         </div>
                     </form>
                     {% endif %}

@@ -4,49 +4,49 @@
 {% block content %}
 <div class="container py-5">
     <div class="row">
-        <!-- 左侧配送地址表单 -->
+        <!-- Left Shipping Address Form -->
         <div class="col-md-8">
             <div class="card shadow-sm rounded-3 border-0 mb-4">
                 <div class="card-body p-4">
-                    <h4 class="mb-4">配送信息</h4>
+                    <h4 class="mb-4">Shipping Information</h4>
                     <form method="POST" action="/customer/order/{{order.id}}/shipping/" id="shipping-form">
                         {% csrf_token %}
                         
-                        <!-- 联系人信息 -->
+                        <!-- Contact Information -->
                         <div class="mb-4">
-                            <h5 class="mb-3">联系人信息</h5>
+                            <h5 class="mb-3">Contact Information</h5>
                             <div class="row g-3">
                                 <div class="col-md-6">
-                                    <label for="first_name" class="form-label">名字</label>
+                                    <label for="first_name" class="form-label">First Name</label>
                                     <input type="text" class="form-control" id="first_name" name="first_name" value="{{ user.first_name }}" required>
                                 </div>
                                 <div class="col-md-6">
-                                    <label for="last_name" class="form-label">姓氏</label>
+                                    <label for="last_name" class="form-label">Last Name</label>
                                     <input type="text" class="form-control" id="last_name" name="last_name" value="{{ user.last_name }}" required>
                                 </div>
                                 <div class="col-12">
-                                    <label for="email" class="form-label">电子邮箱</label>
+                                    <label for="email" class="form-label">Email</label>
                                     <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- 地址选择部分 -->
+                        <!-- Address Selection -->
                         <div class="mb-4">
-                            <h5 class="mb-3">配送地址</h5>
+                            <h5 class="mb-3">Shipping Address</h5>
                             <div class="form-check mb-3">
                                 <input class="form-check-input" type="radio" name="address_choice" id="existing_address" value="existing" {% if user.address %}checked{% endif %}>
                                 <label class="form-check-label" for="existing_address">
-                                    使用已保存的地址
+                                    Use Saved Address
                                 </label>
                                 {% if user.address %}
                                 <div class="mt-2 ms-4 text-muted">
                                     {{ user.address }}
                                 </div>
-                                <!-- 快捷支付按钮 -->
+                                <!-- Quick Payment Button -->
                                 <div class="mt-2 ms-4">
                                     <button type="submit" class="btn btn-success btn-sm" id="quick_continue">
-                                        使用此地址并继续支付 <i class="fas fa-arrow-right"></i>
+                                        Use This Address and Continue to Payment <i class="fas fa-arrow-right"></i>
                                     </button>
                                 </div>
                                 {% endif %}
@@ -54,38 +54,38 @@
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="address_choice" id="new_address" value="new" {% if not user.address %}checked{% endif %}>
                                 <label class="form-check-label" for="new_address">
-                                    使用新地址
+                                    Use New Address
                                 </label>
                             </div>
                         </div>
 
-                        <!-- 新地址表单 -->
+                        <!-- New Address Form -->
                         <div id="new_address_form" {% if user.address %}style="display: none;"{% endif %}>
                             <div class="row g-3">
                                 <div class="col-12">
                                     <label for="shipping_address" class="form-label">
-                                        详细地址 <span class="text-danger">*</span>
+                                        Detailed Address <span class="text-danger">*</span>
                                     </label>
                                     <input type="text" class="form-control" id="shipping_address" name="shipping_address" required>
                                 </div>
                                 <div class="col-md-6">
                                     <label for="city" class="form-label">
-                                        城市 <span class="text-danger">*</span>
+                                        City <span class="text-danger">*</span>
                                     </label>
                                     <input type="text" class="form-control" id="city" name="city" required>
                                 </div>
                                 <div class="col-md-6">
                                     <label for="postcode" class="form-label">
-                                        邮编 <span class="text-danger">*</span>
+                                        Postcode <span class="text-danger">*</span>
                                     </label>
                                     <input type="text" class="form-control" id="postcode" name="postcode" required>
                                 </div>
                                 <div class="col-12">
                                     <label for="country" class="form-label">
-                                        国家/地区 <span class="text-danger">*</span>
+                                        Country/Region <span class="text-danger">*</span>
                                     </label>
                                     <select class="form-select" id="country" name="country" required>
-                                        <option value="">请选择...</option>
+                                        <option value="">Please select...</option>
                                         <option value="UK">United Kingdom</option>
                                         <option value="US">United States</option>
                                         <option value="CN">China</option>
@@ -94,32 +94,32 @@
                             </div>
                             <div class="form-check mt-3">
                                 <input type="checkbox" class="form-check-input" id="save_info" name="save_info">
-                                <label class="form-check-label" for="save_info">保存为默认地址</label>
+                                <label class="form-check-label" for="save_info">Save as Default Address</label>
                             </div>
                         </div>
 
-                        <!-- 订阅选项 -->
+                        <!-- Subscription Option -->
                         <div class="form-check mt-4">
                             <input type="checkbox" class="form-check-input" id="newsletter" name="newsletter">
-                            <label class="form-check-label" for="newsletter">订阅我们的新闻和优惠信息</label>
+                            <label class="form-check-label" for="newsletter">Subscribe to our newsletter and offers</label>
                         </div>
 
-                        <!-- 继续支付按钮 -->
+                        <!-- Continue to Payment Button -->
                         <div class="d-flex justify-content-between align-items-center mt-4">
-                            <div></div> <!-- 占位，确保继续支付按钮在右侧 -->
+                            <div></div> <!-- Placeholder to ensure the continue button is on the right -->
                             <button type="submit" name="action" value="continue" class="btn btn-primary">
-                                继续支付<i class="fas fa-arrow-right ms-2"></i>
+                                Continue to Payment<i class="fas fa-arrow-right ms-2"></i>
                             </button>
                         </div>
                     </form>
 
-                    <!-- 按钮组容器 -->
+                    <!-- Button Group Container -->
                     <div class="d-flex justify-content-between align-items-center" style="margin-top: -38px;">
-                        <!-- 返回购物车按钮 -->
+                        <!-- Return to Cart Button -->
                         <form action="/customer/order/{{order.id}}/shipping/" method="post">
                             {% csrf_token %}
                             <button type="submit" name="action" value="cancel" class="btn btn-outline-secondary" formnovalidate>
-                                <i class="fas fa-arrow-left me-2"></i>返回购物车
+                                <i class="fas fa-arrow-left me-2"></i>Return to Cart
                             </button>
                         </form>
                     </div>
@@ -127,13 +127,13 @@
             </div>
         </div>
 
-        <!-- 右侧订单摘要 -->
+        <!-- Right Order Summary -->
         <div class="col-md-4">
             <div class="card shadow-sm rounded-3 border-0">
                 <div class="card-body p-4">
-                    <h5 class="card-title mb-4">订单摘要</h5>
+                    <h5 class="card-title mb-4">Order Summary</h5>
                     
-                    <!-- 商品列表 -->
+                    <!-- Product List -->
                     {% for item in order.items.all %}
                     <div class="d-flex align-items-center mb-3">
                         <div class="flex-shrink-0">
@@ -143,7 +143,7 @@
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <h6 class="mb-0">{{ item.product.name }}</h6>
-                            <small class="text-muted">数量: {{ item.quantity }}</small>
+                            <small class="text-muted">Quantity: {{ item.quantity }}</small>
                             <div class="text-end">
                                 <span class="fw-bold">£{{ item.item_subtotal }}</span>
                             </div>
@@ -155,35 +155,35 @@
                     
                     <!-- Promo Code Section -->
                     <div class="mb-4">
-                        <label for="promo_code" class="form-label">优惠码</label>
+                        <label for="promo_code" class="form-label">Promo Code</label>
                         <div class="input-group">
                             <input type="text" class="form-control" id="promo_code" name="promo_code">
-                            <button class="btn btn-outline-secondary" type="button" onclick="applyPromoCode()">使用</button>
+                            <button class="btn btn-outline-secondary" type="button" onclick="applyPromoCode()">Apply</button>
                         </div>
                     </div>
 
                     <!-- Order Summary -->
                     <div class="d-flex justify-content-between mb-3">
-                        <span class="text-muted">商品小计</span>
+                        <span class="text-muted">Subtotal</span>
                         <span class="fw-bold">£{{ order.subtotal_amount|floatformat:2 }}</span>
                     </div>
                     <div class="d-flex justify-content-between mb-3">
-                        <span class="text-muted">运费</span>
-                        <span class="fw-bold">{% if order.shipping_fee > 0 %}£{{ order.shipping_fee|floatformat:2 }}{% else %}免运费{% endif %}</span>
+                        <span class="text-muted">Shipping Fee</span>
+                        <span class="fw-bold">{% if order.shipping_fee > 0 %}£{{ order.shipping_fee|floatformat:2 }}{% else %}Free{% endif %}</span>
                     </div>
                     <div class="d-flex justify-content-between mb-3">
-                        <span class="text-muted">增值税 (5%)</span>
+                        <span class="text-muted">VAT (5%)</span>
                         <span class="fw-bold">£{{ order.vat|floatformat:2 }}</span>
                     </div>
                     {% if order.promo_discount %}
                     <div class="d-flex justify-content-between mb-3 text-success">
-                        <span>优惠折扣</span>
+                        <span>Promo Discount</span>
                         <span>-£{{ order.promo_discount|floatformat:2 }}</span>
                     </div>
                     {% endif %}
                     <hr class="my-4">
                     <div class="d-flex justify-content-between">
-                        <span class="fw-bold">总计</span>
+                        <span class="fw-bold">Total</span>
                         <span class="fw-bold fs-5">£{{ order.total_amount|floatformat:2 }}</span>
                     </div>
                 </div>
@@ -224,12 +224,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const newAddressForm = document.getElementById('new_address_form');
     const quickContinueBtn = document.getElementById('quick_continue');
     
-    // 地址选择切换逻辑
+    // Address selection toggle logic
     if(existingAddressRadio && newAddressRadio && newAddressForm) {
         existingAddressRadio.addEventListener('change', function() {
             if(this.checked) {
                 newAddressForm.style.display = 'none';
-                // 当选择使用已保存地址时，移除新地址表单的required属性
+                // Remove required attribute from new address form fields when using saved address
                 toggleNewAddressFormRequiredFields(false);
             }
         });
@@ -237,27 +237,27 @@ document.addEventListener('DOMContentLoaded', function() {
         newAddressRadio.addEventListener('change', function() {
             if(this.checked) {
                 newAddressForm.style.display = 'block';
-                // 当选择使用新地址时，添加新地址表单的required属性
+                // Add required attribute to new address form fields when using new address
                 toggleNewAddressFormRequiredFields(true);
             }
         });
     }
     
-    // 快捷支付按钮点击处理
+    // Quick payment button click handler
     if(quickContinueBtn) {
         quickContinueBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            // 确保选择已保存地址
+            // Ensure saved address is selected
             existingAddressRadio.checked = true;
             newAddressForm.style.display = 'none';
             toggleNewAddressFormRequiredFields(false);
             
-            // 提交表单
+            // Submit the form
             document.getElementById('shipping-form').submit();
         });
     }
     
-    // 切换新地址表单中字段的required属性
+    // Toggle required attribute for new address form fields
     function toggleNewAddressFormRequiredFields(required) {
         const requiredFields = [
             document.getElementById('shipping_address'),
@@ -277,17 +277,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // 初始状态检查
+    // Initial state check
     if(existingAddressRadio && existingAddressRadio.checked) {
         toggleNewAddressFormRequiredFields(false);
     }
 });
 
-// 优惠码应用
+// Apply promo code
 function applyPromoCode() {
     const promoCode = document.getElementById('promo_code').value;
     if (!promoCode) {
-        alert('请输入优惠码');
+        alert('Please enter a promo code');
         return;
     }
 
@@ -304,27 +304,27 @@ function applyPromoCode() {
     })
     .then(response => {
         if (!response.ok) {
-            throw new Error('网络请求失败');
+            throw new Error('Network request failed');
         }
         return response.json();
     })
     .then(data => {
         if (data.success) {
-            // 更新页面上的金额显示
+            // Update the amount displayed on the page
             const discountElement = document.querySelector('.text-success .fw-bold');
             if (discountElement) {
                 discountElement.textContent = `-£${data.discount}`;
             }
             document.querySelector('.fw-bold.fs-5').textContent = `£${data.final_amount}`;
-            alert('优惠码应用成功！');
-            location.reload();  // 刷新页面显示新的金额
+            alert('Promo code applied successfully!');
+            location.reload();  // Refresh the page to show the new amount
         } else {
-            alert(data.message || '优惠码无效');
+            alert(data.message || 'Invalid promo code');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('应用优惠码时出错：' + error.message);
+        alert('Error applying promo code: ' + error.message);
     });
 }
 </script>

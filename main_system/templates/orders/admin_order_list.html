@@ -5,49 +5,49 @@
 
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
-            <span class="badge bg-info rounded-pill">总订单项数: {{ order_items.paginator.count }}</span>
+            <span class="badge bg-info rounded-pill">Total Order Items: {{ order_items.paginator.count }}</span>
             {% if total_returns > 0 %}
-                <span class="badge bg-warning rounded-pill">总退货记录: {{ total_returns }}</span>
+                <span class="badge bg-warning rounded-pill">Total Return Records: {{ total_returns }}</span>
             {% endif %}
         </div>
     </div>
 
-    <!-- 过滤栏 -->
+    <!-- Filter Bar -->
     <div class="card mb-4">
         <div class="card-header bg-dark text-white">
-            <h5 class="mb-0">订单过滤</h5>
+            <h5 class="mb-0">Order Filter</h5>
         </div>
         <div class="card-body">
             <form method="get" class="row g-3">
                 <div class="col-md-6">
-                    <label for="order_status" class="form-label">订单状态</label>
+                    <label for="order_status" class="form-label">Order Status</label>
                     <select class="form-select" id="order_status" name="order_status">
-                        <option value="">全部</option>
-                        <option value="pending" {% if request.GET.order_status == 'pending' %}selected{% endif %}>待支付</option>
-                        <option value="paid" {% if request.GET.order_status == 'paid' %}selected{% endif %}>已支付</option>
-                        <option value="shipped" {% if request.GET.order_status == 'shipped' %}selected{% endif %}>已发货</option>
-                        <option value="delivered" {% if request.GET.order_status == 'delivered' %}selected{% endif %}>已送达</option>
-                        <option value="completed" {% if request.GET.order_status == 'completed' %}selected{% endif %}>已完成</option>
-                        <option value="cancelled" {% if request.GET.order_status == 'cancelled' %}selected{% endif %}>已取消</option>
-                        <option value="refunded" {% if request.GET.order_status == 'refunded' %}selected{% endif %}>已退款</option>
+                        <option value="">All</option>
+                        <option value="pending" {% if request.GET.order_status == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="paid" {% if request.GET.order_status == 'paid' %}selected{% endif %}>Paid</option>
+                        <option value="shipped" {% if request.GET.order_status == 'shipped' %}selected{% endif %}>Shipped</option>
+                        <option value="delivered" {% if request.GET.order_status == 'delivered' %}selected{% endif %}>Delivered</option>
+                        <option value="completed" {% if request.GET.order_status == 'completed' %}selected{% endif %}>Completed</option>
+                        <option value="cancelled" {% if request.GET.order_status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                        <option value="refunded" {% if request.GET.order_status == 'refunded' %}selected{% endif %}>Refunded</option>
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label for="return_status" class="form-label">退货状态</label>
+                    <label for="return_status" class="form-label">Return Status</label>
                     <select class="form-select" id="return_status" name="return_status">
-                        <option value="">全部</option>
-                        <option value="none" {% if request.GET.return_status == 'none' %}selected{% endif %}>未申请</option>
-                        <option value="pending" {% if request.GET.return_status == 'pending' %}selected{% endif %}>待审核</option>
-                        <option value="approved" {% if request.GET.return_status == 'approved' %}selected{% endif %}>已批准</option>
-                        <option value="shipped" {% if request.GET.return_status == 'shipped' %}selected{% endif %}>已寄出</option>
-                        <option value="received" {% if request.GET.return_status == 'received' %}selected{% endif %}>已收到</option>
-                        <option value="refunded" {% if request.GET.return_status == 'refunded' %}selected{% endif %}>已退款</option>
-                        <option value="rejected" {% if request.GET.return_status == 'rejected' %}selected{% endif %}>已拒绝</option>
+                        <option value="">All</option>
+                        <option value="none" {% if request.GET.return_status == 'none' %}selected{% endif %}>None</option>
+                        <option value="pending" {% if request.GET.return_status == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="approved" {% if request.GET.return_status == 'approved' %}selected{% endif %}>Approved</option>
+                        <option value="shipped" {% if request.GET.return_status == 'shipped' %}selected{% endif %}>Shipped</option>
+                        <option value="received" {% if request.GET.return_status == 'received' %}selected{% endif %}>Received</option>
+                        <option value="refunded" {% if request.GET.return_status == 'refunded' %}selected{% endif %}>Refunded</option>
+                        <option value="rejected" {% if request.GET.return_status == 'rejected' %}selected{% endif %}>Rejected</option>
                     </select>
                 </div>
                 <div class="col-12">
-                    <button type="submit" class="btn btn-primary">筛选</button>
-                    <a href="{% url 'admin_order_list' %}" class="btn btn-outline-secondary">重置</a>
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                    <a href="{% url 'admin_order_list' %}" class="btn btn-outline-secondary">Reset</a>
                 </div>
             </form>
         </div>
@@ -90,26 +90,26 @@
                                       {% elif item.order.order_status == 'refunded' %}danger
                                       {% endif %}">
                         {% if item.order.order_status == 'pending' %}
-                            <i class="fas fa-clock me-1"></i>待支付
+                            <i class="fas fa-clock me-1"></i>Pending
                         {% elif item.order.order_status == 'paid' %}
-                            <i class="fas fa-credit-card me-1"></i>已支付
+                            <i class="fas fa-credit-card me-1"></i>Paid
                         {% elif item.order.order_status == 'shipped' %}
-                            <i class="fas fa-shipping-fast me-1"></i>已发货
+                            <i class="fas fa-shipping-fast me-1"></i>Shipped
                         {% elif item.order.order_status == 'delivered' %}
-                            <i class="fas fa-box-open me-1"></i>已送达
+                            <i class="fas fa-box-open me-1"></i>Delivered
                         {% elif item.order.order_status == 'completed' %}
-                            <i class="fas fa-check-circle me-1"></i>已完成
+                            <i class="fas fa-check-circle me-1"></i>Completed
                             {% if item.return_status == 'refunded' %}
-                            <span class="badge bg-success"><i class="fas fa-hand-holding-usd me-1"></i>已退款</span>
+                            <span class="badge bg-success"><i class="fas fa-hand-holding-usd me-1"></i>Refunded</span>
                             {% elif item.return_status != 'none' and item.return_status != 'rejected' %}
-                            <span class="badge bg-info"><i class="fas fa-sync-alt me-1"></i>退货处理中</span>
+                            <span class="badge bg-info"><i class="fas fa-sync-alt me-1"></i>Return in Process</span>
                             {% elif not item.review %}
-                            <span class="badge bg-light text-dark"><i class="fas fa-star-half-alt me-1"></i>待评价</span>
+                            <span class="badge bg-light text-dark"><i class="fas fa-star-half-alt me-1"></i>Pending Review</span>
                             {% endif %}
                         {% elif item.order.order_status == 'cancelled' %}
-                            <i class="fas fa-ban me-1"></i>已取消
+                            <i class="fas fa-ban me-1"></i>Cancelled
                         {% elif item.order.order_status == 'refunded' %}
-                            <i class="fas fa-undo-alt me-1"></i>已退款
+                            <i class="fas fa-undo-alt me-1"></i>Refunded
                         {% else %}
                             {{ item.order.get_order_status_display }}
                         {% endif %}
@@ -123,17 +123,17 @@
                                     {% elif item.return_status == 'refunded' %}success
                                     {% else %}secondary{% endif %}">
                         {% if item.return_status == 'pending' %}
-                            <i class="fas fa-question-circle me-1"></i>待审核
+                            <i class="fas fa-question-circle me-1"></i>Pending Review
                         {% elif item.return_status == 'approved' %}
-                            <i class="fas fa-thumbs-up me-1"></i>已批准
+                            <i class="fas fa-thumbs-up me-1"></i>Approved
                         {% elif item.return_status == 'rejected' %}
-                            <i class="fas fa-thumbs-down me-1"></i>已拒绝
+                            <i class="fas fa-thumbs-down me-1"></i>Rejected
                         {% elif item.return_status == 'shipped' %}
-                            <i class="fas fa-dolly me-1"></i>已寄出
+                            <i class="fas fa-dolly me-1"></i>Shipped
                         {% elif item.return_status == 'received' %}
-                            <i class="fas fa-box me-1"></i>已收到
+                            <i class="fas fa-box me-1"></i>Received
                         {% elif item.return_status == 'refunded' %}
-                            <i class="fas fa-hand-holding-usd me-1"></i>已退款
+                            <i class="fas fa-hand-holding-usd me-1"></i>Refunded
                         {% else %}
                             {{ item.get_return_status_display }}
                         {% endif %}
@@ -142,7 +142,7 @@
                 </td>
                 <td>{{ item.order.timestamp|date:"Y-m-d" }}</td>
                 <td>
-                    <a href="/operation/homepage/orders/detail/{{ item.order.id }}/" class="btn btn-sm btn-primary">查看详情</a>
+                    <a href="/operation/homepage/orders/detail/{{ item.order.id }}/" class="btn btn-sm btn-primary">View Details</a>
                 </td>
             </tr>
             {% empty %}
@@ -153,7 +153,7 @@
         </tbody>
     </table>
 
-    <!-- 分页 -->
+    <!-- Pagination -->
     <div class="d-flex justify-content-center">
         {% if order_items.has_other_pages %}
         <nav>

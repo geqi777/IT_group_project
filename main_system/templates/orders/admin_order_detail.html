@@ -155,7 +155,7 @@
     {% if order.order_status != 'completed' and order.order_status != 'refunded' and order.order_status != 'cancelled' %}
     <div class="card mb-4">
         <div class="card-header bg-dark text-white">
-            <h5 class="mb-0">更新订单状态</h5>
+            <h5 class="mb-0">Update Order Status</h5>
         </div>
         <div class="card-body">
             <form action="{% url 'update_order_status' order.id %}" method="post" class="row g-3">
@@ -163,23 +163,23 @@
                 <div class="col-md-4">
                     <select class="form-select" name="status" id="status">
                         {% if order.order_status == 'pending' %}
-                        <option value="paid">标记为已支付</option>
-                        <option value="shipped">标记为已发货</option>
+                        <option value="paid">Mark as Paid</option>
+                        <option value="shipped">Mark as Shipped</option>
                         {% endif %}
                         {% if order.order_status == 'paid' %}
-                        <option value="shipped">标记为已发货</option>
+                        <option value="shipped">Mark as Shipped</option>
                         {% endif %}
                         {% if order.order_status == 'shipped' %}
-                        <option value="delivered">标记为已送达</option>
+                        <option value="delivered">Mark as Delivered</option>
                         {% endif %}
                         {% if order.order_status == 'delivered' %}
-                        <option value="completed">标记为已完成</option>
+                        <option value="completed">Mark as Completed</option>
                         {% endif %}
-                        <option value="cancelled">取消订单</option>
+                        <option value="cancelled">Cancel Order</option>
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary">更新</button>
+                    <button type="submit" class="btn btn-primary">Update</button>
                 </div>
             </form>
         </div>

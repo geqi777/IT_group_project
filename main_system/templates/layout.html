@@ -58,19 +58,19 @@
                             <i class="fa fa-user me-1"></i>{{ request.session.user_info.name }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                            <li><a class="dropdown-item" href="/customer/profile/"><i class="fa fa-id-card me-2"></i>个人资料</a></li>
-                            <li><a class="dropdown-item" href="/customer/order/"><i class="fa fa-shopping-bag me-2"></i>我的订单</a></li>
-                            <li><a class="dropdown-item" href="/customer/wallet/"><i class="fa fa-wallet me-2"></i>我的钱包</a></li>
+                            <li><a class="dropdown-item" href="/customer/profile/"><i class="fa fa-id-card me-2"></i>Profile</a></li>
+                            <li><a class="dropdown-item" href="/customer/order/"><i class="fa fa-shopping-bag me-2"></i>My Orders</a></li>
+                            <li><a class="dropdown-item" href="/customer/wallet/"><i class="fa fa-wallet me-2"></i>My Wallet</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="/customer/logout/"><i class="fa fa-sign-out-alt me-2"></i>退出登录</a></li>
+                            <li><a class="dropdown-item" href="/customer/logout/"><i class="fa fa-sign-out-alt me-2"></i>Logout</a></li>
                         </ul>
                     </li>
                     {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="/customer/login/">登录</a>
+                        <a class="nav-link" href="/customer/login/">Login</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/customer/register/">注册</a>
+                        <a class="nav-link" href="/customer/register/">Register</a>
                     </li>
                     {% endif %}
                     <li class="nav-item">
@@ -105,21 +105,21 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-4">
-                    <h5>关于Unicraft</h5>
-                    <p>我们致力于提供最优质的手工艺品，让每位客户享受独特的购物体验。</p>
+                    <h5>About Unicraft</h5>
+                    <p>We are committed to providing the highest quality handicrafts, allowing every customer to enjoy a unique shopping experience.</p>
                 </div>
                 <div class="col-md-4">
-                    <h5>快速链接</h5>
+                    <h5>Quick Links</h5>
                     <ul class="list-unstyled">
-                        <li><a href="/about/">关于我们</a></li>
-                        <li><a href="/contact/">联系我们</a></li>
-                        <li><a href="/customer/order/">订单查询</a></li>
+                        <li><a href="/about/">About Us</a></li>
+                        <li><a href="/contact/">Contact Us</a></li>
+                        <li><a href="/customer/order/">Order Tracking</a></li>
                     </ul>
                 </div>
                 <div class="col-md-4">
-                    <h5>联系我们</h5>
+                    <h5>Contact Us</h5>
                     <p><i class="fas fa-envelope me-2"></i>Email: support@unicraft.com</p>
-                    <p><i class="fas fa-phone me-2"></i>电话: +44 123 456 7890</p>
+                    <p><i class="fas fa-phone me-2"></i>Phone: +44 123 456 7890</p>
                 </div>
             </div>
             <hr>
@@ -129,7 +129,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // 添加全局函数用于更新购物车计数
+        // Add a global function to update the cart count
         function updateCartCount(count) {
             const cartCountElements = document.querySelectorAll('.cart-count');
             cartCountElements.forEach(element => {
@@ -137,7 +137,7 @@
             });
         }
         
-        // 添加商品到购物车的AJAX处理
+        // AJAX handling for adding items to the cart
         document.addEventListener('DOMContentLoaded', function() {
             const addToCartForms = document.querySelectorAll('.add-to-cart-form');
             
@@ -158,10 +158,10 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.status === 'success') {
-                            // 更新购物车计数
+                            // Update cart count
                             updateCartCount(data.cart_count);
                             
-                            // 显示成功消息
+                            // Show success message
                             const alertDiv = document.createElement('div');
                             alertDiv.className = 'alert alert-success alert-dismissible fade show';
                             alertDiv.setAttribute('role', 'alert');
@@ -170,11 +170,11 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             `;
                             
-                            // 添加到页面
+                            // Add to the page
                             const container = document.querySelector('.container');
                             container.insertBefore(alertDiv, container.firstChild);
                             
-                            // 自动关闭提示
+                            // Auto close alert
                             setTimeout(() => {
                                 alertDiv.classList.remove('show');
                                 setTimeout(() => alertDiv.remove(), 500);

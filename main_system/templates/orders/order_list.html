@@ -3,19 +3,19 @@
 
 {% block content %}
 <div class="container py-5">
-    <h2 class="mb-4">我的订单</h2>
+    <h2 class="mb-4">My Orders</h2>
     
     {% if orders %}
         <div class="table-responsive">
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th>订单号</th>
-                        <th>订单状态</th>
-                        <th>支付方式</th>
-                        <th>订单金额</th>
-                        <th>创建时间</th>
-                        <th>操作</th>
+                        <th>Order Number</th>
+                        <th>Order Status</th>
+                        <th>Payment Method</th>
+                        <th>Order Amount</th>
+                        <th>Creation Time</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -32,11 +32,11 @@
                                   {% elif order.order_status == 'refunded' %}bg-danger
                                   {% endif %}">
                                 {% if order.order_status == 'refunded' %}
-                                    <i class="fas fa-undo-alt me-1"></i>已退款
+                                    <i class="fas fa-undo-alt me-1"></i>Refunded
                                 {% elif order.has_refunded_items %}
-                                    <i class="fas fa-undo-alt me-1"></i>部分退款
+                                    <i class="fas fa-undo-alt me-1"></i>Partial Refund
                                 {% elif order.order_status == 'completed' and order.has_returned_items %}
-                                    <i class="fas fa-sync-alt me-1"></i>退货处理中
+                                    <i class="fas fa-sync-alt me-1"></i>Return in Process
                                 {% elif order.order_status == 'completed' %}
                                     {% with all_reviewed=True %}
                                         {% for item in order.items.all %}
@@ -46,9 +46,9 @@
                                         {% endfor %}
                                         
                                         {% if all_reviewed %}
-                                            <i class="fas fa-check-circle me-1"></i>订单完成
+                                            <i class="fas fa-check-circle me-1"></i>Order Completed
                                         {% else %}
-                                            <i class="fas fa-star-half-alt me-1"></i>待评价
+                                            <i class="fas fa-star-half-alt me-1"></i>Pending Review
                                         {% endif %}
                                     {% endwith %}
                                 {% else %}
@@ -60,42 +60,42 @@
                         <td>£{{ order.final_amount }}</td>
                         <td>{{ order.timestamp|date:"Y-m-d H:i" }}</td>
                         <td>
-                            <a href="/customer/order/{{ order.id }}/detail/" class="btn btn-sm btn-primary">查看详情</a>
+                            <a href="/customer/order/{{ order.id }}/detail/" class="btn btn-sm btn-primary">View Details</a>
                             
                             {% if order.order_status == 'pending' or order.order_status == 'paid' or order.order_status == 'shipped' %}
-                                <!-- 未支付、已支付或已发货的订单可以取消 -->
+                                <!-- Orders that are pending, paid, or shipped can be cancelled -->
                                 <form action="/customer/order/{{ order.id }}/cancel/" method="post" class="d-inline">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('确定要取消此订单吗？')">
-                                        取消订单
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to cancel this order?')">
+                                        Cancel Order
                                     </button>
                                 </form>
                             {% elif order.order_status == 'delivered' %}
-                                <!-- 已送达的订单可以确认收货 -->
+                                <!-- Orders that are delivered can be confirmed as received -->
                                 <form action="/customer/order/{{ order.id }}/confirm-receipt/" method="post" class="d-inline">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('确认已收到商品吗？')">确认收货</button>
+                                    <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Confirm receipt of goods?')">Confirm Receipt</button>
                                 </form>
                             {% elif order.order_status == 'completed' %}
-                                <!-- 已完成的订单可以评价和退货，但如果已经退款则不显示 -->
+                                <!-- Completed orders can be reviewed and returned, but not if already refunded -->
                                 {% if not order.has_refunded_items %}
-                                    <!-- 如果订单没有正在处理的退货，允许评价 -->
+                                    <!-- If the order has no returns in process, allow review -->
                                     {% if not order.has_returned_items %}
-                                        <!-- 检查是否有未评价的商品 -->
+                                        <!-- Check if there are any items not reviewed -->
                                         {% if not order.all_reviewed %}
-                                            <a href="/customer/order/{{ order.id }}/review/" class="btn btn-sm btn-info">评价订单</a>
+                                            <a href="/customer/order/{{ order.id }}/review/" class="btn btn-sm btn-info">Review Order</a>
                                         {% endif %}
-                                        <!-- 未申请退货的情况下，才显示退货按钮 -->
-                                        <a href="/customer/order/{{ order.id }}/return/" class="btn btn-sm btn-warning">申请退货</a>
+                                        <!-- Show return button only if no return has been requested -->
+                                        <a href="/customer/order/{{ order.id }}/return/" class="btn btn-sm btn-warning">Request Return</a>
                                     {% endif %}
                                 {% endif %}
                             {% endif %}
 
                             {% if order.order_status != 'pending' %}
-                                <!-- 除了未支付订单外，其他状态都可以删除记录 -->
+                                <!-- Orders other than pending can be deleted -->
                                 <form action="/customer/order/{{ order.id }}/delete/" method="post" class="d-inline">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('确定要删除此订单记录吗？此操作不可恢复。')">删除记录</button>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this order record? This action cannot be undone.')">Delete Record</button>
                                 </form>
                             {% endif %}
                         </td>
@@ -105,7 +105,7 @@
             </table>
         </div>
         
-        <!-- 分页 -->
+        <!-- Pagination -->
         {% if orders.has_other_pages %}
         <nav aria-label="Page navigation" class="mt-4">
             <ul class="pagination justify-content-center">
@@ -145,7 +145,7 @@
         {% endif %}
     {% else %}
         <div class="alert alert-info">
-            您还没有任何订单。<a href="{% url 'product_page' %}" class="alert-link">去购物</a>
+            You have no orders yet. <a href="{% url 'product_page' %}" class="alert-link">Go Shopping</a>
         </div>
     {% endif %}
 </div>
