@@ -11,6 +11,12 @@ This is a web application based on the Django framework, designed to provide a c
 
 The project aims to offer a seamless shopping experience for users and convenient management tools for administrators.
 
+## Attention
+The Administrator System need to visit url directly
+Admin URL:https://1050502625.pythonanywhere.com/operation/login/
+account:admin
+password:Admin123456
+
 ## Installation
 
 ### Requirements
