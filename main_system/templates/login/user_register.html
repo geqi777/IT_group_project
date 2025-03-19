@@ -2,11 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Unicraft - Sign Up</title>
+  <title>Unicraft - Create Account</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
 
-    /* Global Initialization */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -14,176 +13,190 @@
     }
 
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: 'Poppins', sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
-      width: 100%;
-      height: 100vh;
-      background-color: #ffffff; /* Pure white background */
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      padding: 20px;
     }
 
-    /* Fixed Size Central Panel */
     .container {
-      width: 800px;   /* Fixed Width */
-      height: 450px;  /* Fixed Height */
+      width: 800px;
+      height: 500px;
       background-color: #fff;
       display: flex;
-      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-      border-radius: 12px;
-      overflow: hidden;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+      border-radius: 20px;
+      overflow: auto;
     }
 
-    /* Left Side: Registration Form */
     .left-panel {
       width: 50%;
-      padding: 40px;
+      padding: 30px;
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      background-color: #fff;
+      position: relative;
     }
 
-    /* Brand Name */
     .brand {
-      position: absolute;
-      top: 20px;
-      left: 40px;
-      font-size: 1.4rem;
-      font-weight: bold;
-      color: #222;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #2d3436;
+      margin-bottom: 20px;
     }
 
-    .left-panel h1 {
+    h1 {
       font-size: 1.8rem;
-      margin-bottom: 10px;
-      color: #222;
+      font-weight: 600;
+      color: #2d3436;
+      margin-bottom: 5px;
     }
 
     .subtitle {
-      margin-bottom: 25px;
-      color: #666;
-      font-size: 0.95rem;
+      color: #636e72;
+      font-size: 0.9rem;
+      margin-bottom: 15px;
     }
 
     form {
       width: 100%;
       display: flex;
       flex-direction: column;
+      gap: 12px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
 
     label {
-      margin-bottom: 6px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      color: #333;
+      font-weight: 500;
+      font-size: 0.85rem;
+      color: #2d3436;
     }
 
     input {
-      padding: 12px;
-      margin-bottom: 16px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 0.95rem;
-      outline: none;
+      padding: 8px 12px;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
     }
 
-    /* Error Message */
+    input:focus {
+      border-color: #74b9ff;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(116, 185, 255, 0.1);
+    }
+
     .error-message {
       color: #e74c3c;
-      font-size: 0.85rem;
-      margin-bottom: 16px;
-    }
-
-    /* Remember Me & Forgot Password */
-    .remember-forgot {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.9rem;
-      margin-bottom: 20px;
-    }
-
-    .remember-forgot a {
-      color: #007bff;
-      text-decoration: none;
+      font-size: 0.8rem;
+      margin-top: 4px;
     }
 
     .signup-btn {
+      margin-top: 5px;
       padding: 12px;
       border: none;
-      border-radius: 6px;
-      background-color: #000;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #0984e3 0%, #74b9ff 100%);
       color: white;
-      font-weight: bold;
-      font-size: 1rem;
+      font-weight: 600;
+      font-size: 0.95rem;
       cursor: pointer;
-      transition: 0.2s;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     .signup-btn:hover {
-      background-color: #333;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(9, 132, 227, 0.2);
     }
 
     .login-link {
-      font-size: 0.9rem;
-      margin-top: 15px;
       text-align: center;
+      margin-top: 20px;
+      font-size: 0.9rem;
+      color: #636e72;
     }
 
     .login-link a {
-      color: #007bff;
+      color: #0984e3;
       text-decoration: none;
+      font-weight: 500;
     }
 
-    /* Right Side: Image Panel */
+    .login-link a:hover {
+      text-decoration: underline;
+    }
+
     .right-panel {
       width: 50%;
-      background: center/cover no-repeat;  /* Replace with your image path */
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      position: relative;
+      overflow: hidden;
     }
 
     .right-panel img {
-      max-width: 100%;
-      height: auto;
-      border-radius: 8px;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      transition: transform 0.3s ease;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+        width: 100%;
+        height: auto;
+      }
+      
+      .left-panel,
+      .right-panel {
+        width: 100%;
+      }
+      
+      .right-panel {
+        height: 250px;
+      }
     }
   </style>
 </head>
 <body>
-
-  <div class="brand">Unicraft</div> <!-- Brand Name -->
-
   <div class="container">
-    
     <!-- Left Side: Registration Form -->
     <div class="left-panel">
-      <h1>Sign in now</h1>
-      <p class="subtitle">Create a free account</p>
+      <div class="brand">Unicraft</div>
+      <h1>Create Account</h1>
+      <p class="subtitle">Join our community and start shopping</p>
 
       <form method="post">
-            {% csrf_token %}
-            {% for field in form %}
-                <div class="form-group mb-3">
-                    <label>{{ field.label }}</label>
-                    {{ field }}
-                    <span style="color: red">{{ field.errors.0 }}</span>
-                </div>
-            {% endfor %}
-            <button type="submit" class="btn btn-primary w-100">Submit</button>
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="form-group">
+          <label>{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}
+          <span class="error-message">{{ field.errors.0 }}</span>
+          {% endif %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="signup-btn">Create Account</button>
       </form>
+
+      <div class="login-link">
+        Already have an account? <a href="/customer/login/">Sign in</a>
+      </div>
     </div>
 
     <!-- Right Side: Image -->
     <div class="right-panel">
-      <!-- You can directly use the image tag -->
-{#        /static/image/liugou.jpg#}
-{#        /media/login_image/customer_register.jpg#}
-      <img src="/media/login_image/customer_register.jpg">
+      <img src="/media/login_image/customer_register.jpg" alt="Welcome Image">
     </div>
-
   </div>
-
 </body>
 </html>

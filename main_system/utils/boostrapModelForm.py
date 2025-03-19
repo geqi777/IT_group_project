@@ -449,3 +449,23 @@ class PromoCode_EditForm(BoostrapModelForm):
             raise ValidationError('Expiry date cannot be earlier than the current time')
         return expiry_date 
 
+
+# Admin Forms
+class AdminLoginForm(BoostrapForm):
+    account = forms.CharField(label='Account', widget=forms.TextInput(), required=True)
+    password = forms.CharField(label='Password', widget=forms.PasswordInput(), required=True)
+
+    def clean_password(self):
+        pwd = self.cleaned_data.get('password')
+        return md5(pwd)
+
+class AdminProfileForm(BoostrapModelForm):
+    class Meta:
+        model = models.Operator
+        fields = [
+            "name",
+            "gender",
+            "email",
+            "phone",
+        ]
+

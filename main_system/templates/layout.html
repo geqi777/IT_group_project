@@ -84,6 +84,18 @@
         </div>
     </nav>
 
+    <!-- User Messages -->
+    {% if user_messages %}
+    <div class="container mt-3">
+        {% for type, message in user_messages %}
+        <div class="alert alert-{{ type }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <!-- Messages -->
     {% if messages %}
     <div class="container mt-3">

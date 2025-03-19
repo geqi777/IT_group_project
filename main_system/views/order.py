@@ -2,31 +2,39 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.utils import timezone
 from django.db import transaction
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseBadRequest
 from django.core.paginator import Paginator
 from django.contrib.admin.views.decorators import staff_member_required
+from django.urls import reverse
+from decimal import Decimal
+import re
+import json
+import random
+import string
+from datetime import timedelta
 
 from main_system.views.home_page import subscribe
 from django.http import HttpRequest
 
 from main_system import models
 from main_system.models import Order, OrderItem, Cart, CartItem, User, WalletTransaction, HistoryNew, Operator, Subscription, PaymentCard, PromoCode
-from decimal import Decimal
-import re
+from main_system.utils.pagination import PageNumberPagination
+from main_system.views.admin_dashboard import admin_message, user_message
 
 
+@user_message
 def create_order(request):
     """Create order from cart"""
     # Check if user is logged in
     user_info = request.session.get('user_info')
     if not user_info:
-        messages.error(request, 'Please log in first')
+        request.user_messages.error('Please log in first')
         return redirect('/customer/login/')
 
     user = User.objects.filter(id=user_info['id']).first()
     cart = Cart.objects.filter(user=user).first()
     if not cart or not cart.items.exists():
-        messages.error(request, 'Cart is empty, cannot create order')
+        request.user_messages.error('Cart is empty, cannot create order')
         return redirect('/customer/cart/')
 
     try:
@@ -88,17 +96,18 @@ def create_order(request):
         return redirect('/customer/cart/')
 
 
+@user_message
 def order_list(request):
     """Order list"""
     # Check if user is logged in
     user_info = request.session.get('user_info')
     if not user_info:
-        messages.error(request, 'Please log in first')
+        request.user_messages.error('Please log in first')
         return redirect('/customer/login/')
 
     user = User.objects.filter(id=user_info['id']).first()
     if not user:
-        messages.error(request, 'User does not exist')
+        request.user_messages.error('User does not exist')
         return redirect('/customer/register/')
 
     orders = Order.objects.filter(user=user).order_by('-timestamp')
@@ -128,22 +137,23 @@ def order_list(request):
     return render(request, 'orders/order_list.html', {'orders': orders})
 
 
+@user_message
 def order_detail(request, order_id):
     """Order detail"""
     # Check if user is logged in
     user_info = request.session.get('user_info')
     if not user_info:
-        messages.error(request, 'Please log in first')
+        request.user_messages.error('Please log in first')
         return redirect('/customer/login/')
 
     user = User.objects.filter(id=user_info['id']).first()
     if not user:
-        messages.error(request, 'User does not exist')
+        request.user_messages.error('User does not exist')
         return redirect('/customer/register/')
 
     order = Order.objects.filter(id=order_id, user=user).first()
     if not order:
-        messages.error(request, 'Order does not exist')
+        request.user_messages.error('Order does not exist')
         return redirect('/customer/order/list/')
 
     # Check if there are any items being returned or already returned
@@ -153,9 +163,16 @@ def order_detail(request, order_id):
             has_returned_items = True
             break
 
+    # Prefetch related reviews for order items to optimize performance
+    from django.db.models import Prefetch
+    from main_system.models import Review
+    order_with_reviews = Order.objects.prefetch_related(
+        Prefetch('items__review', queryset=Review.objects.all())
+    ).get(id=order_id)
+
     # Calculate all necessary values
     context = {
-        'order': order,
+        'order': order_with_reviews,
         'points_value': float(order.points_used) * 0.01 if order.points_used else 0,
         'items_with_subtotal': [{
             'item': item,
@@ -604,24 +621,25 @@ def payment(request, order_id):
     return render(request, 'orders/payment.html', context)
 
 
+@user_message
 def order_cancel(request, order_id):
     """Cancel order (supports unpaid and paid orders)"""
     # Check if user is logged in
     user_info = request.session.get('user_info')
     if not user_info:
-        messages.error(request, 'Please log in first')
+        request.user_messages.error('Please log in first')
         return redirect('/customer/login/')
 
     user = User.objects.filter(id=user_info['id']).first()
     if not user:
-        messages.error(request, 'User does not exist')
+        request.user_messages.error('User does not exist')
         return redirect('/customer/register/')
 
-    order = Order.objects.get (id=order_id, user=user)
+    order = Order.objects.get(id=order_id, user=user)
 
     # Check order status
     if order.order_status not in ['pending', 'paid', 'shipped']:
-        messages.error(request, 'Current order status cannot be cancelled')
+        request.user_messages.error('Current order status cannot be cancelled')
         return redirect('/customer/order/{{ order.id }}/detail/')
 
     try:
@@ -633,7 +651,7 @@ def order_cancel(request, order_id):
 
                 messages.success(request, 'Order has been cancelled')
             else:
-                # Paid orders require a refund
+                # Paid orders require a created_time
                 if order.payment_method == 'wallet':
                     # Wallet refund
                     user.wallet.balance += order.final_amount
@@ -704,43 +722,45 @@ def order_cancel(request, order_id):
 
     return redirect('/customer/order/')
 
+@user_message
 def order_confirm_receipt(request, order_id):
     """Confirm receipt"""
      # Check if user is logged in
     user_info = request.session.get('user_info')
     if not user_info:
-        messages.error(request, 'Please log in first')
+        request.user_messages.error('Please log in first')
         return redirect('/customer/login/')
 
     user = User.objects.filter(id=user_info['id']).first()
     if not user:
-        messages.error(request, 'User does not exist')
+        request.user_messages.error('User does not exist')
         return redirect('/customer/register/')
 
-    order = Order.objects.get (id=order_id, user=user)
+    order = Order.objects.get(id=order_id, user=user)
 
     if order.order_status != 'delivered':
-        messages.error(request, 'Current order status cannot confirm receipt')
+        request.user_messages.error('Current order status cannot confirm receipt')
         return redirect('order_detail', order_id=order_id)
 
     order.order_status = 'completed'
     order.complete_time = timezone.now()
     order.save()
 
-    messages.success(request, 'Receipt confirmed')
+    request.user_messages.success('Receipt confirmed')
     return redirect('/customer/order/')
 
+@user_message
 def order_review(request, order_id):
     """Order review"""
     # Check if user is logged in
     user_info = request.session.get('user_info')
     if not user_info:
-        messages.error(request, 'Please log in first')
+        request.user_messages.error('Please log in first')
         return redirect('/customer/login/')
 
     user = User.objects.filter(id=user_info['id']).first()
     if not user:
-        messages.error(request, 'User does not exist')
+        request.user_messages.error('User does not exist')
         return redirect('/customer/register/')
 
     order = get_object_or_404(Order, id=order_id, user=user)
@@ -858,6 +878,7 @@ def order_delete(request, order_id):
 
 
 # Admin port 1
+@admin_message
 def admin_order_list(request):
     """Admin view all orders"""
     # Check if admin is logged in
@@ -907,16 +928,17 @@ def admin_order_list(request):
     })
 
 
+@admin_message
 def update_order_status(request, order_id):
     """Admin update order status"""
     # Check if admin is logged in
-    operator_id = request.session.get('admin_info')
-    if not operator_id:
+    operator_info = request.session.get('admin_info')
+    if not operator_info:
         messages.error(request, 'Please log in first')
         return redirect('/operation/login/')
 
     # Verify if it is an admin
-    operator = Operator.objects.filter(id=operator_id['employee_id'], is_operator=True).first()
+    operator = Operator.objects.filter(id=operator_info['employee_id'], is_operator=True).first()
     if not operator:
         messages.error(request, 'Insufficient permissions')
         return redirect('/operation/login/')
@@ -1075,6 +1097,7 @@ def update_order_status(request, order_id):
     return redirect('/operation/homepage/orders/')
 
 
+@admin_message
 def process_return(request, order_id, item_id):
     """Admin process return request"""
     # Check if admin is logged in
@@ -1258,16 +1281,17 @@ def process_return(request, order_id, item_id):
 
     return redirect(f'/operation/homepage/orders/detail/{order_id}/')
 
+@admin_message
 def admin_order_detail(request, order_id):
     """Admin view order details"""
     # Check if admin is logged in
-    operator_id = request.session.get('admin_info')
-    if not operator_id:
+    operator_info = request.session.get('admin_info')
+    if not operator_info:
         messages.error(request, 'Please log in first')
         return redirect('/operation/login/')
 
     # Verify if it is an admin
-    operator = Operator.objects.filter(id=operator_id['employee_id'], is_operator=True).first()
+    operator = Operator.objects.filter(id=operator_info['employee_id'], is_operator=True).first()
     if not operator:
         messages.error(request, 'Insufficient permissions')
         return redirect('/operation/login/')

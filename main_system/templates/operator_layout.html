@@ -60,6 +60,18 @@
         </div>
     </nav>
 
+    <!-- Admin Messages -->
+    {% if admin_messages %}
+    <div class="container mt-3">
+        {% for type, message in admin_messages %}
+        <div class="alert alert-{{ type }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <!-- Page Content -->
     <div class="container my-4">
         {% block content %}{% endblock %}

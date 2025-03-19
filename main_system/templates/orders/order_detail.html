@@ -40,31 +40,64 @@
                     <!-- Product List -->
                     <div class="mb-4">
                         <h5 class="mb-3">Product List</h5>
-                        {% for item in order.items.all %}
+                        {% for item_data in items_with_subtotal %}
                         <div class="card mb-3">
                             <div class="card-body">
                                 <div class="row align-items-center">
                                     <div class="col-auto">
-                                        {% if item.product.picture %}
-                                        <img src="{{ item.product.picture.url }}" alt="{{ item.product.name }}" style="width: 80px; height: 80px; object-fit: cover;" class="rounded">
+                                        {% if item_data.item.product.picture %}
+                                        <img src="{{ item_data.item.product.picture.url }}" alt="{{ item_data.item.product.name }}" style="width: 80px; height: 80px; object-fit: cover;" class="rounded">
                                         {% endif %}
                                     </div>
                                     <div class="col">
-                                        <h6 class="mb-1">{{ item.product.name }}</h6>
+                                        <h6 class="mb-1">{{ item_data.item.product.name }}</h6>
                                         <p class="mb-0 text-muted">
-                                            Unit Price: £{{ item.price|floatformat:2 }} × {{ item.quantity }}
-                                            <span class="float-end fw-bold">£{{ item.item_subtotal|floatformat:2 }}</span>
+                                            Unit Price: £{{ item_data.item.price|floatformat:2 }} × {{ item_data.item.quantity }}
+                                            <span class="float-end fw-bold">£{{ item_data.subtotal|floatformat:2 }}</span>
                                         </p>
-                                        {% if item.return_status != 'none' %}
+                                        {% if item_data.item.return_status != 'none' %}
                                         <div class="mt-2">
-                                            <span class="badge bg-{% if item.return_status == 'pending' %}warning{% elif item.return_status == 'approved' %}info{% elif item.return_status == 'rejected' %}danger{% elif item.return_status == 'refunded' %}success{% else %}secondary{% endif %}">
-                                                Return Status: {{ item.get_return_status_display }}
+                                            <span class="badge bg-{% if item_data.item.return_status == 'pending' %}warning{% elif item_data.item.return_status == 'approved' %}info{% elif item_data.item.return_status == 'rejected' %}danger{% elif item_data.item.return_status == 'refunded' %}success{% else %}secondary{% endif %}">
+                                                Return Status: {{ item_data.item.get_return_status_display }}
                                             </span>
-                                            {% if item.return_status == 'approved' %}
+                                            {% if item_data.item.return_status == 'approved' %}
                                             <small class="text-info ms-2">Please contact customer service for return address</small>
                                             {% endif %}
                                         </div>
                                         {% endif %}
+                                        
+                                        <!-- Product Review Section -->
+                                        <div class="mt-2">
+                                            {% if item_data.item.review %}
+                                                <div class="mt-2 p-2 bg-light rounded">
+                                                    <div class="d-flex align-items-center mb-1">
+                                                        <strong class="me-2">Your Review:</strong>
+                                                        <div class="text-warning">
+                                                            {% with ''|center:5 as range %}
+                                                                {% for _ in range %}
+                                                                    {% if forloop.counter <= item_data.item.review.rating %}
+                                                                        <i class="fas fa-star"></i>
+                                                                    {% else %}
+                                                                        <i class="far fa-star"></i>
+                                                                    {% endif %}
+                                                                {% endfor %}
+                                                            {% endwith %}
+                                                        </div>
+                                                        <small class="ms-auto text-muted">{{ item_data.item.review.created_time|date:"Y-m-d" }}</small>
+                                                    </div>
+                                                    <p class="mb-0 small">{{ item_data.item.review.comment }}</p>
+                                                </div>
+                                            {% elif order.order_status == 'completed' %}
+                                                <div class="mt-2 d-flex align-items-center">
+                                                    <span class="badge bg-secondary me-2">Not Reviewed</span>
+                                                    <small class="text-muted">
+                                                        <a href="/customer/order/{{ order.id }}/review/" class="text-primary">
+                                                            <i class="fas fa-pencil-alt me-1"></i>Write a review
+                                                        </a>
+                                                    </small>
+                                                </div>
+                                            {% endif %}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
