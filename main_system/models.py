@@ -6,7 +6,7 @@ import datetime
 from django.core.validators import MinValueValidator, MaxValueValidator
 from decimal import Decimal
 
-
+# 1
 # Subscription
 class Subscription(models.Model):
     name = models.CharField(max_length=120)
