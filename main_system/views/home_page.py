@@ -105,7 +105,7 @@ def search(request):
         products = Product.objects.filter(
             Q(name__icontains=query) | 
             Q(description__icontains=query) |
-            Q(details__icontains=query)
+            Q(category__icontains=query)  # 替换details为category
         ).filter(status='active')
     else:
         products = Product.objects.filter(status='active')
