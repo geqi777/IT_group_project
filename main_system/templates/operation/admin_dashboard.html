@@ -12,22 +12,22 @@
                         <a class="nav-link text-white active" href="{% url 'admin_dashboard' %}">Dashboard</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if section == 'users' %}active{% endif %} text-white" href="{% url 'admin_user_list' %}">Manage Users</a>
+                        <a class="nav-link {% if section == 'users' %}active{% endif %} text-white" href="{% url 'admin_user_list' %}">Users</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if section == 'products' %}active{% endif %} text-white" href="{% url 'admin_product_list' %}">Manage Products</a>
+                        <a class="nav-link {% if section == 'products' %}active{% endif %} text-white" href="{% url 'admin_product_list' %}">Products</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if section == 'admins' %}active{% endif %} text-white" href="{% url 'admin_operator_list' %}">Manage Admins</a>
+                        <a class="nav-link {% if section == 'admins' %}active{% endif %} text-white" href="{% url 'admin_operator_list' %}">Admins</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if section == 'orders' %}active{% endif %} text-white" href="{% url 'admin_order_list' %}">Manage Orders</a>
+                        <a class="nav-link {% if section == 'orders' %}active{% endif %} text-white" href="{% url 'admin_order_list' %}">Orders</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if section == 'reviews' %}active{% endif %} text-white" href="{% url 'admin_review_list' %}">Manage Reviews</a>
+                        <a class="nav-link {% if section == 'reviews' %}active{% endif %} text-white" href="{% url 'admin_review_list' %}">Reviews</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if section == 'promo_codes' %}active{% endif %} text-white" href="{% url 'promo_code_list' %}">Manage Promo Codes</a>
+                        <a class="nav-link {% if section == 'promo_codes' %}active{% endif %} text-white" href="{% url 'promo_code_list' %}">Promo Codes</a>
                     </li>
                 </ul>
             </div>

@@ -27,8 +27,8 @@
                 <td>${{ product.price }}</td>
                 <td>{{ product.stock }}</td>
                 <td><span class="badge bg-{% if product.status == 'active' %}success{% else %}danger{% endif %}">{{ product.status }}</span></td>
-                <td>
-                    <a href="{% url 'product_edit' product.id %}" class="btn btn-sm btn-warning">Edit</a>
+                <td class="d-flex gap-2">
+                    <a href="{% url 'product_edit' product.id %}" class="btn btn-sm btn-primary">Edit</a>
                     <a href="{% url 'product_delete' product.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
                 </td>
             </tr>
