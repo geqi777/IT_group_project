@@ -11,7 +11,131 @@ import json
 import random
 from decimal import Decimal
 from datetime import timedelta
+from functools import wraps
 
+# 添加一个装饰器函数处理管理员页面的消息
+def admin_message(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        # 定义自定义的消息方法
+        def error(message):
+            request.session.setdefault('admin_messages', []).append(('error', message))
+        
+        def success(message):
+            request.session.setdefault('admin_messages', []).append(('success', message))
+        
+        def info(message):
+            request.session.setdefault('admin_messages', []).append(('info', message))
+        
+        def warning(message):
+            request.session.setdefault('admin_messages', []).append(('warning', message))
+        
+        # 将自定义消息方法添加到request对象
+        request.admin_messages = type('', (), {
+            'error': error,
+            'success': success,
+            'info': info,
+            'warning': warning,
+        })
+        
+        # 执行原始视图函数
+        response = view_func(request, *args, **kwargs)
+        
+        # 处理Django render返回的响应
+        if hasattr(response, 'context_data'):
+            # 如果是TemplateResponse
+            admin_messages = request.session.pop('admin_messages', [])
+            response.context_data['admin_messages'] = admin_messages
+        elif response.__class__.__name__ == 'HttpResponse' and not response.streaming and not getattr(response, 'is_redirect', False):
+            # 如果是普通HttpResponse
+            from django.template.response import SimpleTemplateResponse
+            admin_messages = request.session.pop('admin_messages', [])
+            
+            # 判断响应是否是render生成的模板响应
+            if hasattr(response, 'content') and b'<!DOCTYPE html>' in response.content:
+                import re
+                content = response.content.decode('utf-8')
+                # 在</nav>后面插入消息部分
+                admin_messages_html = ""
+                if admin_messages:
+                    admin_messages_html = '<div class="container mt-3">'
+                    for msg_type, msg in admin_messages:
+                        admin_messages_html += f'<div class="alert alert-{msg_type} alert-dismissible fade show" role="alert">'
+                        admin_messages_html += f'{msg}'
+                        admin_messages_html += '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>'
+                        admin_messages_html += '</div>'
+                    admin_messages_html += '</div>'
+                
+                # 在</nav>后面插入消息
+                new_content = re.sub(r'</nav>', r'</nav>' + admin_messages_html, content)
+                response.content = new_content.encode('utf-8')
+        
+        return response
+    
+    return _wrapped_view
+
+# 添加一个用户消息装饰器，类似于admin_message
+def user_message(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        # 定义自定义的消息方法
+        def error(message):
+            request.session.setdefault('user_messages', []).append(('error', message))
+        
+        def success(message):
+            request.session.setdefault('user_messages', []).append(('success', message))
+        
+        def info(message):
+            request.session.setdefault('user_messages', []).append(('info', message))
+        
+        def warning(message):
+            request.session.setdefault('user_messages', []).append(('warning', message))
+        
+        # 将自定义消息方法添加到request对象
+        request.user_messages = type('', (), {
+            'error': error,
+            'success': success,
+            'info': info,
+            'warning': warning,
+        })
+        
+        # 执行原始视图函数
+        response = view_func(request, *args, **kwargs)
+        
+        # 处理Django render返回的响应
+        if hasattr(response, 'context_data'):
+            # 如果是TemplateResponse
+            user_messages = request.session.pop('user_messages', [])
+            response.context_data['user_messages'] = user_messages
+        elif response.__class__.__name__ == 'HttpResponse' and not response.streaming and not getattr(response, 'is_redirect', False):
+            # 如果是普通HttpResponse
+            from django.template.response import SimpleTemplateResponse
+            user_messages = request.session.pop('user_messages', [])
+            
+            # 判断响应是否是render生成的模板响应
+            if hasattr(response, 'content') and b'<!DOCTYPE html>' in response.content:
+                import re
+                content = response.content.decode('utf-8')
+                # 在</nav>后面插入消息部分
+                user_messages_html = ""
+                if user_messages:
+                    user_messages_html = '<div class="container mt-3">'
+                    for msg_type, msg in user_messages:
+                        user_messages_html += f'<div class="alert alert-{msg_type} alert-dismissible fade show" role="alert">'
+                        user_messages_html += f'{msg}'
+                        user_messages_html += '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>'
+                        user_messages_html += '</div>'
+                    user_messages_html += '</div>'
+                
+                # 在</nav>后面插入消息
+                new_content = re.sub(r'</nav>', r'</nav>' + user_messages_html, content)
+                response.content = new_content.encode('utf-8')
+        
+        return response
+    
+    return _wrapped_view
+
+@admin_message
 def admin_dashboard(request):
     """Admin Dashboard"""
     # Check if the admin is logged in
@@ -131,6 +255,7 @@ def admin_dashboard(request):
 
     return render(request, 'operation/admin_dashboard.html', context)
 
+@admin_message
 def admin_review_list(request):
     """Admin view and manage user reviews"""
     # Check if the admin is logged in
@@ -172,6 +297,7 @@ def admin_review_list(request):
         'operator': operator
     })
 
+@admin_message
 def admin_review_delete(request, review_id):
     """Admin delete review"""
     # Check if the admin is logged in
@@ -192,7 +318,7 @@ def admin_review_delete(request, review_id):
     # Delete the review
     if request.method == 'POST':
         review.delete()
-        messages.success(request, 'Review deleted')
+        request.admin_messages.success('Review deleted')
         return redirect('/operation/homepage/reviews/')
 
     return render(request, 'operation/admin_review_delete.html', {
@@ -214,8 +340,8 @@ def generate_sample_data(request):
                     name=f'Test User {i+1}',
                     email=f'user{i+1}@example.com',
                     address=f'Test Address {i+1}',
-                    contact=f'1234567890{i}',
-                    username=f'user{i+1}',
+                    phone=f'1234567890{i}',
+                    account=f'user{i+1}',
                     password='password'
                 )
 
@@ -282,6 +408,15 @@ def generate_sample_data(request):
                 
                 order.save()
         
-        messages.success(request, 'Sample data generated')
+        if hasattr(request, 'admin_messages'):
+            request.admin_messages.success('Sample data generated')
+        else:
+            # For compatibility, keep the original message system
+            messages.success(request, 'Sample data generated')
     except Exception as e:
-        messages.error(request, f'Error generating sample data: {str(e)}')
+        error_message = f'Error generating sample data: {str(e)}'
+        if hasattr(request, 'admin_messages'):
+            request.admin_messages.error(error_message)
+        else:
+            # For compatibility, keep the original message system
+            messages.error(request, error_message)

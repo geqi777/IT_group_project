@@ -9,8 +9,10 @@ import json
 
 from main_system.models import PromoCode, Order, User, HistoryNew, Operator
 from main_system.utils.boostrapModelForm import PromoCode_ModelForm, PromoCode_EditForm
+from main_system.views.admin_dashboard import admin_message
 
 
+@admin_message
 def promo_code_list(request):
     """Admin view all promo codes"""
     # Verify admin identity
@@ -35,6 +37,7 @@ def promo_code_list(request):
     })
 
 
+@admin_message
 def promo_code_add(request):
     """Add new promo code"""
     # Verify admin identity
@@ -49,19 +52,19 @@ def promo_code_add(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Promo code created successfully')
-            return redirect('promo_code_list')
+            return redirect('/operation/homepage/promo_codes/')
         else:
             messages.error(request, 'Creation failed, please check your input')
     else:
         form = PromoCode_ModelForm()
     
-    return render(request, 'operation/promo_code_edit.html', {
+    return render(request, 'operation/promo_code_add.html', {
         'form': form,
-        'title': 'Add Promo Code',
-        'operator': operator,
+        'operator': operator
     })
 
 
+@admin_message
 def promo_code_edit(request, code_id):
     """Edit promo code"""
     # Verify admin identity
@@ -70,15 +73,14 @@ def promo_code_edit(request, code_id):
         return redirect('/operation/login/')
     
     operator = get_object_or_404(Operator, id=operator_info['employee_id'])
-
-    promo_code = PromoCode.objects.filter(id=code_id).first()
+    promo_code = get_object_or_404(PromoCode, id=code_id)
     
     if request.method == 'POST':
         form = PromoCode_EditForm(data=request.POST, instance=promo_code)
         if form.is_valid():
             form.save()
             messages.success(request, 'Promo code updated successfully')
-            return redirect('promo_code_list')
+            return redirect('/operation/homepage/promo_codes/')
         else:
             messages.error(request, 'Update failed, please check your input')
     else:
@@ -86,30 +88,27 @@ def promo_code_edit(request, code_id):
     
     return render(request, 'operation/promo_code_edit.html', {
         'form': form,
-        'title': 'Edit Promo Code',
-        'operator': operator,
-        'promo_code': promo_code
+        'promo_code': promo_code,
+        'operator': operator
     })
 
 
+@admin_message
 def promo_code_delete(request, code_id):
     """Delete promo code"""
     # Verify admin identity
     operator_info = request.session.get('admin_info')
     if not operator_info:
-        return JsonResponse({'success': False, 'message': 'Please log in first'})
+        return redirect('/operation/login/')
     
-    operator_obj = Operator.objects.filter(id=operator_info['id']).first()
-    if not operator_obj:
-        return JsonResponse({'success': False, 'message': 'Invalid admin account'})
-
     try:
-        promo_code = PromoCode.objects.filter(id=code_id).first()
+        promo_code = get_object_or_404(PromoCode, id=code_id)
         promo_code.delete()
         messages.success(request, 'Promo code deleted successfully')
     except Exception as e:
         messages.error(request, f'Deletion failed: {str(e)}')
-    return redirect('promo_code_list')
+    
+    return redirect('/operation/homepage/promo_codes/')
 
 
 def apply_promo_code(request):

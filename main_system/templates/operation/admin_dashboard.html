@@ -136,7 +136,7 @@
                                             {% for order in pending_orders %}
                                             <tr>
                                                 <td><a href="{% url 'admin_order_detail' order.id %}">{{ order.order_number }}</a></td>
-                                                <td>¥{{ order.total_amount }}</td>
+                                                <td>£{{ order.total_amount }}</td>
                                                 <td>
                                                     <span class="badge bg-danger">Pending Payment</span>
                                                 </td>
@@ -176,7 +176,7 @@
                                             {% for order in to_ship_orders %}
                                             <tr>
                                                 <td><a href="{% url 'admin_order_detail' order.id %}">{{ order.order_number }}</a></td>
-                                                <td>¥{{ order.total_amount }}</td>
+                                                <td>£{{ order.total_amount }}</td>
                                                 <td>
                                                     <span class="badge bg-info">Pending Shipment</span>
                                                 </td>
@@ -216,7 +216,7 @@
                                             {% for order in to_deliver_orders %}
                                             <tr>
                                                 <td><a href="{% url 'admin_order_detail' order.id %}">{{ order.order_number }}</a></td>
-                                                <td>¥{{ order.total_amount }}</td>
+                                                <td>£{{ order.total_amount }}</td>
                                                 <td>
                                                     <span class="badge bg-secondary">Pending Delivery</span>
                                                 </td>
@@ -258,7 +258,7 @@
                                             {% for order in return_orders %}
                                             <tr>
                                                 <td><a href="{% url 'admin_order_detail' order.id %}">{{ order.order_number }}</a></td>
-                                                <td>¥{{ order.total_amount }}</td>
+                                                <td>£{{ order.total_amount }}</td>
                                                 <td>{{ order.complete_time|date:"Y-m-d H:i" }}</td>
                                             </tr>
                                             {% endfor %}
@@ -300,7 +300,7 @@
                                             {% for order in recent_orders %}
                                             <tr>
                                                 <td><a href="{% url 'admin_order_detail' order.id %}">{{ order.order_number }}</a></td>
-                                                <td>¥{{ order.total_amount }}</td>
+                                                <td>£{{ order.total_amount }}</td>
                                                 <td>
                                                     {% if order.order_status == 'pending' %}
                                                     <span class="badge bg-danger">Pending Payment</span>
@@ -429,7 +429,7 @@
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Sales (¥)',
+                    label: 'Sales (£)',
                     data: salesData,
                     backgroundColor: 'rgba(54, 162, 235, 0.5)',
                     borderColor: 'rgba(54, 162, 235, 1)',

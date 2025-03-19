@@ -3,7 +3,9 @@ from main_system.utils.pagination import PageNumberPagination
 from main_system.utils.boostrapModelForm import Operator_ModelForm, Operator_EditForm, ResetPasswordForm
 from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.contrib import messages
+from main_system.views.admin_dashboard import admin_message
 
+@admin_message
 def operator_list(request):
     data = models.Operator.objects.all()
     # Get page_size from request, default is 20
@@ -21,6 +23,7 @@ def operator_list(request):
     return render(request, 'operation/admin_operator_list.html', context)
 
 
+@admin_message
 def operator_add(request):
     if request.method == 'GET':
         form = Operator_ModelForm()
@@ -37,6 +40,7 @@ def operator_add(request):
         return render(request, 'operation/admin_operator_add.html', {"form": form})
 
 
+@admin_message
 def operator_edit(request, nid):
     row = models.Operator.objects.filter(id=nid).first()  # Get the employee object to be edited
 
@@ -54,6 +58,7 @@ def operator_edit(request, nid):
     return render(request, 'main/change.html', {"form": form})
 
 
+@admin_message
 def operator_delete(request, nid):
     operator = models.Operator.objects.filter(id=nid).first()
     if not operator:
@@ -69,6 +74,7 @@ def operator_delete(request, nid):
     return redirect('/operation/employee/list/')
 
 
+@admin_message
 def reset_password(request, nid):
     row = models.Operator.objects.filter(id=nid).first()  # Get the employee object to be edited
     if not row:

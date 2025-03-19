@@ -11,8 +11,27 @@
         <div class="col-md-6">
             <h2>{{ product.name }}</h2>
             <p class="text-muted">{{ product.category }}</p>
-            <p><strong>Price：</strong> ${{ product.price }}</p>
-            <p><strong>Stock：</strong>
+            
+            <!-- Product Rating -->
+            <div class="mb-3">
+                <div class="d-flex align-items-center">
+                    <div class="text-warning me-2">
+                        {% for i in "12345"|make_list %}
+                            {% if forloop.counter <= avg_rating|floatformat:"0"|add:"0" %}
+                                <i class="fas fa-star"></i>
+                            {% elif forloop.counter <= avg_rating|floatformat:"0"|add:"0.5" %}
+                                <i class="fas fa-star-half-alt"></i>
+                            {% else %}
+                                <i class="far fa-star"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <span class="text-muted">{{ avg_rating|floatformat:1 }} ({{ reviews_count }} reviews)</span>
+                </div>
+            </div>
+            
+            <p><strong>Price:</strong> £{{ product.price }}</p>
+            <p><strong>stock:</strong>
                 {% if product.stock > 0 %}
                     <span class="text-success">{{ product.stock }} available</span>
                 {% else %}
@@ -21,10 +40,8 @@
             </p>
 
             <!-- Add to Cart Form on Product Detail Page -->
-            <div class="card-body">
-                <h5 class="card-title">{{ product.name }}</h5>
+            <div class="card-body p-0">
                 <p class="card-text">{{ product.description }}</p>
-                <p class="price mb-3">£{{ product.price }}</p>
                 
                 <form action="/customer/cart/{{ product.id }}/add/" method="POST" class="mb-3 add-to-cart-form">
                     {% csrf_token %}
@@ -49,6 +66,70 @@
         <div class="col-md-12">
             <h4>Product Detail</h4>
             <p>{{ product.description }}</p>
+        </div>
+    </div>
+    
+    <!-- Product Reviews Section -->
+    <div class="row mt-5">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">Customer Reviews ({{ reviews_count }})</h4>
+                </div>
+                <div class="card-body">
+                    {% if reviews %}
+                        <!-- Average Rating Display -->
+                        <div class="mb-4">
+                            <div class="d-flex align-items-center">
+                                <h2 class="me-3 mb-0">{{ avg_rating|floatformat:1 }}</h2>
+                                <div>
+                                    <div class="text-warning mb-1">
+                                        {% for i in "12345"|make_list %}
+                                            {% if forloop.counter <= avg_rating|floatformat:"0"|add:"0" %}
+                                                <i class="fas fa-star"></i>
+                                            {% elif forloop.counter <= avg_rating|floatformat:"0"|add:"0.5" %}
+                                                <i class="fas fa-star-half-alt"></i>
+                                            {% else %}
+                                                <i class="far fa-star"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    <span class="text-muted">Based on {{ reviews_count }} reviews</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <!-- Individual Reviews -->
+                        {% for review in reviews %}
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="badge bg-primary me-2">{{ review.user.name }}</div>
+                                    <div class="text-warning">
+                                        {% for i in "12345"|make_list %}
+                                            {% if forloop.counter <= review.rating %}
+                                                <i class="fas fa-star"></i>
+                                            {% else %}
+                                                <i class="far fa-star"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <small class="text-muted">{{ review.created_time|date:"Y-m-d" }}</small>
+                            </div>
+                            <p class="mb-0">{{ review.comment }}</p>
+                        </div>
+                        {% if not forloop.last %}<hr>{% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <p class="text-muted">No reviews yet</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
 </div>
