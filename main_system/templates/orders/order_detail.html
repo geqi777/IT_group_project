@@ -40,7 +40,8 @@
                     <!-- Product List -->
                     <div class="mb-4">
                         <h5 class="mb-3">Product List</h5>
-                        {% for item in order.items.all %}
+                        {% for item_data in items_with_data %}
+                        {% with item=item_data.item %}
                         <div class="card mb-3">
                             <div class="card-body">
                                 <div class="row align-items-center">
@@ -53,7 +54,7 @@
                                         <h6 class="mb-1">{{ item.product.name }}</h6>
                                         <p class="mb-0 text-muted">
                                             Unit Price: £{{ item.price|floatformat:2 }} × {{ item.quantity }}
-                                            <span class="float-end fw-bold">£{{ item.item_subtotal|floatformat:2 }}</span>
+                                            <span class="float-end fw-bold">£{{ item_data.subtotal|floatformat:2 }}</span>
                                         </p>
                                         {% if item.return_status != 'none' %}
                                         <div class="mt-2">
@@ -69,6 +70,7 @@
                                 </div>
                             </div>
                         </div>
+                        {% endwith %}
                         {% endfor %}
                     </div>
 

@@ -6,7 +6,7 @@ import datetime
 from django.core.validators import MinValueValidator, MaxValueValidator
 from decimal import Decimal
 
-
+# 1
 # Subscription
 class Subscription(models.Model):
     name = models.CharField(max_length=120)
@@ -40,8 +40,7 @@ class Operator(models.Model):
 
     def verify_password(self, password):
         """Verify if the password is correct"""
-        from main_system.utils.encrypt import md5
-        return self.password == md5(password)
+        return self.password == password
     
     def set_password(self, password):
         """Set the encrypted password"""
@@ -221,7 +220,10 @@ class Product(models.Model):
     updated_time = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        # Automatically adjust product status
+        # 确保created_time不为空（对新对象和已存在对象都检查）
+        if not hasattr(self, 'created_time') or self.created_time is None:
+            self.created_time = timezone.now()
+        # 自动调整产品状态
         if self.stock == 0:
             self.status = 'locked'
         super().save(*args, **kwargs)

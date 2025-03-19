@@ -25,8 +25,8 @@
 
     /* Fixed Size Central Panel */
     .container {
-      width: 800px;   /* Fixed Width */
-      height: 450px;  /* Fixed Height */
+      width: 850px;   /* Fixed Width */
+      height: 500px;  /* Fixed Height */
       background-color: #fff;
       display: flex;
       box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
@@ -58,30 +58,31 @@
       font-size: 1.8rem;
       margin-bottom: 10px;
       color: #222;
+      text-align: center;
     }
 
     .subtitle {
       margin-bottom: 25px;
       color: #666;
       font-size: 0.95rem;
+      text-align: center;
     }
 
-    form {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
+    .form-group {
+      margin-bottom: 16px;
     }
 
-    label {
+    .form-group label {
+      display: block;
       margin-bottom: 6px;
       font-weight: 600;
       font-size: 0.9rem;
       color: #333;
     }
 
-    input {
+    .form-group input {
+      width: 100%;
       padding: 12px;
-      margin-bottom: 16px;
       border: 1px solid #ddd;
       border-radius: 6px;
       font-size: 0.95rem;
@@ -109,19 +110,20 @@
     }
 
     .signup-btn {
-      padding: 12px;
+      width: 100%;
+      padding: 14px 20px;
       border: none;
-      border-radius: 6px;
-      background-color: #000;
+      border-radius: 8px;
+      background-color: #007bff;
       color: white;
       font-weight: bold;
-      font-size: 1rem;
+      font-size: 1.1rem;
       cursor: pointer;
-      transition: 0.2s;
+      transition: background-color 0.3s ease;
     }
 
     .signup-btn:hover {
-      background-color: #333;
+      background-color: #0056b3;
     }
 
     .login-link {
@@ -159,7 +161,7 @@
 
     <!-- Left Side: Registration Form -->
     <div class="left-panel">
-      <h1>Sign in now</h1>
+      <h1>Sign up now</h1>
       <p class="subtitle">Create a free account</p>
 
       <form method="post">
@@ -171,7 +173,7 @@
                     <span style="color: red">{{ field.errors.0 }}</span>
                 </div>
             {% endfor %}
-            <button type="submit" class="btn btn-primary w-100">Submit</button>
+            <button type="submit" class="signup-btn">Submit</button>
       </form>
     </div>
 

@@ -49,9 +49,9 @@
                                 <div>{{ item.product.name }}</div>
                             </div>
                         </td>
-                        <td>${{ item.price }}</td>
+                        <td>£{{ item.price }}</td>
                         <td>{{ item.quantity }}</td>
-                        <td>${{ item.item_subtotal }}</td>
+                        <td>£{{ item.item_subtotal }}</td>
                         <td>
                             {% if item.return_status != 'none' %}
                             <span class="badge bg-{% if item.return_status == 'pending' %}warning{% elif item.return_status == 'approved' %}info{% elif item.return_status == 'rejected' %}danger{% elif item.return_status == 'refunded' %}success{% else %}secondary{% endif %}">
@@ -126,25 +126,25 @@
                     <table class="table table-sm">
                         <tr>
                             <td><strong>Subtotal:</strong></td>
-                            <td class="text-end">${{ order.subtotal_amount }}</td>
+                            <td class="text-end">£{{ order.subtotal_amount }}</td>
                         </tr>
                         <tr>
                             <td><strong>Shipping:</strong></td>
-                            <td class="text-end">${{ order.shipping_fee }}</td>
+                            <td class="text-end">£{{ order.shipping_fee }}</td>
                         </tr>
                         <tr>
                             <td><strong>VAT (5%):</strong></td>
-                            <td class="text-end">${{ order.vat }}</td>
+                            <td class="text-end">£{{ order.vat }}</td>
                         </tr>
                         {% if order.promo_discount %}
                         <tr class="text-success">
                             <td><strong>Discount:</strong></td>
-                            <td class="text-end">-${{ order.promo_discount }}</td>
+                            <td class="text-end">-£{{ order.promo_discount }}</td>
                         </tr>
                         {% endif %}
                         <tr class="table-active">
                             <td><strong>Total:</strong></td>
-                            <td class="text-end"><strong>${{ order.final_amount }}</strong></td>
+                            <td class="text-end"><strong>£{{ order.final_amount }}</strong></td>
                         </tr>
                     </table>
                 </div>

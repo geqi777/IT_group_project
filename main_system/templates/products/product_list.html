@@ -34,7 +34,7 @@
                     {% endif %}
                 </td>
                 <td>{{ product.get_category_display }}</td>
-                <td>${{ product.price }}</td>
+                <td>£{{ product.price }}</td>
                 <td>{{ product.stock }}</td>
                 <td>
                     <span class="badge {% if product.status == 'active' %}bg-success{% else %}bg-danger{% endif %}">

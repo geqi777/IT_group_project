@@ -78,7 +78,7 @@
                         {{ item.product.name }}
                     </div>
                 </td>
-                <td>${{ item.price }}</td>
+                <td>£{{ item.price }}</td>
                 <td>{{ item.quantity }}</td>
                 <td>
                     <span class="badge bg-{% if item.order.order_status == 'pending' %}warning
