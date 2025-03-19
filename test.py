@@ -48,7 +48,7 @@ for _, row in df.iterrows():
             row["created_time"],
             row["updated_time"]
         ))
-        current_id+=1
+        current_id += 1
     except Exception as e:
         print(f"❌ 插入失败: {e}")
 
