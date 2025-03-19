@@ -22,8 +22,8 @@
                 </span>
             </div>
             
-            <div class="mb-4">
-                <img src="https://via.placeholder.com/800x400?text=Traditional+Wood+Carving" alt="Traditional Wood Carving and Modern Home" class="img-fluid rounded">
+            <div class="mb-4 text-center">
+                <img src="/media/story_picture/story3_pic1.jpg" alt="Traditional Wood Carving and Modern Home" class="img-fluid rounded">
             </div>
             
             <div class="story-content">
@@ -36,11 +36,11 @@
                 
                 <div class="row my-4">
                     <div class="col-md-6 mb-3">
-                        <img src="https://via.placeholder.com/400x300?text=Dongyang+Wood+Carving" alt="Dongyang Wood Carving" class="img-fluid rounded">
+                        <img src="/media/story_picture/story3_mid_pic1.jpg" alt="Dongyang Wood Carving" class="img-fluid rounded">
                         <p class="text-center mt-2 small">Dongyang wood carving from Zhejiang</p>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <img src="https://via.placeholder.com/400x300?text=Hui'an+Wood+Carving" alt="Hui'an Wood Carving" class="img-fluid rounded">
+                        <img src="/media/story_picture/story3_mid_pic2.jpg" alt="Hui'an Wood Carving" class="img-fluid rounded">
                         <p class="text-center mt-2 small">Hui'an wood carving from Fujian</p>
                     </div>
                 </div>
@@ -104,7 +104,7 @@
                 </div>
                 <div class="card-body">
                     <div class="d-flex mb-3">
-                        <img src="https://via.placeholder.com/70x70?text=Carved+Screen" alt="Modern Minimalist Carved Screen" class="me-3" style="width: 70px; height: 70px; object-fit: cover;">
+                        <img src="/media/story_picture/story3_product1.webp" alt="Modern Minimalist Carved Screen" class="me-3" style="width: 70px; height: 70px; object-fit: cover;">
                         <div>
                             <h6 class="mb-1">Modern Minimalist Carved Screen</h6>
                             <p class="text-muted mb-1">$299.99</p>
@@ -112,7 +112,7 @@
                         </div>
                     </div>
                     <div class="d-flex mb-3">
-                        <img src="https://via.placeholder.com/70x70?text=Carved+Wall+Decoration" alt="Traditional Pattern Carved Wall Decoration" class="me-3" style="width: 70px; height: 70px; object-fit: cover;">
+                        <img src="/media/story_picture/story3_product2.webp" alt="Traditional Pattern Carved Wall Decoration" class="me-3" style="width: 70px; height: 70px; object-fit: cover;">
                         <div>
                             <h6 class="mb-1">Traditional Pattern Carved Wall Decoration</h6>
                             <p class="text-muted mb-1">$129.50</p>
@@ -120,7 +120,7 @@
                         </div>
                     </div>
                     <div class="d-flex">
-                        <img src="https://via.placeholder.com/70x70?text=Carved+Jewelry+Box" alt="Hand-Carved Jewelry Box" class="me-3" style="width: 70px; height: 70px; object-fit: cover;">
+                        <img src="/media/story_picture/story3_product3.webp" alt="Hand-Carved Jewelry Box" class="me-3" style="width: 70px; height: 70px; object-fit: cover;">
                         <div>
                             <h6 class="mb-1">Hand-Carved Jewelry Box</h6>
                             <p class="text-muted mb-1">$85.00</p>
@@ -139,7 +139,7 @@
                         <li class="mb-3">
                             <a href="/story/1/" class="text-decoration-none text-dark">
                                 <div class="d-flex align-items-center">
-                                    <img src="https://via.placeholder.com/50x50?text=Weaving" alt="The Art of Traditional Hand Weaving" class="me-2" style="width: 50px; height: 50px; object-fit: cover;">
+                                    <img src="/media/story_picture/story1_pic50.png" alt="The Art of Traditional Hand Weaving" class="me-2" style="width: 50px; height: 50px; object-fit: cover;">
                                     <div>
                                         <h6 class="mb-1">The Art of Traditional Hand Weaving</h6>
                                         <small class="text-muted">December 15, 2023</small>
@@ -150,7 +150,7 @@
                         <li class="mb-3">
                             <a href="/story/2/" class="text-decoration-none text-dark">
                                 <div class="d-flex align-items-center">
-                                    <img src="https://via.placeholder.com/50x50?text=Ceramics" alt="The Evolution of Modern Ceramics" class="me-2" style="width: 50px; height: 50px; object-fit: cover;">
+                                    <img src="/media/story_picture/story2_pic50.jpg" alt="The Evolution of Modern Ceramics" class="me-2" style="width: 50px; height: 50px; object-fit: cover;">
                                     <div>
                                         <h6 class="mb-1">The Evolution of Modern Ceramics</h6>
                                         <small class="text-muted">November 20, 2023</small>
@@ -195,4 +195,14 @@
         </div>
     </div>
 </div>
+    <script>
+    const avatars = [
+        "/media/review_picture/user_pic.webp",
+        "/media/review_picture/user_pic1.webp"
+    ];
+
+    const randomAvatar = avatars[Math.floor(Math.random() * avatars.length)];
+
+    document.getElementById("userAvatar").src = randomAvatar;
+</script>
 {% endblock %} 
