@@ -152,8 +152,34 @@ def product_page(request):
 def product_detail(request, product_id):
     """User view product details (including stock information)"""
     product = models.Product.objects.filter(id=product_id, status='active').first()
+    
+    # 获取当前用户信息（如果已登录）
+    user = None
+    user_info = request.session.get('user_info')
+    if user_info:
+        user = models.User.objects.filter(id=user_info['id']).first()
+    
+    # 获取产品的评价
+    from main_system.models import Review
+    reviews = Review.objects.filter(product=product).select_related('user').order_by('-created_time')[:10]
+    
+    # 计算平均评分
+    avg_rating = 0
+    if reviews.exists():
+        avg_rating = sum(review.rating for review in reviews) / reviews.count()
+    
     quantity_range = range(1, product.stock + 1) if product.stock > 0 else []
-    return render(request, 'products/product_detail.html', {'product': product, 'quantity_range': quantity_range})
+    
+    context = {
+        'product': product, 
+        'quantity_range': quantity_range,
+        'reviews': reviews,
+        'reviews_count': reviews.count(),
+        'avg_rating': avg_rating,
+        'current_user': user
+    }
+    
+    return render(request, 'products/product_detail.html', context)
 
 
 def search_products(request):

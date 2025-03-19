@@ -66,69 +66,6 @@
                                             {% endif %}
                                         </div>
                                         {% endif %}
-                                        
-                                        <!-- Your Review Section -->
-                                        <div class="mt-2">
-                                            {% if item.review %}
-                                                <div class="mt-2 p-2 bg-light rounded">
-                                                    <div class="d-flex align-items-center mb-1">
-                                                        <strong class="me-2">Your Review:</strong>
-                                                        <div class="text-warning">
-                                                            {% with ''|center:5 as range %}
-                                                                {% for _ in range %}
-                                                                    {% if forloop.counter <= item.review.rating %}
-                                                                        <i class="fas fa-star"></i>
-                                                                    {% else %}
-                                                                        <i class="far fa-star"></i>
-                                                                    {% endif %}
-                                                                {% endfor %}
-                                                            {% endwith %}
-                                                        </div>
-                                                        <small class="ms-auto text-muted">{{ item.review.created_time|date:"Y-m-d" }}</small>
-                                                    </div>
-                                                    <p class="mb-0 small">{{ item.review.comment }}</p>
-                                                </div>
-                                            {% elif order.order_status == 'completed' %}
-                                                <div class="mt-2 d-flex align-items-center">
-                                                    <span class="badge bg-secondary me-2">Not Reviewed</span>
-                                                    <small class="text-muted">
-                                                        <a href="/customer/order/{{ order.id }}/review/" class="text-primary">
-                                                            <i class="fas fa-pencil-alt me-1"></i>Write a review
-                                                        </a>
-                                                    </small>
-                                                </div>
-                                            {% endif %}
-                                        </div>
-                                        
-                                        <!-- Other Users' Reviews Section -->
-                                        <div class="mt-3">
-                                            <h6 class="mb-2 small text-muted">其他用户评价 ({{ item_data.other_reviews|length }})</h6>
-                                            
-                                            {% if item_data.has_other_reviews %}
-                                                {% for review in item_data.other_reviews %}
-                                                <div class="mb-2 p-2 bg-light rounded">
-                                                    <div class="d-flex align-items-center mb-1">
-                                                        <span class="badge bg-primary me-2">{{ review.user.name }}</span>
-                                                        <div class="text-warning">
-                                                            {% for i in "12345"|make_list %}
-                                                                {% if forloop.counter <= review.rating %}
-                                                                    <i class="fas fa-star"></i>
-                                                                {% else %}
-                                                                    <i class="far fa-star"></i>
-                                                                {% endif %}
-                                                            {% endfor %}
-                                                        </div>
-                                                        <small class="ms-auto text-muted">{{ review.created_time|date:"Y-m-d" }}</small>
-                                                    </div>
-                                                    <p class="mb-0 small">{{ review.comment }}</p>
-                                                </div>
-                                                {% empty %}
-                                                <p class="small text-muted mb-0">暂无其他用户评价。</p>
-                                                {% endfor %}
-                                            {% else %}
-                                                <p class="small text-muted mb-0">该产品暂无其他用户评价。</p>
-                                            {% endif %}
-                                        </div>
                                     </div>
                                 </div>
                             </div>
