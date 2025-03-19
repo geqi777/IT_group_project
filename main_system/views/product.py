@@ -1,18 +1,13 @@
-from datetime import timezone
 from main_system import models
 from main_system.models import Product
 from main_system.utils.pagination import PageNumberPagination
 from main_system.utils.boostrapModelForm import Product_ModelForm, Product_EditForm
-from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
-from django.http import JsonResponse
+from django.shortcuts import render, redirect
 from django.db.models import Q, Case, When, IntegerField
-from django.utils import timezone
-import string, random
+
 from django.contrib import messages
 from django.core.paginator import Paginator
 from main_system.views.admin_dashboard import admin_message
-# from django.contrib.auth.decorators import  login_required
-
 
 # ==========================
 # Admin Functions
@@ -157,34 +152,8 @@ def product_page(request):
 def product_detail(request, product_id):
     """User view product details (including stock information)"""
     product = models.Product.objects.filter(id=product_id, status='active').first()
-    
-    # 获取当前用户信息（如果已登录）
-    user = None
-    user_info = request.session.get('user_info')
-    if user_info:
-        user = models.User.objects.filter(id=user_info['id']).first()
-    
-    # 获取产品的评价
-    from main_system.models import Review
-    reviews = Review.objects.filter(product=product).select_related('user').order_by('-created_time')[:10]
-    
-    # 计算平均评分
-    avg_rating = 0
-    if reviews.exists():
-        avg_rating = sum(review.rating for review in reviews) / reviews.count()
-    
     quantity_range = range(1, product.stock + 1) if product.stock > 0 else []
-    
-    context = {
-        'product': product, 
-        'quantity_range': quantity_range,
-        'reviews': reviews,
-        'reviews_count': reviews.count(),
-        'avg_rating': avg_rating,
-        'current_user': user
-    }
-    
-    return render(request, 'products/product_detail.html', context)
+    return render(request, 'products/product_detail.html', {'product': product, 'quantity_range': quantity_range})
 
 
 def search_products(request):

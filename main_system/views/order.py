@@ -169,15 +169,39 @@ def order_detail(request, order_id):
     order_with_reviews = Order.objects.prefetch_related(
         Prefetch('items__review', queryset=Review.objects.all())
     ).get(id=order_id)
+    
+    # 获取每个产品的相关评价
+    items_with_data = []
+    for item in order_with_reviews.items.all():
+        try:
+            # 查询该产品的所有评价
+            product_reviews = Review.objects.filter(product_id=item.product_id).select_related('user').order_by('-created_time')
+            
+            # 排除当前用户的评价
+            other_reviews = product_reviews.exclude(user_id=user.id)[:5]  # 只显示5条其他用户的评价
+            
+            # 打印调试信息
+            print(f"Product ID: {item.product_id}, Name: {item.product.name}")
+            print(f"All reviews: {product_reviews.count()}, Other reviews: {other_reviews.count()}")
+            
+            has_other_reviews = other_reviews.exists()
+        except Exception as e:
+            print(f"Error querying reviews: {e}")
+            other_reviews = []
+            has_other_reviews = False
+        
+        items_with_data.append({
+            'item': item,
+            'subtotal': float(item.price) * item.quantity,
+            'other_reviews': other_reviews,
+            'has_other_reviews': has_other_reviews
+        })
 
     # Calculate all necessary values
     context = {
         'order': order_with_reviews,
         'points_value': float(order.points_used) * 0.01 if order.points_used else 0,
-        'items_with_subtotal': [{
-            'item': item,
-            'subtotal': float(item.price) * item.quantity
-        } for item in order.items.all()],
+        'items_with_data': items_with_data,
         'has_returned_items': has_returned_items
     }
 

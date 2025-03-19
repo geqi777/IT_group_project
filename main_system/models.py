@@ -40,8 +40,7 @@ class Operator(models.Model):
 
     def verify_password(self, password):
         """Verify if the password is correct"""
-        from main_system.utils.encrypt import md5
-        return self.password == md5(password)
+        return self.password == password
     
     def set_password(self, password):
         """Set the encrypted password"""
