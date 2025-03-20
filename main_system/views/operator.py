@@ -47,7 +47,7 @@ def operator_edit(request, nid):
     if request.method == 'GET':
         # When GET request, use instance parameter to load existing data
         form = Operator_EditForm(instance=row)
-        return render(request, 'main/change.html', {"form": form})
+        return render(request, 'main/operation_change.html', {"form": form})
 
     # If it's a POST request, validate and save the submitted data
     form = Operator_EditForm(request.POST, instance=row)
@@ -55,7 +55,7 @@ def operator_edit(request, nid):
         form.save()
         return redirect('/operation/employee/list/')
 
-    return render(request, 'main/change.html', {"form": form})
+    return render(request, 'main/operation_change.html', {"form": form})
 
 
 @admin_message
@@ -84,7 +84,7 @@ def reset_password(request, nid):
     if request.method == 'GET':
         # When GET request, use instance parameter to load existing data
         form = ResetPasswordForm()
-        return render(request, 'main/change.html', {"form": form})
+        return render(request, 'main/operation_change.html', {"form": form})
 
     # If it's a POST request, validate and save the submitted data
     form = ResetPasswordForm(request.POST, instance=row)
@@ -92,4 +92,4 @@ def reset_password(request, nid):
         form.save()
         return redirect('/operation/employee/list/')
 
-    return render(request, 'main/change.html', {"form": form})
+    return render(request, 'main/operation_change.html', {"form": form})

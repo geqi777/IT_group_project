@@ -38,7 +38,7 @@ def product_add(request):
     """ Add new product """
     if request.method == 'GET':
         form = Product_ModelForm()
-        return render(request, 'main/change.html', {"form": form})
+        return render(request, 'main/operation_change.html', {"form": form})
 
     form = Product_ModelForm(request.POST, request.FILES)
     if form.is_valid():
@@ -46,7 +46,7 @@ def product_add(request):
         messages.success(request, "Product added successfully.")
         return redirect('/operation/homepage/products/')
 
-    return render(request, 'main/change.html', {"form": form})
+    return render(request, 'main/operation_change.html', {"form": form})
 
 
 @admin_message
@@ -56,7 +56,7 @@ def product_edit(request, product_id):
 
     if request.method == 'GET':
         form = Product_EditForm(instance=row)
-        return render(request, 'main/change.html', {"form": form})
+        return render(request, 'main/operation_change.html', {"form": form})
 
     form = Product_EditForm(request.POST, request.FILES, instance=row)
     if form.is_valid():
@@ -64,7 +64,7 @@ def product_edit(request, product_id):
         messages.success(request, "Product edited successfully.")
         return redirect('/operation/homepage/products/')
 
-    return render(request, 'main/change.html', {"form": form})
+    return render(request, 'main/operation_change.html', {"form": form})
 
 
 @admin_message

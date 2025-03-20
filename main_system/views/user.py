@@ -52,7 +52,7 @@ def user_edit(request, nid):
 
     if request.method == 'GET':
         form = User_EditForm(instance=row)
-        return render(request, 'main/change.html', {"form": form})
+        return render(request, 'main/operation_change.html', {"form": form})
 
     form = User_EditForm(request.POST, instance=row)
     if form.is_valid():
@@ -60,7 +60,7 @@ def user_edit(request, nid):
         messages.success(request, "User information updated successfully.")
         return redirect('/operation/homepage/users/')
 
-    return render(request, 'main/change.html', {"form": form})
+    return render(request, 'main/operation_change.html', {"form": form})
 
 
 @admin_message
