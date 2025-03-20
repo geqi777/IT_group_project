@@ -963,11 +963,8 @@ def update_order_status(request, order_id):
                 # If completing the order, set completion time and update points
                 if new_status == 'completed':
                     order.complete_time = timezone.now()
-                    # Calculate and add points
-                    points_earned = int(order.final_amount * 10)  # Earn 10 points for every 1 unit spent
+                    points_earned = int(order.final_amount * 10)  # 每消费1元获得10积分
                     order.points_earned = points_earned
-                    
-                    # Update user wallet points - ensure wallet exists
                     wallet, created = models.Wallet.objects.get_or_create(
                         user=order.user,
                         defaults={'balance': Decimal('0'), 'points': 0}
