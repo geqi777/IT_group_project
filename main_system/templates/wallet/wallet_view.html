@@ -10,7 +10,7 @@
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h4 class="mb-0">My Wallet</h4>
-                        <a href="/customer/wallet/wallet-top-up/" class="btn btn-primary">
+                        <a href="{% url 'wallet_top_up' %}" class="btn btn-primary">
                             <i class="fas fa-plus me-2"></i>Top-Up
                         </a>
                     </div>
@@ -39,12 +39,12 @@
                     <div class="mt-4">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="mb-0">Recent Transactions</h5>
-                            <a href="/customer/wallet/transactions/" class="text-decoration-none">View All</a>
+                            <a href="{% url 'transaction_history' %}" class="text-decoration-none">View All</a>
                         </div>
                         {% if transactions %}
                         <div class="list-group">
                             {% for transaction in transactions %}
-                            <a href="/customer/wallet/transactions/" class="list-group-item list-group-item-action">
+                            <a href="{% url 'transaction_history' %}" class="list-group-item list-group-item-action">
                                 <div class="d-flex w-100 justify-content-between align-items-center">
                                     <div>
                                         <h6 class="mb-1">{{ transaction.details }}</h6>
@@ -86,7 +86,7 @@
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h5 class="mb-0">My Payment Cards</h5>
-                        <a href="/customer/wallet/cards/add/" class="btn btn-sm btn-outline-primary">
+                        <a href="{% url 'payment_card_add' %}" class="btn btn-sm btn-outline-primary">
                             <i class="fas fa-plus me-1"></i>Add
                         </a>
                     </div>
@@ -106,12 +106,12 @@
                                     </button>
                                     <ul class="dropdown-menu">
                                         <li>
-                                            <a class="dropdown-item" href="/customer/wallet/cards/{{ card.id }}/edit/">
+                                            <a class="dropdown-item" href="{% url 'payment_card_edit' card.id %}">
                                                 <i class="fas fa-edit me-2"></i>Edit
                                             </a>
                                         </li>
                                         <li>
-                                            <a class="dropdown-item text-danger" href="/customer/wallet/cards/{{ card.id }}/delete/" onclick="deleteCard({{ card.id }})">
+                                            <a class="dropdown-item text-danger" href="{% url 'payment_card_delete' card.it %}" onclick="deleteCard({{ card.id }})">
                                                 <i class="fas fa-trash-alt me-2"></i>Delete
                                             </a>
                                         </li>

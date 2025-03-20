@@ -5,7 +5,7 @@
 <div class="container py-5">
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="/home/">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
             <li class="breadcrumb-item active" aria-current="page">The Evolution of Modern Ceramics</li>
         </ol>
     </nav>
@@ -125,7 +125,7 @@
                 <div class="card-body">
                     <ul class="list-unstyled">
                         <li class="mb-3">
-                            <a href="/story/1/" class="text-decoration-none text-dark">
+                            <a href="{% url 'story1' %}" class="text-decoration-none text-dark">
                                 <div class="d-flex align-items-center">
                                     <img src="/media/story_picture/story1_pic50.png" alt="The Art of Traditional Hand Weaving" class="me-2" style="width: 50px; height: 50px; object-fit: cover;">
                                     <div>
@@ -136,7 +136,7 @@
                             </a>
                         </li>
                         <li class="mb-3">
-                            <a href="/story/3/" class="text-decoration-none text-dark">
+                            <a href="{% url 'story3' %}" class="text-decoration-none text-dark">
                                 <div class="d-flex align-items-center">
                                     <img src="/media/story_picture/story3_pic50.jpg" alt="Traditional Woodcarving and Modern Home" class="me-2" style="width: 50px; height: 50px; object-fit: cover;">
                                     <div>

@@ -13,7 +13,7 @@
     <div class="container position-relative content-container">
         <h1 class="display-4 text-white">Experience the very best online shopping with us.</h1>
         <p class="lead text-white">Find the best deals on clothing, accessories, gifts, and more.</p>
-        <a href="/products/product/collection/" class="btn btn-light">Shop Now</a>
+        <a href="{% url 'product_page' %}" class="btn btn-light">Shop Now</a>
     </div>
 </section>
 
@@ -45,16 +45,16 @@
             {% for product in new_releases %}
                 <div class="col-md-4 col-sm-6 mb-4">
                     <div class="card">
-                        <a href="/products/product/{{ product.id }}/detail/">
+                        <a href="{% url 'product_detail' product.id %}">
                             <img src="{% if product.picture %}{{ product.picture.url }}{% else %}/static/image/products/default_product.png{% endif %}"
                                 class="card-img-top" alt="{{ product.name }}">
                         </a>
                         <div class="card-body text-center">
-                            <a href="/products/product/{{ product.id }}/detail/" class="text-dark text-decoration-none">
+                            <a href="{% url 'product_detail' product.id %}" class="text-dark text-decoration-none">
                                 <h5 class="card-title">{{ product.name }}</h5>
                             </a>
                             <p class="card-text">${{ product.price }}</p>
-                            <form action="/customer/cart/{{ product.id }}/add/" method="POST">
+                            <form action="{% url 'cart_add' product.id %}"method="POST">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-dark">Add to Cart</button>
                             </form>
@@ -112,7 +112,7 @@
                         <p class="card-text">In the fast-paced modern society, the art of traditional hand weaving is gradually disappearing. However, at Unicraft, we are committed to preserving and passing on these precious traditional skills.</p>
                     </div>
                     <div class="card-footer bg-white border-0 pb-3">
-                        <a href="/story/1/" class="btn btn-dark">Learn More</a>
+                        <a href="{% url 'story1' %}" class="btn btn-dark">Learn More</a>
                     </div>
                 </div>
             </div>
@@ -124,7 +124,7 @@
                         <p class="card-text">Ceramics is an ancient and ever-evolving art form. From practical utensils to artistic expressions, ceramics continue to evolve in contemporary society, blending traditional techniques with modern aesthetics.</p>
                     </div>
                     <div class="card-footer bg-white border-0 pb-3">
-                        <a href="/story/2/" class="btn btn-dark">Learn More</a>
+                        <a href="{% url 'story2' %}" class="btn btn-dark">Learn More</a>
                     </div>
                 </div>
             </div>
@@ -136,7 +136,7 @@
                         <p class="card-text">Traditional wood carving is an important part of China's intangible cultural heritage. Today, it is being integrated into modern home decor with a new look, injecting profound cultural heritage into contemporary life.</p>
                     </div>
                     <div class="card-footer bg-white border-0 pb-3">
-                        <a href="/story/3/" class="btn btn-dark">Learn More</a>
+                        <a href="{% url 'story3' %}" class="btn btn-dark">Learn More</a>
                     </div>
                 </div>
             </div>

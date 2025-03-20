@@ -57,7 +57,7 @@
                             <i class="fas fa-shopping-cart fa-4x mb-4 text-muted"></i>
                             <h4 class="mb-3">Your cart is empty</h4>
                             <p class="text-muted mb-4">Go and pick your favorite items!</p>
-                            <a href="/products/product/collection/" class="btn btn-primary px-4">
+                            <a href="{% url 'product_page' %}" class="btn btn-primary px-4">
                                 Browse Products
                             </a>
                         </div>
@@ -67,7 +67,7 @@
 
             {% if cart.items.all %}
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <a href="/products/product/collection/" class="btn btn-outline-primary">
+                <a href="{% url 'product_page' %}" class="btn btn-outline-primary">
                     <i class="fas fa-arrow-left me-2"></i>Continue Shopping
                 </a>
             </div>
@@ -98,7 +98,7 @@
                         <span class="fw-bold">Total</span>
                         <span class="fw-bold fs-5">£{{ cart.get_total_amount }}</span>
                     </div>
-                    <form action="/customer/cart/checkout/" method="POST" class="mb-3">
+                    <form action="{% url 'checkout' %}" method="POST" class="mb-3">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-primary w-100 py-3 fw-bold">
                             Checkout

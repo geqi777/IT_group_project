@@ -14,9 +14,9 @@
                     <h4 class="mb-1">{{ user.name }}</h4>
                     <p class="text-muted mb-3">{{ user.email }}</p>
                     <div class="d-grid">
-                        <a href="/customer/order/" class="btn btn-outline-primary mb-2">My Orders</a>
-                        <a href="/customer/wallet/" class="btn btn-outline-success mb-2">My Wallet</a>
-                        <a href="/customer/logout/" class="btn btn-outline-danger">Logout</a>
+                        <a href="{% url "order_list" %}" class="btn btn-outline-primary mb-2">My Orders</a>
+                        <a href="{% url "wallet_view" %}" class="btn btn-outline-success mb-2">My Wallet</a>
+                        <a href="{% url "customer_logout" %}" class="btn btn-outline-danger">Logout</a>
                     </div>
                 </div>
             </div>
@@ -36,7 +36,7 @@
                     </div>
                     <hr>
                     <div class="d-grid">
-                        <a href="/customer/wallet/wallet-top-up/" class="btn btn-primary btn-sm">Top Up</a>
+                        <a href="{% url "wallet_top_up" %}" class="btn btn-primary btn-sm">Top Up</a>
                     </div>
                 </div>
             </div>
@@ -142,7 +142,7 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Recent Orders</h5>
-                    <a href="/customer/order/" class="btn btn-sm btn-outline-primary">View All</a>
+                    <a href="{% url "order_list" %}" class="btn btn-sm btn-outline-primary">View All</a>
                 </div>
                 <div class="card-body p-0">
                     {% if recent_orders %}
@@ -169,7 +169,7 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <a href="/customer/order/{{ order.id }}/detail/" class="btn btn-sm btn-outline-primary">Details</a>
+                                        <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-outline-primary">Details</a>
                                     </td>
                                 </tr>
                                 {% endfor %}

@@ -87,19 +87,19 @@ urlpatterns = [
     path('customer/logout/', user_login.user_logout, name='customer_logout'),
 
     path('products/product/collection/', product.product_page, name='product_page'),
-    path('products/product/<int:product_id>/detail/', product.product_detail),
+    path('products/product/<int:product_id>/detail/', product.product_detail, name='product_detail'),
     # /products/product/25/detail/
 
     # Cart
     path("customer/cart/", cart.cart_view),
-    path("customer/cart/<int:product_id>/add/", cart.cart_add),
+    path("customer/cart/<int:product_id>/add/", cart.cart_add, name="cart_add"),
     path("customer/cart/<int:cart_item_id>/edit/", cart.cart_edit),
     path("customer/cart/<int:cart_item_id>/delete/", cart.cart_delete),
-    path("customer/cart/checkout/", cart.checkout),
+    path("customer/cart/checkout/", cart.checkout, name="checkout"),
 
     # Order
-    path('customer/order/', order.order_list),
-    path('customer/order/<int:order_id>/detail/', order.order_detail),
+    path('customer/order/', order.order_list, name='order_list'),
+    path('customer/order/<int:order_id>/detail/', order.order_detail, name='order_detail'),
     path('customer/order/<int:order_id>/shipping/', order.shipping),  # New: Shipping information page
     path('customer/order/<int:order_id>/payment/', order.payment),  # New: Payment page
     path('customer/order/history/', order.history_list),
@@ -113,13 +113,13 @@ urlpatterns = [
     path('api/apply-promo-code/', promo_code.apply_promo_code),
 
     # Wallet
-    path('customer/wallet/', wallet.wallet_view),
-    path('customer/wallet/cards/', wallet.payment_card_list),
-    path('customer/wallet/cards/add/', wallet.payment_card_add),
-    path('customer/wallet/cards/<int:card_id>/edit/', wallet.payment_card_edit),
-    path('customer/wallet/cards/<int:card_id>/delete/', wallet.payment_card_delete),
-    path('customer/wallet/wallet-top-up/', wallet.wallet_top_up),
-    path('customer/wallet/transactions/', wallet.transaction_history),
+    path('customer/wallet/', wallet.wallet_view, name='wallet_view'),
+    path('customer/wallet/cards/', wallet.payment_card_list, name='payment_card_list'),
+    path('customer/wallet/cards/add/', wallet.payment_card_add, name='payment_card_add'),
+    path('customer/wallet/cards/<int:card_id>/edit/', wallet.payment_card_edit, name='payment_card_edit'),
+    path('customer/wallet/cards/<int:card_id>/delete/', wallet.payment_card_delete, name='payment_card_delete'),
+    path('customer/wallet/wallet-top-up/', wallet.wallet_top_up, name='wallet_top_up'),
+    path('customer/wallet/transactions/', wallet.transaction_history, name='transaction_history'),
 ]
 
 if settings.DEBUG:
