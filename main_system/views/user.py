@@ -52,7 +52,7 @@ def user_edit(request, nid):
 
     if request.method == 'GET':
         form = User_EditForm(instance=row)
-        return render(request, 'operation/admin_user_edit.html', {"form": form})
+        return render(request, 'main/change.html', {"form": form})
 
     form = User_EditForm(request.POST, instance=row)
     if form.is_valid():
@@ -60,7 +60,7 @@ def user_edit(request, nid):
         messages.success(request, "User information updated successfully.")
         return redirect('/operation/homepage/users/')
 
-    return render(request, 'operation/admin_user_edit.html', {"form": form})
+    return render(request, 'main/change.html', {"form": form})
 
 
 @admin_message
@@ -101,20 +101,4 @@ def reset_password(request, nid):
     return render(request, 'main/user_change.html', {"form": form})
 
 
-def user_profile(request):
-    """ Display user profile information """
-    user_info = request.session.get('info')
 
-    user_detail = models.User.objects.get(pk=user_info['user_id'])
-
-    profile_info = {
-        'id': user_detail.id,
-        'name': user_detail.name,
-        'date_of_birth': user_detail.date_of_birth,
-        'email': user_detail.email,
-        'phone': user_detail.phone,
-        'address': user_detail.address,
-        'account': user_detail.account,
-    }
-
-    return render(request, 'user/user_profile.html', {'profile': profile_info})
